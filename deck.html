@@ -1,0 +1,3969 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From Prompt to Production - AI Genius S6 E2</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <script>
+    document.documentElement.setAttribute("data-theme", "dark");
+    if (new URLSearchParams(window.location.search).get("capture") === "1") {
+      document.documentElement.classList.add("capture");
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 15% 20%, var(--cp-highlight), transparent 28%),
+        linear-gradient(145deg, var(--cp-bg-elevated), var(--cp-bg));
+    }
+
+    html.capture .app {
+      grid-template-rows: 1fr;
+    }
+
+    html.capture .stage {
+      padding: 0;
+    }
+
+    html.capture .slide-frame {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    html.capture .controls {
+      display: none;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .slide-viewport {
+      --deck-scale: 1;
+      position: relative;
+      width: calc(1600px * var(--deck-scale));
+      height: calc(900px * var(--deck-scale));
+      flex: 0 0 auto;
+    }
+
+    .slide-frame {
+      position: relative;
+      width: 1600px;
+      height: 900px;
+      overflow: hidden;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+      box-shadow: var(--cp-shadow);
+      transform: scale(var(--deck-scale));
+      transform-origin: top left;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 5.2% 6%;
+      background:
+        linear-gradient(135deg, var(--cp-sheen), transparent 32%),
+        var(--cp-bg-elevated);
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      animation: enter 240ms ease-out;
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      right: -7%;
+      bottom: -18%;
+      width: 38%;
+      aspect-ratio: 1;
+      border: 1px solid var(--cp-border);
+      border-radius: 50%;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .slide-kicker {
+      margin: 0 0 12px;
+      color: var(--cp-accent);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 80%;
+      margin-bottom: 18px;
+      font-size: 88px;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+    }
+
+    h2 {
+      max-width: 88%;
+      margin-bottom: 18px;
+      font-size: 44px;
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      font-size: 27px;
+      line-height: 1.1;
+    }
+
+    .lead {
+      max-width: 72%;
+      color: var(--cp-text-soft);
+      font-size: 27px;
+      line-height: 1.35;
+    }
+
+    .accent {
+      color: var(--cp-accent);
+    }
+
+    .muted {
+      color: var(--cp-text-muted);
+    }
+
+    .small {
+      font-size: 14px;
+    }
+
+    .footer {
+      position: absolute;
+      right: 5%;
+      bottom: 4%;
+      left: 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 5%;
+      align-items: center;
+      flex: 1;
+    }
+
+    .hero-loop {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .mini-card,
+    .card,
+    .demo-card {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .mini-card {
+      min-height: 118px;
+      padding: 18px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--cp-accent);
+      font-size: 20px;
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      flex: 1;
+      align-items: stretch;
+      margin: 10px 36px 42px 0;
+    }
+
+    .presenter-steps > h2 {
+      min-height: 90px;
+      margin-bottom: 0;
+    }
+
+    .concept-card {
+      --card-accent: var(--slide-accent);
+      display: flex;
+      min-height: 318px;
+      padding: 26px;
+      flex-direction: column;
+      border: 1px solid var(--cp-border);
+      border-top: 4px solid var(--card-accent);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .concept-card.blue {
+      --card-accent: var(--cp-link);
+    }
+
+    .concept-card.green {
+      --card-accent: var(--cp-success);
+    }
+
+    .concept-card.orange {
+      --card-accent: var(--cp-warning);
+    }
+
+    .concept-card.purple {
+      --card-accent: #b88cff;
+    }
+
+    .concept-icon {
+      display: grid;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 28px;
+      place-items: center;
+      border: 2px solid var(--card-accent);
+      border-radius: 14px;
+      color: var(--card-accent);
+      font-size: 20px;
+      font-weight: 850;
+      letter-spacing: -0.02em;
+    }
+
+    .concept-card h3 {
+      margin-bottom: 12px;
+      color: var(--card-accent);
+      font-size: 28px;
+    }
+
+    .concept-card p {
+      margin-bottom: 16px;
+      color: var(--cp-text-soft);
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .evaluator-slide .concept-card h3 {
+      min-height: 62px;
+    }
+
+    .concept-detail {
+      min-height: 72px;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--cp-text);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .concept-detail small {
+      display: block;
+      margin-top: 5px;
+      color: var(--cp-text-soft);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .iq-concept-slide {
+      --slide-accent: #b88cff;
+    }
+
+    .template-title .footer span:last-child {
+      margin-right: 96px;
+    }
+
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 156px);
+      gap: 24px 48px;
+      flex: 1;
+      align-content: center;
+      margin: 8px 100px 72px 0;
+    }
+
+    .agenda-step {
+      --agenda-accent: var(--cp-link);
+      position: relative;
+      min-width: 0;
+    }
+
+    .agenda-step:nth-child(2) {
+      --agenda-accent: var(--cp-accent);
+    }
+
+    .agenda-step:nth-child(3) {
+      --agenda-accent: var(--cp-warning);
+    }
+
+    .agenda-step:nth-child(4) {
+      --agenda-accent: var(--cp-success);
+    }
+
+    .agenda-step:nth-child(5) {
+      --agenda-accent: var(--cp-danger);
+    }
+
+    .agenda-step:nth-child(6) {
+      --agenda-accent: var(--cp-link);
+    }
+
+    .agenda-marker {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--agenda-accent);
+      font-size: 28px;
+      font-weight: 850;
+    }
+
+    .agenda-step h3 {
+      margin-bottom: 10px;
+      color: var(--cp-text);
+      font-size: 28px;
+    }
+
+    .agenda-step p {
+      max-width: 320px;
+      margin: 0;
+      color: var(--cp-text-soft);
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    .delivery-cycle {
+      position: relative;
+      margin-top: 24px;
+    }
+
+    .delivery-flow {
+      display: grid;
+      grid-template-columns: 0.85fr 1.5fr 0.85fr;
+      gap: 36px;
+    }
+
+    .delivery-panel {
+      --delivery-accent: var(--cp-link);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .delivery-panel:nth-child(2) {
+      --delivery-accent: var(--cp-success);
+    }
+
+    .delivery-panel:nth-child(3) {
+      --delivery-accent: var(--cp-warning);
+    }
+
+    .delivery-panel:not(:last-child)::after {
+      content: "\2192";
+      position: absolute;
+      top: 50%;
+      right: -30px;
+      color: var(--cp-text-soft);
+      font-size: 28px;
+    }
+
+    .delivery-phase {
+      color: var(--delivery-accent);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .delivery-panel h3 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .delivery-panel p {
+      margin: 0;
+      color: var(--cp-text-soft);
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .delivery-node {
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 10px;
+      background: var(--cp-surface-soft);
+    }
+
+    .delivery-node strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--delivery-accent);
+      font-size: 22px;
+    }
+
+    .delivery-node:last-child {
+      margin-top: auto;
+    }
+
+    .delivery-pipeline {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .delivery-pipeline li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 12px;
+      border-radius: 8px;
+      background: var(--cp-surface-soft);
+      line-height: 1.2;
+    }
+
+    .delivery-pipeline li:not(:last-child)::after {
+      content: "\2193";
+      position: absolute;
+      bottom: -11px;
+      left: 24px;
+      color: var(--cp-text-soft);
+      font-size: 14px;
+    }
+
+    .delivery-pipeline .step-number {
+      color: var(--delivery-accent);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .delivery-pipeline strong {
+      font-size: 19px;
+    }
+
+    .delivery-feedback {
+      display: flex;
+      justify-content: flex-end;
+      height: 82px;
+      margin-top: 32px;
+    }
+
+    .delivery-feedback-step {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      height: 100%;
+      width: calc((100% - 72px) * 0.265625);
+      min-width: 0;
+      padding: 12px 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 10px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 20px;
+    }
+
+    .delivery-feedback-step small {
+      color: var(--cp-text-soft);
+      font-size: 16px;
+    }
+
+    .delivery-feedback-step.optimise {
+      border-color: var(--cp-accent);
+    }
+
+    .delivery-feedback-step.optimise strong {
+      color: var(--cp-accent);
+    }
+
+    .delivery-connectors {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      color: var(--cp-accent);
+    }
+
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .journey-step {
+      position: relative;
+      min-height: 150px;
+      padding: 20px 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .journey-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -15px;
+      width: 15px;
+      height: 2px;
+      background: var(--cp-accent);
+    }
+
+    .number {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 24px;
+      place-items: center;
+      border: 1px solid var(--cp-accent);
+      border-radius: 50%;
+      color: var(--cp-accent);
+      font-weight: 700;
+    }
+
+    .journey-step span:last-child {
+      font-size: 19px;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+
+    .tradeoff {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 5%;
+      align-items: stretch;
+      flex: 1;
+      margin-top: 18px;
+      margin-bottom: 42px;
+    }
+
+    .tradeoff-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .tradeoff-copy .big-statement {
+      font-size: 44px;
+      font-weight: 750;
+      line-height: 1.08;
+    }
+
+    .chart {
+      position: relative;
+      min-height: 290px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background:
+        linear-gradient(to right, transparent 49.7%, var(--cp-border) 50%, transparent 50.3%),
+        linear-gradient(to bottom, transparent 49.7%, var(--cp-border) 50%, transparent 50.3%),
+        var(--cp-surface);
+    }
+
+    .axis-x,
+    .axis-y {
+      position: absolute;
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .axis-x {
+      right: 18px;
+      bottom: 12px;
+    }
+
+    .axis-y {
+      top: 18px;
+      left: 16px;
+    }
+
+    .model-dot {
+      position: absolute;
+      display: grid;
+      width: 70px;
+      height: 70px;
+      place-items: center;
+      border: 2px solid var(--cp-accent);
+      border-radius: 50%;
+      background: var(--cp-accent-soft);
+      color: var(--cp-text);
+      font-size: 12px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .model-dot.a {
+      left: 24%;
+      bottom: 23%;
+    }
+
+    .model-dot.b {
+      right: 17%;
+      bottom: 35%;
+      border-color: var(--cp-warning);
+    }
+
+    .model-dot.c {
+      top: 16%;
+      right: 30%;
+      border-color: var(--cp-success);
+    }
+
+    .model-choice-slide {
+      --slide-accent: var(--cp-link);
+    }
+
+    .model-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex: 1;
+      align-items: center;
+      margin: 0 180px 40px 0;
+    }
+
+    .model-choice-card {
+      position: relative;
+      display: flex;
+      min-height: 370px;
+      padding: 28px;
+      flex-direction: column;
+      border: 1px solid var(--cp-border);
+      border-top: 4px solid var(--model-color);
+      border-radius: 18px;
+      background: var(--cp-surface);
+    }
+
+    .model-choice-card.fast {
+      --model-color: var(--cp-link);
+    }
+
+    .model-choice-card.balanced {
+      --model-color: var(--cp-success);
+    }
+
+    .model-choice-card.economy {
+      --model-color: var(--cp-success);
+    }
+
+    .model-choice-card.reasoning {
+      --model-color: var(--cp-warning);
+    }
+
+    .model-choice-card.router {
+      --model-color: #b88cff;
+    }
+
+    .model-character {
+      position: relative;
+      display: grid;
+      width: 112px;
+      height: 96px;
+      margin: 0 auto 12px;
+      place-items: center;
+    }
+
+    .model-character::before {
+      content: "";
+      width: 82px;
+      height: 68px;
+      border: 3px solid #111;
+      border-radius: 18px 18px 24px 24px;
+      background: var(--model-color);
+      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.28);
+    }
+
+    .model-character::after {
+      content: "•  •";
+      position: absolute;
+      top: 24px;
+      left: 26px;
+      width: 60px;
+      padding: 4px 0 8px;
+      border-radius: 10px;
+      background: #151515;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      text-align: center;
+    }
+
+    .model-character .antenna {
+      position: absolute;
+      top: 0;
+      left: 53px;
+      width: 3px;
+      height: 18px;
+      background: var(--model-color);
+    }
+
+    .model-character .antenna::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: -4px;
+      width: 11px;
+      height: 11px;
+      border: 2px solid #111;
+      border-radius: 50%;
+      background: var(--model-color);
+    }
+
+    .model-pitch {
+      position: relative;
+      align-self: center;
+      max-width: 100%;
+      margin: 0 auto 4px;
+      padding: 8px 11px;
+      border: 1px solid var(--model-color);
+      border-radius: 12px;
+      background: #111;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+
+    .model-pitch::before {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: calc(50% - 7px);
+      border-top: 8px solid var(--model-color);
+      border-right: 7px solid transparent;
+    }
+
+    .model-choice-card h3 {
+      margin: 0 0 5px;
+      color: var(--model-color);
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .model-illustration {
+      width: 180px;
+      height: 164px;
+      margin: 0 auto 16px;
+      color: var(--model-color);
+      fill: none;
+      stroke: var(--cp-bg-elevated);
+      stroke-width: 3;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .model-illustration .model-shell {
+      fill: currentColor;
+    }
+
+    .model-illustration .model-screen {
+      fill: var(--cp-bg-elevated);
+    }
+
+    .model-illustration .model-light {
+      fill: var(--cp-text);
+      stroke: none;
+    }
+
+    .model-illustration .model-detail {
+      stroke: var(--cp-text);
+    }
+
+    .model-priority {
+      margin: 8px 0 12px;
+      color: var(--cp-text);
+      font-size: 26px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .model-example {
+      margin: 0;
+      color: var(--cp-text-soft);
+      font-size: 20px;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .model-choice-caption {
+      margin: 0 36px 24px 0;
+      color: var(--cp-text-soft);
+      font-size: 16px;
+    }
+
+    .agent-intro {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 64px;
+      align-items: center;
+      flex: 1;
+      margin: 0 160px 48px 0;
+    }
+
+    .agent-intro-profile {
+      text-align: center;
+    }
+
+    .agent-intro-profile .model-illustration {
+      --model-color: var(--cp-success);
+      width: 220px;
+      height: 200px;
+    }
+
+    .agent-intro-profile h3 {
+      margin-bottom: 12px;
+      color: var(--cp-success);
+      font-size: 28px;
+    }
+
+    .agent-intro-profile p {
+      color: var(--cp-text-soft);
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .agent-intro-question {
+      margin: 0;
+      padding: 32px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .agent-intro-question figcaption {
+      margin-bottom: 20px;
+      color: var(--cp-link);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .agent-intro-question blockquote {
+      margin: 0;
+      color: var(--cp-text);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .model-profile-label {
+      margin-bottom: 14px;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .model-metrics {
+      display: grid;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .model-metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 9px;
+      border: 1px solid var(--cp-border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 13px;
+    }
+
+    .model-metric strong {
+      color: var(--model-color);
+    }
+
+    .model-downside {
+      min-height: 72px;
+      margin: 20px 0 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .router-character {
+      position: relative;
+      display: flex;
+      width: 120px;
+      height: 96px;
+      margin: 0 auto 12px;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .router-route-label {
+      margin: -6px 0 8px;
+      color: var(--model-color);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .router-character::before,
+    .router-character::after {
+      content: "";
+      position: absolute;
+      top: 27px;
+      width: 30px;
+      height: 2px;
+      background: var(--model-color);
+    }
+
+    .router-character::before {
+      left: 17px;
+      transform: rotate(28deg);
+    }
+
+    .router-character::after {
+      right: 17px;
+      transform: rotate(-28deg);
+    }
+
+    .router-core,
+    .router-mini {
+      position: relative;
+      z-index: 1;
+      border: 2px solid #111;
+      background: var(--model-color);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.28);
+    }
+
+    .router-core {
+      align-self: flex-start;
+      width: 52px;
+      height: 46px;
+      border-radius: 13px;
+    }
+
+    .router-core::after,
+    .router-mini::after {
+      content: "••";
+      position: absolute;
+      color: #111;
+      font-weight: 900;
+      letter-spacing: 5px;
+    }
+
+    .router-core::after {
+      top: 10px;
+      left: 13px;
+      font-size: 18px;
+    }
+
+    .router-mini {
+      width: 29px;
+      height: 26px;
+      border-radius: 8px;
+    }
+
+    .router-mini::after {
+      top: 5px;
+      left: 6px;
+      font-size: 10px;
+      letter-spacing: 3px;
+    }
+
+    .model-catalog-callout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      width: 1020px;
+      margin-right: auto;
+      margin-bottom: 38px;
+      padding: 15px 20px;
+      border: 1px solid var(--cp-link);
+      border-radius: 14px;
+      background: rgba(48, 164, 255, 0.08);
+    }
+
+    .model-catalog-callout strong {
+      color: var(--cp-link);
+      font-size: 21px;
+    }
+
+    .model-catalog-callout span {
+      color: var(--cp-text-soft);
+      font-size: 16px;
+      font-weight: 650;
+      text-align: right;
+    }
+
+    .catalog-wireframe {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 14px;
+      min-height: 300px;
+    }
+
+    .catalog-list,
+    .catalog-choice {
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .catalog-model {
+      display: grid;
+      grid-template-columns: 1fr repeat(3, auto);
+      gap: 12px;
+      align-items: center;
+      margin-top: 10px;
+      min-height: 52px;
+      padding: 11px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .catalog-model.selected {
+      border-color: var(--cp-success);
+      background: rgba(93, 220, 141, 0.08);
+      box-shadow: inset 4px 0 0 var(--cp-success);
+    }
+
+    .catalog-model span:not(:first-child) {
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .catalog-model strong small {
+      display: block;
+      margin-top: 3px;
+      color: var(--cp-success);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .catalog-model.router-row strong small {
+      color: #b88cff;
+    }
+
+    .catalog-choice {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .catalog-choice p {
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .catalog-choice strong {
+      margin: 8px 0;
+      color: var(--cp-link);
+      font-size: 25px;
+    }
+
+    .catalog-choice .tag {
+      align-self: flex-start;
+      margin-top: 12px;
+    }
+
+    .model-catalog-demo .click-path span {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .model-catalog-demo > .demo-layout {
+      margin-bottom: 38px;
+    }
+
+    .demo-bumper {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 48px;
+    }
+
+    .demo-bumper .demo-number {
+      margin-bottom: 22px;
+    }
+
+    .demo-bumper h2 {
+      max-width: 82%;
+      margin-bottom: 22px;
+      font-size: 68px;
+      line-height: 1;
+    }
+
+    .demo-bumper .lead {
+      max-width: 62%;
+    }
+
+    .scenario {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 5%;
+      align-items: center;
+      flex: 1;
+      margin-bottom: 36px;
+    }
+
+    .quote {
+      padding: 28px;
+      border-left: 5px solid var(--cp-accent);
+      border-radius: 0 16px 16px 0;
+      background: var(--cp-surface);
+      font-size: 36px;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 0.8fr 0.35fr 1fr 0.35fr 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .node {
+      display: grid;
+      min-height: 130px;
+      padding: 16px;
+      place-items: center;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      text-align: center;
+    }
+
+    .node strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--cp-accent);
+    }
+
+    .connector {
+      height: 2px;
+      background: var(--cp-accent);
+    }
+
+    .sources {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      flex: 1;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+
+    .iq-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      flex: 1;
+      align-items: stretch;
+      margin: 18px 0 34px;
+    }
+
+    .iq-card {
+      display: flex;
+      min-height: 330px;
+      padding: 26px;
+      flex-direction: column;
+      border: 1px solid var(--cp-border);
+      border-top: 4px solid var(--slide-accent);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .iq-card.fabric {
+      border-top-color: var(--cp-link);
+    }
+
+    .iq-card.work {
+      border-top-color: var(--cp-success);
+    }
+
+    .iq-card h3 {
+      margin-bottom: 8px;
+      color: var(--slide-accent);
+      font-size: 30px;
+    }
+
+    .iq-card.fabric h3 {
+      color: var(--cp-link);
+    }
+
+    .iq-card.work h3 {
+      color: var(--cp-success);
+    }
+
+    .iq-kind {
+      margin-bottom: 22px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .iq-card > p {
+      color: var(--cp-text-soft);
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .iq-example {
+      margin-top: auto;
+      padding: 15px 16px;
+      border-left: 3px solid var(--slide-accent);
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .iq-card.fabric .iq-example {
+      border-left-color: var(--cp-link);
+    }
+
+    .iq-card.work .iq-example {
+      border-left-color: var(--cp-success);
+    }
+
+    .iq-disclosure {
+      display: block;
+      margin-top: 10px;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .cast-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex: 1;
+      align-items: center;
+      margin-bottom: 44px;
+    }
+
+    .cast-card {
+      display: grid;
+      grid-template-rows: 150px auto;
+      min-height: 390px;
+      padding: 24px 26px;
+      border: 1px solid var(--cp-border);
+      border-radius: 18px;
+      background: var(--cp-surface);
+      box-shadow: inset 0 3px 0 var(--slide-accent);
+    }
+
+    .cast-card:nth-child(2) {
+      box-shadow: inset 0 3px 0 var(--cp-link);
+    }
+
+    .cast-card:nth-child(3) {
+      box-shadow: inset 0 3px 0 var(--cp-success);
+    }
+
+    .character-art {
+      --art-ink: #171717;
+      --art-paper: #f3f0e8;
+      --art-fold: #d8d4ca;
+      --art-skin: #9b664a;
+      width: 100%;
+      height: 145px;
+      overflow: visible;
+    }
+
+    .character-art .art-line,
+    .character-art .art-outline {
+      stroke: var(--art-ink);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2.4;
+    }
+
+    .character-art .art-line {
+      fill: none;
+    }
+
+    .character-art .art-edge {
+      fill: none;
+      stroke: var(--art-paper);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+    }
+
+    .character-art .art-lanyard {
+      fill: none;
+      stroke: var(--cp-link);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2.8;
+    }
+
+    .character-art .art-ink {
+      fill: var(--art-ink);
+    }
+
+    .character-art .art-paper {
+      fill: var(--art-paper);
+    }
+
+    .character-art .art-skin {
+      fill: var(--art-skin);
+    }
+
+    .character-art .art-fold {
+      fill: var(--art-fold);
+    }
+
+    .character-art .art-shade {
+      fill: var(--art-ink);
+      opacity: 0.2;
+    }
+
+    .character-art .fill-accent {
+      fill: var(--slide-accent);
+    }
+
+    .character-art .fill-blue {
+      fill: var(--cp-link);
+    }
+
+    .character-art .fill-green {
+      fill: var(--cp-success);
+    }
+
+    .cast-card h3 {
+      margin-bottom: 12px;
+      color: var(--slide-accent);
+      font-size: 29px;
+    }
+
+    .cast-card:nth-child(2) h3 {
+      color: var(--cp-link);
+    }
+
+    .cast-card:nth-child(3) h3 {
+      color: var(--cp-success);
+    }
+
+    .cast-card p {
+      color: var(--cp-text-soft);
+      font-size: 20px;
+      line-height: 1.42;
+    }
+
+    .cast-card .tag {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .answer-story {
+      display: grid;
+      grid-template-columns: 1fr 0.92fr 1.18fr;
+      gap: 42px;
+      align-items: center;
+      flex: 1;
+      min-height: 0;
+      margin: 2px 0 20px;
+    }
+
+    .story-stage {
+      position: relative;
+      display: grid;
+      align-content: center;
+      min-width: 0;
+    }
+
+    .story-stage.flow::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -22px;
+      width: 22px;
+      height: 2px;
+      background: var(--slide-accent);
+    }
+
+    .story-stage.flow::before {
+      content: "";
+      position: absolute;
+      top: calc(50% - 5px);
+      right: -22px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 8px solid var(--slide-accent);
+    }
+
+    .story-avatar {
+      width: 150px;
+      height: 132px;
+      margin: 0 auto 8px;
+    }
+
+    .speech-bubble {
+      position: relative;
+      padding: 18px 20px;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: 18px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 23px;
+      font-weight: 680;
+      line-height: 1.26;
+    }
+
+    .speech-bubble::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: 34px;
+      border-right: 12px solid transparent;
+      border-bottom: 12px solid var(--cp-border-strong);
+      border-left: 12px solid transparent;
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 35px;
+      border-right: 11px solid transparent;
+      border-bottom: 11px solid var(--cp-surface);
+      border-left: 11px solid transparent;
+    }
+
+    .speech-bubble.agent-answer {
+      border-color: var(--slide-accent);
+      font-size: 19px;
+    }
+
+    .speech-bubble.agent-answer::before {
+      top: 34px;
+      left: -13px;
+      border-top: 12px solid transparent;
+      border-right: 13px solid var(--slide-accent);
+      border-bottom: 12px solid transparent;
+      border-left: 0;
+    }
+
+    .speech-bubble.agent-answer::after {
+      top: 35px;
+      left: -11px;
+      border-top: 11px solid transparent;
+      border-right: 12px solid var(--cp-surface);
+      border-bottom: 11px solid transparent;
+      border-left: 0;
+    }
+
+    .speech-bubble small {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--slide-accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .policy-paper {
+      position: relative;
+      padding: 22px 18px;
+      border: 1px solid var(--slide-accent);
+      background: #f3f0e8;
+      color: #181818;
+      box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.3);
+      transform: rotate(-2deg);
+    }
+
+    .policy-paper::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-bottom: 26px solid #d8d4ca;
+      border-left: 26px solid transparent;
+    }
+
+    .policy-paper strong {
+      display: block;
+      margin-bottom: 13px;
+      color: #171717;
+      font-size: 17px;
+      text-transform: uppercase;
+    }
+
+    .policy-rule {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 9px;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.2;
+    }
+
+    .policy-rule span:first-child {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      background: #171717;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .agent-orb {
+      display: grid;
+      width: 150px;
+      height: 150px;
+      margin: auto;
+      place-items: center;
+    }
+
+    .agent-orb .story-avatar {
+      width: 150px;
+      height: 132px;
+      margin: 0;
+    }
+
+    .agent-workflow {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+    }
+
+    .search-action {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border: 1px solid var(--cp-link);
+      border-radius: 999px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 14px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .search-action::before {
+      content: "";
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      width: 2px;
+      height: 17px;
+      background: var(--cp-link);
+    }
+
+    .search-action::after {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: calc(50% - 4px);
+      border-top: 7px solid var(--cp-link);
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+    }
+
+    .search-icon {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--cp-link);
+      border-radius: 50%;
+    }
+
+    .search-icon::after {
+      content: "";
+      position: absolute;
+      right: -6px;
+      bottom: -4px;
+      width: 8px;
+      height: 2px;
+      background: var(--cp-link);
+      transform: rotate(45deg);
+      transform-origin: left center;
+    }
+
+    .policy-result {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+      padding-top: 4px;
+    }
+
+    .policy-result::before {
+      content: "Foundry IQ result returned";
+      display: block;
+      margin-bottom: 5px;
+      color: var(--slide-accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .policy-result .policy-paper {
+      padding: 13px 15px;
+      box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+      transform: rotate(-1deg);
+    }
+
+    .policy-result .policy-paper strong {
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+
+    .policy-result .policy-rule {
+      grid-template-columns: 24px 1fr;
+      gap: 7px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    .policy-result .policy-rule span:first-child {
+      width: 23px;
+      height: 23px;
+      font-size: 10px;
+    }
+
+    .return-arrow {
+      position: absolute;
+      top: -34px;
+      right: 9px;
+      width: 2px;
+      height: 30px;
+      background: var(--slide-accent);
+    }
+
+    .return-arrow::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -4px;
+      border-right: 5px solid transparent;
+      border-bottom: 8px solid var(--slide-accent);
+      border-left: 5px solid transparent;
+    }
+
+    .slide.work-story-slide {
+      --slide-accent: var(--cp-success);
+    }
+
+    .work-story-slide .search-action {
+      border-color: var(--cp-success);
+    }
+
+    .work-story-slide .search-action::before,
+    .work-story-slide .search-icon::after {
+      background: var(--cp-success);
+    }
+
+    .work-story-slide .search-action::after {
+      border-top-color: var(--cp-success);
+    }
+
+    .work-story-slide .search-icon {
+      border-color: var(--cp-success);
+    }
+
+    .work-email-result {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+      padding-top: 4px;
+    }
+
+    .work-email-result::before {
+      content: "Work IQ result returned";
+      display: block;
+      margin-bottom: 5px;
+      color: var(--cp-success);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .email-card {
+      position: relative;
+      padding: 10px 14px;
+      border: 1px solid var(--cp-success);
+      background: #f3f0e8;
+      color: #181818;
+      box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+      transform: rotate(1deg);
+    }
+
+    .email-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-bottom: 25px solid #d8d4ca;
+      border-left: 25px solid transparent;
+    }
+
+    .email-card strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 12.5px;
+      text-transform: uppercase;
+    }
+
+    .email-meta {
+      margin-bottom: 5px;
+      color: #555;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .email-card p {
+      margin: 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .work-email-result .return-arrow {
+      background: var(--cp-success);
+    }
+
+    .work-email-result .return-arrow::before {
+      border-bottom-color: var(--cp-success);
+    }
+
+    .work-story-slide .story-journey {
+      margin-top: 18px;
+    }
+
+    .work-story-slide .response-stage::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: -42px;
+      width: 31px;
+      height: 2px;
+      background: var(--cp-success);
+    }
+
+    .work-story-slide .response-stage::after {
+      content: "";
+      position: absolute;
+      top: calc(50% - 5px);
+      left: -12px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 8px solid var(--cp-success);
+    }
+
+    .ideal-story-slide .answer-story {
+      grid-template-columns: 0.82fr 1.48fr 1.08fr;
+      gap: 30px;
+    }
+
+    .ideal-agent-workflow {
+      display: grid;
+      width: 100%;
+      justify-items: center;
+      gap: 8px;
+    }
+
+    .ideal-agent-workflow .agent-orb {
+      width: 125px;
+      height: 112px;
+    }
+
+    .ideal-agent-workflow .agent-orb .story-avatar {
+      width: 125px;
+      height: 110px;
+    }
+
+    .ideal-source-row {
+      display: grid;
+      width: 100%;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ideal-source {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .ideal-source .search-action {
+      justify-self: center;
+      padding: 7px 11px;
+      font-size: 12px;
+    }
+
+    .ideal-source .search-action::before,
+    .ideal-source .search-action::after {
+      display: none;
+    }
+
+    .ideal-source.work .search-action {
+      border-color: var(--cp-success);
+    }
+
+    .ideal-source.work .search-icon {
+      border-color: var(--cp-success);
+    }
+
+    .ideal-source.work .search-icon::after {
+      background: var(--cp-success);
+    }
+
+    .ideal-policy,
+    .ideal-email {
+      min-height: 112px;
+      padding: 12px;
+      border: 1px solid var(--slide-accent);
+      background: #f3f0e8;
+      color: #181818;
+      box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.28);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.22;
+    }
+
+    .ideal-email {
+      border-color: var(--cp-success);
+    }
+
+    .ideal-policy strong,
+    .ideal-email strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .ideal-policy span,
+    .ideal-email span {
+      display: block;
+      margin-top: 5px;
+    }
+
+    .continue-chip {
+      position: relative;
+      max-width: 104px;
+      padding: 8px 9px;
+      border: 1px dashed var(--cp-border-strong);
+      border-radius: 999px;
+      color: var(--cp-text-soft);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.15;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .continue-chip::before,
+    .continue-chip::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 11px;
+      height: 2px;
+    }
+
+    .continue-chip::before {
+      left: -12px;
+      background: var(--slide-accent);
+    }
+
+    .continue-chip::after {
+      right: -12px;
+      background: var(--cp-success);
+    }
+
+    .ideal-story-slide .story-journey {
+      margin-top: 12px;
+    }
+
+    .mechanics-layout {
+      display: grid;
+      grid-template-columns: 0.72fr 1.28fr;
+      gap: 6%;
+      align-items: center;
+      flex: 1;
+      margin: 12px 0 40px;
+    }
+
+    .mechanics-agent {
+      display: grid;
+      min-height: 390px;
+      padding: 30px;
+      place-items: center;
+      border: 1px solid var(--cp-border);
+      border-radius: 20px;
+      background: var(--cp-surface);
+      text-align: center;
+    }
+
+    .mechanics-agent .character-art {
+      width: 220px;
+      height: 190px;
+    }
+
+    .mechanics-agent strong {
+      display: block;
+      margin-top: 16px;
+      color: var(--slide-accent);
+      font-size: 25px;
+    }
+
+    .mechanics-agent span {
+      color: var(--cp-text-soft);
+      font-size: 17px;
+    }
+
+    .mechanics-cards {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mechanic-card {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 14px;
+      background: var(--cp-surface);
+    }
+
+    .mechanic-icon {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid var(--slide-accent);
+      border-radius: 12px;
+      color: var(--slide-accent);
+      font-size: 17px;
+      font-weight: 850;
+    }
+
+    .mechanic-card h3 {
+      margin-bottom: 5px;
+      color: var(--cp-text);
+      font-size: 22px;
+    }
+
+    .mechanic-card p {
+      margin-bottom: 0;
+      color: var(--cp-text-soft);
+      font-size: 17px;
+      line-height: 1.32;
+    }
+
+    .mechanics-warning {
+      padding: 16px 18px;
+      border-left: 4px solid var(--cp-danger);
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .legacy-hidden {
+      display: none !important;
+    }
+
+    .story-journey {
+      margin: 0 0 34px;
+    }
+
+    .story-reveal {
+      opacity: 1;
+      transform: none;
+    }
+
+    .presenter-steps .story-reveal {
+      opacity: 0;
+      visibility: hidden;
+      transform: none;
+    }
+
+    .presenter-steps .story-reveal.is-revealed {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+
+    .slide.active.presenter-steps,
+    .presenter-steps .story-reveal,
+    .presenter-steps .policy-paper {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    html.capture .presenter-steps .story-reveal,
+    html.capture .presenter-steps .policy-paper {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      animation: none !important;
+    }
+
+    @media print, (prefers-reduced-motion: reduce) {
+      .presenter-steps .story-reveal,
+      .presenter-steps .policy-paper {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        animation: none !important;
+      }
+    }
+
+    .source-card {
+      min-height: 260px;
+      padding: 28px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .source-card.featured {
+      border-color: var(--cp-accent);
+      box-shadow: inset 0 0 0 1px var(--cp-accent);
+    }
+
+    .source-card h3 {
+      color: var(--cp-accent);
+    }
+
+    .source-card p {
+      color: var(--cp-text-soft);
+      font-size: 19px;
+      line-height: 1.45;
+    }
+
+    .source-card .tag {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 7px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .demo-layout {
+      display: grid;
+      grid-template-columns: 0.68fr 1.32fr;
+      gap: 4%;
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 40px;
+    }
+
+    .template-demo > .demo-layout {
+      padding-top: 48px;
+      margin-bottom: 20px;
+    }
+
+    .demo-objective {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .demo-number {
+      margin-bottom: 18px;
+      color: var(--cp-accent);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .demo-objective h2 {
+      max-width: 100%;
+    }
+
+    .demo-objective p {
+      color: var(--cp-text-soft);
+      font-size: 21px;
+      line-height: 1.42;
+    }
+
+    .demo-card {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 0;
+      padding: 22px;
+    }
+
+    .demo-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .demo-screen {
+      display: grid;
+      place-items: center;
+      margin: 18px 0;
+      border: 1px dashed var(--cp-border-strong);
+      border-radius: 0.625rem;
+      background:
+        linear-gradient(135deg, var(--cp-accent-soft), transparent),
+        var(--cp-surface-soft);
+      text-align: center;
+    }
+
+    .demo-screen strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--cp-accent);
+      font-size: 32px;
+    }
+
+    .demo-screen span {
+      display: block;
+      max-width: 70%;
+      color: var(--cp-text-soft);
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .click-path {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .click-path span {
+      padding: 7px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      color: var(--cp-text-soft);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .click-path span:not(:last-child)::after {
+      content: "  >";
+      color: var(--cp-accent);
+    }
+
+    .rubric-layout {
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 5%;
+      flex: 1;
+      margin-bottom: 40px;
+    }
+
+    .rubric-list {
+      display: grid;
+      gap: 12px;
+      align-content: center;
+    }
+
+    .rubric-row {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      font-size: 19px;
+      font-weight: 650;
+    }
+
+    .check {
+      display: grid;
+      width: 27px;
+      height: 27px;
+      place-items: center;
+      border: 1px solid var(--cp-success);
+      border-radius: 50%;
+      color: var(--cp-success);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .cases {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      align-content: center;
+    }
+
+    .case {
+      min-height: 120px;
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .case strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--cp-accent);
+    }
+
+    .case span {
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .wireframe {
+      width: 92%;
+      min-height: 78%;
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      text-align: left;
+    }
+
+    .wireframe-label {
+      margin-bottom: 12px;
+      color: var(--cp-accent);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .code-wireframe {
+      display: grid;
+      grid-template-columns: 0.72fr 1.28fr;
+      gap: 14px;
+    }
+
+    .demo-principles {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .demo-principle {
+      padding: 8px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .demo-principle strong {
+      display: inline;
+      margin: 0;
+      color: var(--cp-accent);
+      font-size: 13px;
+    }
+
+    .file-tree,
+    .answer-wireframe,
+    .compare-column,
+    .diff-column {
+      padding: 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .file-tree code,
+    .answer-wireframe code {
+      display: block;
+      color: var(--cp-text-soft);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .answer-wireframe p,
+    .compare-column p,
+    .diff-column p {
+      margin-bottom: 8px;
+      color: var(--cp-text-soft);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .answer-wireframe strong,
+    .compare-column strong,
+    .diff-column strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--cp-text);
+      font-size: 18px;
+    }
+
+    .trace-wireframe {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      align-items: center;
+      padding-top: 34px;
+    }
+
+    .trace-node {
+      position: relative;
+      display: grid;
+      min-height: 92px;
+      padding: 10px;
+      place-items: center;
+      border: 1px solid var(--cp-border);
+      border-radius: 50%;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-soft);
+      font-size: 15px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .trace-node:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -19px;
+      width: 19px;
+      height: 2px;
+      background: var(--cp-accent);
+    }
+
+    .trace-node.skipped {
+      border-color: var(--cp-danger);
+      color: var(--cp-danger);
+      opacity: 0.76;
+    }
+
+    .trace-caption {
+      grid-column: 1 / -1;
+      margin-top: 14px;
+      color: var(--cp-text-soft);
+      font-size: 17px;
+      text-align: center;
+    }
+
+    .compare-wireframe,
+    .diff-wireframe {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .compare-column.baseline,
+    .diff-column.before {
+      border-color: var(--cp-danger);
+    }
+
+    .compare-column.candidate,
+    .diff-column.after {
+      border-color: var(--cp-success);
+    }
+
+    .signal-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .signal {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      color: var(--cp-text-soft);
+      font-size: 14px;
+    }
+
+    .signal.fail {
+      border-color: var(--cp-danger);
+      color: var(--cp-danger);
+    }
+
+    .signal.pass {
+      border-color: var(--cp-success);
+      color: var(--cp-success);
+    }
+
+    .diff-item {
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--cp-border-strong);
+      background: var(--cp-surface);
+      color: var(--cp-text-soft);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .validation-slide .scenario {
+      flex: none;
+      margin-bottom: 20px;
+    }
+
+    .validation-slide .quote {
+      padding: 22px;
+      font-size: 29px;
+      line-height: 1.2;
+    }
+
+    .validation-slide .source-card {
+      min-height: 0;
+      padding: 20px;
+    }
+
+    .validation-slide .source-card p {
+      margin-bottom: 8px;
+      font-size: 17px;
+      line-height: 1.3;
+    }
+
+    .validation-slide .source-card .tag {
+      margin-top: 8px;
+    }
+
+    .validation-slide .journey {
+      margin: 0 16% 30px 0;
+    }
+
+    .validation-slide .journey-step {
+      min-height: 108px;
+      padding: 14px;
+    }
+
+    .validation-slide .number {
+      margin-bottom: 12px;
+    }
+
+    .validation-slide .journey-step span:last-child {
+      font-size: 17px;
+    }
+
+    .diff-column.after .diff-item {
+      border-left-color: var(--cp-success);
+    }
+
+    .loop-layout {
+      display: grid;
+      grid-template-columns: 1fr 0.75fr;
+      gap: 6%;
+      align-items: center;
+      flex: 1;
+      margin-bottom: 44px;
+    }
+
+    .loop {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
+    .loop-step {
+      position: relative;
+      display: grid;
+      min-height: 104px;
+      padding: 12px;
+      place-items: center;
+      border: 1px solid var(--cp-border);
+      border-radius: 50%;
+      background: var(--cp-surface);
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .loop-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -9px;
+      width: 9px;
+      height: 2px;
+      background: var(--cp-accent);
+    }
+
+    .loop-message {
+      font-size: 40px;
+      font-weight: 720;
+      line-height: 1.12;
+    }
+
+    .delivery-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .release-statuses {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .release-status {
+      padding: 11px 13px;
+      border: 1px solid currentColor;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .release-status.fail {
+      color: #ff756b;
+      background: rgba(255, 117, 107, 0.08);
+    }
+
+    .release-status.pass {
+      color: var(--cp-success);
+      background: rgba(93, 220, 141, 0.08);
+    }
+
+    .delivery-tags span {
+      padding: 8px 11px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .closing {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 6%;
+      align-items: center;
+      flex: 1;
+      margin-bottom: 42px;
+    }
+
+    .closing-statements {
+      display: grid;
+      gap: 18px;
+    }
+
+    .closing-statement {
+      padding: 17px 20px;
+      border-left: 4px solid var(--cp-accent);
+      background: var(--cp-surface);
+      font-size: 28px;
+      font-weight: 690;
+    }
+
+    .qr-placeholder {
+      display: grid;
+      min-height: 260px;
+      padding: 28px;
+      place-items: center;
+      border: 1px dashed var(--cp-border-strong);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      color: var(--cp-text-soft);
+      text-align: center;
+    }
+
+    .qr-placeholder strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--cp-accent);
+      font-size: 22px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 56px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+    }
+
+    .control-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control-button {
+      min-width: 38px;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+    }
+
+    .control-button:hover,
+    .control-button:focus-visible {
+      border-color: var(--cp-accent);
+      outline: none;
+    }
+
+    .progress-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .progress {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: var(--cp-accent);
+      transition: width 180ms ease;
+    }
+
+    .slide-count,
+    .timer {
+      min-width: 66px;
+      color: var(--cp-text-muted);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .notes-panel,
+    .overview {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: none;
+      background: var(--cp-overlay);
+    }
+
+    .notes-panel.open,
+    .overview.open {
+      display: grid;
+    }
+
+    .notes-panel {
+      grid-template-columns: 1fr minmax(360px, 42vw);
+    }
+
+    .notes-spacer {
+      cursor: pointer;
+    }
+
+    .notes-content {
+      overflow: auto;
+      padding: 28px;
+      border-left: 1px solid var(--cp-border);
+      background: var(--cp-surface);
+      box-shadow: var(--cp-shadow);
+    }
+
+    .notes-content h2 {
+      font-size: 28px;
+    }
+
+    .notes-content h3 {
+      margin-top: 24px;
+      color: var(--cp-accent);
+      font-size: 17px;
+    }
+
+    .notes-content p,
+    .notes-content li {
+      color: var(--cp-text-soft);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .notes-content code {
+      font-family: Consolas, "Courier New", Courier, monospace;
+      color: var(--cp-accent);
+    }
+
+    .overview {
+      overflow: auto;
+      padding: 32px;
+      background: var(--cp-bg);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      align-content: start;
+    }
+
+    .overview-card {
+      min-height: 165px;
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .overview-card:hover,
+    .overview-card:focus-visible {
+      border-color: var(--cp-accent);
+      outline: none;
+    }
+
+    .overview-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--cp-accent);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .overview-card span {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    /* AI Genius template visual system */
+    .slide {
+      --slide-accent: var(--cp-warning);
+      padding: 7.2% 8%;
+      background-color: var(--cp-bg-elevated);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .slide.template-title {
+      background-image: url("assets/ai-genius-title.jpg");
+    }
+
+    .slide.template-content-minimal {
+      background-image: url("assets/ai-genius-content-minimal.jpg");
+    }
+
+    .slide.template-content-framed,
+    .slide.template-demo,
+    .slide.template-qa {
+      background-image: url("assets/ai-genius-content-framed.jpg");
+    }
+
+    .slide.section-evaluation {
+      --slide-accent: var(--cp-success);
+    }
+
+    .slide.section-optimisation {
+      --slide-accent: var(--cp-danger);
+    }
+
+    .slide.section-delivery {
+      --slide-accent: var(--cp-link);
+    }
+
+    .slide.section-evaluation.template-content-minimal {
+      background-image: url("assets/ai-genius-content-green.jpg");
+    }
+
+    .slide.section-evaluation.template-content-minimal .footer {
+      right: 30%;
+    }
+
+    .slide.section-optimisation.template-content-minimal .footer {
+      right: 30%;
+    }
+
+    .slide.section-evaluation.template-content-framed,
+    .slide.section-evaluation.template-demo {
+      background-image: url("assets/ai-genius-framed-green.jpg");
+    }
+
+    .slide.section-optimisation.template-content-minimal {
+      background-image: url("assets/ai-genius-content-red.jpg");
+    }
+
+    .slide.section-optimisation.template-content-framed,
+    .slide.section-optimisation.template-demo {
+      background-image: url("assets/ai-genius-framed-red.jpg");
+    }
+
+    .slide.template-content-minimal > .slide-kicker {
+      margin-left: 230px;
+    }
+
+    .slide.template-title .hero-grid {
+      padding-top: 5%;
+    }
+
+    .slide::after {
+      display: none;
+    }
+
+    .slide-kicker,
+    .accent,
+    .mini-card strong,
+    .node strong,
+    .source-card h3,
+    .demo-number,
+    .demo-screen strong,
+    .case strong,
+    .wireframe-label,
+    .qr-placeholder strong {
+      color: var(--slide-accent);
+    }
+
+    .number,
+    .model-dot,
+    .source-card.featured {
+      border-color: var(--slide-accent);
+    }
+
+    .source-card.featured {
+      box-shadow: inset 0 0 0 1px var(--slide-accent);
+    }
+
+    .journey-step:not(:last-child)::after,
+    .connector,
+    .trace-node:not(:last-child)::after,
+    .loop-step:not(:last-child)::after {
+      background: var(--slide-accent);
+    }
+
+    .quote,
+    .closing-statement {
+      border-left-color: var(--slide-accent);
+    }
+
+    .click-path span:not(:last-child)::after {
+      color: var(--slide-accent);
+    }
+
+    .demo-screen {
+      background:
+        linear-gradient(135deg, var(--cp-highlight), transparent),
+        var(--cp-surface-soft);
+    }
+
+    .footer span:first-child {
+      display: none;
+    }
+
+    .footer::before {
+      content: "FY27 AI Genius";
+    }
+
+    @media (max-width: 900px) {
+      .stage {
+        padding: 8px;
+      }
+
+      .slide-frame {
+        border-radius: 10px;
+      }
+
+      .controls {
+        gap: 8px;
+        padding: 6px 8px;
+      }
+
+      .control-button {
+        min-width: 32px;
+        min-height: 32px;
+        padding: 5px 8px;
+        font-size: 12px;
+      }
+    }
+
+    @media print {
+      html,
+      body {
+        overflow: visible;
+        background: var(--cp-bg);
+      }
+
+      .app {
+        display: block;
+      }
+
+      .stage {
+        display: block;
+        padding: 0;
+      }
+
+      .slide-viewport {
+        width: auto;
+        height: auto;
+      }
+
+      .slide-frame {
+        width: auto;
+        height: auto;
+        aspect-ratio: auto;
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .slide,
+      .slide.active {
+        position: relative;
+        display: flex;
+        width: 13.333in;
+        height: 7.5in;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .controls,
+      .notes-panel,
+      .overview {
+        display: none !important;
+      }
+
+      @page {
+        size: 13.333in 7.5in;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="stage" aria-label="Presentation">
+      <div class="slide-viewport" id="slideViewport">
+        <div class="slide-frame">
+        <article class="slide template-title section-context active" data-title="From Prompt to Production" data-minutes="1">
+          <div class="hero-grid">
+            <div>
+              <p class="slide-kicker">AI Genius / Season 6 / Episode 2</p>
+              <h1>From Prompt<br><span class="accent">to Production</span></h1>
+              <p class="lead">Start with a working agent. Measure consistency, speed and cost. Improve with evidence.</p>
+              <p class="small muted">Graeme Foster</p>
+            </div>
+            <div class="hero-loop" aria-hidden="true">
+              <div class="mini-card"><strong>Context</strong>Microsoft IQ</div>
+              <div class="mini-card"><strong>Evaluation</strong>Evaluations + checklists</div>
+              <div class="mini-card"><strong>Optimisation</strong>Agent Optimizer</div>
+              <div class="mini-card"><strong>CI/CD</strong>GitHub Actions</div>
+            </div>
+          </div>
+          <div class="footer"><span>Microsoft Foundry</span><span>AI Genius / S6 E2 / 01</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-context" data-title="Agenda" data-minutes="1">
+          <p class="slide-kicker">Today in Microsoft Foundry</p>
+          <h2>What we'll cover.</h2>
+          <div class="agenda-grid">
+            <div class="agenda-step">
+              <span class="agenda-marker">01</span>
+              <h3>Model Choice</h3>
+              <p>Model comparison + Model Router</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">02</span>
+              <h3>Grounding</h3>
+              <p>Foundry IQ, Fabric IQ + Work IQ</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">03</span>
+              <h3>Observe</h3>
+              <p>Foundry tracing + tool calls</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">04</span>
+              <h3>Evaluate</h3>
+              <p>Quality, latency, tokens + cost</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">05</span>
+              <h3>Optimise</h3>
+              <p>Agent Optimizer</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">06</span>
+              <h3>Automate</h3>
+              <p>Continuous evaluation<br>+ GitHub Actions</p>
+            </div>
+          </div>
+          <div class="footer"><span>Session agenda</span><span>AI Genius / S6 E2 / 02</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-context" data-title="Meet the agent" data-minutes="1">
+          <p class="slide-kicker">Our example</p>
+          <h2>Meet the agent</h2>
+          <div class="agent-intro">
+            <div class="agent-intro-profile">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Purchasing advice agent">
+                <path class="model-shell" d="M36 62 58 48H132L150 64V132L130 146H50L36 132Z"/>
+                <path d="M36 62H130L141 56M130 62V146"/>
+                <path class="model-screen" d="M49 75H116L122 82V120L115 126H49Z"/>
+                <rect class="model-light" x="62" y="88" width="8" height="12" rx="2"/>
+                <rect class="model-light" x="99" y="88" width="8" height="12" rx="2"/>
+                <path class="model-detail" d="M72 113H94L101 107M89 46V31"/>
+                <circle class="model-shell" cx="89" cy="24" r="8"/>
+                <path d="M49 136H60M68 136H78M139 84V96"/>
+                <path class="model-shell" d="M75 146V153L91 159 108 153V146"/>
+              </svg>
+              <h3>Purchasing advice agent</h3>
+              <p>Helps employees understand<br>what they can buy and<br>which approvals they need.</p>
+            </div>
+            <figure class="agent-intro-question">
+              <figcaption>A learning coordinator asks:</figcaption>
+              <blockquote>“Can I spend $6,250 on 25 Nova Learning licences for our new graduate employees?”</blockquote>
+            </figure>
+          </div>
+          <div class="footer"><span>Purchasing advice / Microsoft Foundry</span><span>AI Genius / S6 E2 / 03</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-context presenter-steps model-choice-slide" data-title="Model Choice" data-minutes="2">
+          <p class="slide-kicker">Different models. Different priorities.</p>
+          <h2>Model Choice</h2>
+          <div class="model-choice-grid">
+            <div class="model-choice-card reasoning story-reveal reveal-1">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model 1: a robot with a connected reasoning diagram">
+                <path class="model-shell" d="M36 62 58 48H132L150 64V132L130 146H50L36 132Z"/>
+                <path d="M36 62H130L141 56M130 62V146"/>
+                <path class="model-screen" d="M49 75H116L122 82V120L115 126H49Z"/>
+                <rect class="model-light" x="62" y="88" width="8" height="12" rx="2"/>
+                <rect class="model-light" x="99" y="88" width="8" height="12" rx="2"/>
+                <path class="model-detail" d="M72 113H94L101 107"/>
+                <path d="M49 136H60M68 136H78M139 84V96"/>
+                <path class="model-detail" d="M62 25 89 12 116 25 89 39 62 25M89 12V39"/>
+                <circle class="model-shell" cx="62" cy="25" r="7"/>
+                <circle class="model-shell" cx="89" cy="12" r="7"/>
+                <circle class="model-shell" cx="116" cy="25" r="7"/>
+                <circle class="model-shell" cx="89" cy="39" r="7"/>
+                <path class="model-shell" d="M75 146V153L91 159 108 153V146"/>
+              </svg>
+              <h3>Model 1</h3>
+              <p class="model-priority">Optimised for quality</p>
+              <p class="model-example">Complex reasoning<br>and multi-step tasks</p>
+              <p class="model-downside">Trade-off: $$$<br>Slower responses</p>
+            </div>
+            <div class="model-choice-card fast story-reveal reveal-2">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model 2: a robot with a lightning bolt and speed lines">
+                <path class="model-shell" d="M46 62 68 48H136L154 64V132L134 146H60L46 132Z"/>
+                <path d="M46 62H134L145 56M134 62V146"/>
+                <path class="model-screen" d="M59 75H120L126 82V120L119 126H59Z"/>
+                <rect class="model-light" x="70" y="88" width="8" height="12" rx="2"/>
+                <rect class="model-light" x="105" y="88" width="8" height="12" rx="2"/>
+                <path class="model-detail" d="M80 113H102L109 107"/>
+                <path d="M59 136H70M78 136H88M143 84V96"/>
+                <path class="model-shell" d="M98 5 77 29H94L85 49 118 20H101L112 5Z"/>
+                <path class="model-detail" d="M12 82H34M6 101H30M18 120H34"/>
+                <path class="model-shell" d="M85 146V153L101 159 118 153V146"/>
+              </svg>
+              <h3>Model 2</h3>
+              <p class="model-priority">Optimised for speed</p>
+              <p class="model-example">Responsive chat<br>and quick interactions</p>
+              <p class="model-downside">Trade-off: less capable<br>on complex tasks</p>
+            </div>
+            <div class="model-choice-card economy story-reveal reveal-3">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model 3: a compact robot beside a stack of coins">
+                <path class="model-shell" d="M24 62 46 48H112L130 64V132L110 146H38L24 132Z"/>
+                <path d="M24 62H110L121 56M110 62V146"/>
+                <path class="model-screen" d="M37 75H96L102 82V120L95 126H37Z"/>
+                <rect class="model-light" x="48" y="88" width="8" height="12" rx="2"/>
+                <rect class="model-light" x="81" y="88" width="8" height="12" rx="2"/>
+                <path class="model-detail" d="M57 113H79L86 107"/>
+                <path d="M37 136H48M56 136H66M119 84V96"/>
+                <path class="model-shell" d="M64 146V153L80 159 97 153V146"/>
+                <path class="model-shell" d="M134 111H170V139C170 152 134 152 134 139Z"/>
+                <ellipse class="model-shell" cx="152" cy="111" rx="18" ry="8"/>
+                <path d="M134 121C134 133 170 133 170 121M134 132C134 144 170 144 170 132"/>
+                <path class="model-detail" d="M71 46V31"/>
+                <circle class="model-shell" cx="71" cy="24" r="8"/>
+              </svg>
+              <h3>Model 3</h3>
+              <p class="model-priority">Optimised for cost</p>
+              <p class="model-example">High-volume,<br>repeatable tasks</p>
+              <p class="model-downside">Trade-off: less suited<br>to nuanced requests</p>
+            </div>
+          </div>
+          <div class="footer"><span>Model Choice</span><span>AI Genius / S6 E2 / 04</span></div>
+        </article>
+
+        <article class="slide template-demo section-context" data-title="Demo 1 - Foundry Model Comparison" data-minutes="3">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 1</span>
+            <h2>Foundry Model Comparison</h2>
+            <p class="lead">Compare fixed models and Model Router, then choose a starting configuration.</p>
+          </div>
+          <div class="footer"><span>The first choice is a hypothesis</span><span>AI Genius / S6 E2 / 05</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-context presenter-steps iq-concept-slide" data-title="Grounding" data-minutes="3">
+          <p class="slide-kicker">Microsoft IQ</p>
+          <h2>Grounding</h2>
+          <div class="concept-grid">
+            <div class="concept-card story-reveal reveal-1">
+              <span class="concept-icon">FIQ</span>
+              <h3>Foundry IQ</h3>
+              <p>Institutional knowledge and authoritative content.</p>
+              <div class="concept-detail">Policies, procedures and reference documents.<small>Connected in this demo</small></div>
+            </div>
+            <div class="concept-card blue story-reveal reveal-2">
+              <span class="concept-icon">BIQ</span>
+              <h3>Fabric IQ</h3>
+              <p>Governed business entities and current business state.</p>
+              <div class="concept-detail">Spend so far, remaining budget and business records.<small>Conceptual / not used in this demo</small></div>
+            </div>
+            <div class="concept-card green story-reveal reveal-3">
+              <span class="concept-icon">WIQ</span>
+              <h3>Work IQ</h3>
+              <p>People, collaboration and workflow context.</p>
+              <div class="concept-detail">Recent decisions, conversations and approvals.<small>Synthetic email via sample adapter</small></div>
+            </div>
+          </div>
+          <div class="footer"><span>Policy + business state + workplace context</span><span>AI Genius / S6 E2 / 06</span></div>
+        </article>
+
+        <article class="slide template-demo section-context" data-title="Demo 2 - Run the Starting Agent" data-minutes="5">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 2</span>
+            <h2>Run the Starting Agent</h2>
+            <p class="lead">Ask the purchasing question, explore its sources and save the baseline run.</p>
+          </div>
+          <div class="footer"><span>Starting agent / Microsoft Foundry</span><span>AI Genius / S6 E2 / 07</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-evaluation presenter-steps" data-title="Observe" data-minutes="2">
+          <p class="slide-kicker">Observability</p>
+          <h2>Observe</h2>
+          <div class="concept-grid">
+            <div class="concept-card blue story-reveal reveal-1">
+              <span class="concept-icon">1</span>
+              <h3>Calls</h3>
+              <p>Follow LLM calls and tool calls.</p>
+              <div class="concept-detail">What was called, and in what order?</div>
+            </div>
+            <div class="concept-card green story-reveal reveal-2">
+              <span class="concept-icon">2</span>
+              <h3>Inputs &amp; outputs</h3>
+              <p>Inspect captured prompts, responses and evidence.</p>
+              <div class="concept-detail">What information passed between each step?</div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-3">
+              <span class="concept-icon">3</span>
+              <h3>Timing</h3>
+              <p>See the duration of each call.</p>
+              <div class="concept-detail">Where did the agent spend its time?</div>
+            </div>
+          </div>
+          <div class="footer"><span>Observe first; evaluate next</span><span>AI Genius / S6 E2 / 08</span></div>
+        </article>
+
+        <article class="slide template-demo section-evaluation" data-title="Demo 3 - Inspect the Trace" data-minutes="4">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 3</span>
+            <h2>Inspect the Trace</h2>
+            <p class="lead">Follow the calls, evidence and timings behind the answer.</p>
+          </div>
+          <div class="footer"><span>LLM calls, tool calls, prompts and responses</span><span>AI Genius / S6 E2 / 09</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-evaluation presenter-steps evaluator-slide" data-title="Evaluate" data-minutes="3">
+          <p class="slide-kicker">Consistency across purchasing tasks</p>
+          <h2>Evaluate</h2>
+          <div class="concept-grid">
+            <div class="concept-card green story-reveal reveal-1">
+              <span class="concept-icon">G</span>
+              <h3>Groundedness</h3>
+              <p>Is the answer supported by the supplied context?</p>
+              <div class="concept-detail">Checks claims against the evidence.<small>Built-in evaluator</small></div>
+            </div>
+            <div class="concept-card blue story-reveal reveal-2">
+              <span class="concept-icon">UX</span>
+              <h3>Customer Satisfaction</h3>
+              <p>How satisfied would the user be with the conversation?</p>
+              <div class="concept-detail">Assesses helpfulness, clarity and resolution.<small>Built-in evaluator / preview</small></div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-3">
+              <span class="concept-icon">R</span>
+              <h3>Rubric</h3>
+              <p>Does the answer meet the requirements of this task?</p>
+              <div class="concept-detail">Your criteria: approval route, expiry, citations and next action.<small>Custom criteria / preview</small></div>
+            </div>
+          </div>
+          <div class="footer"><span>Quality becomes evidence, not opinion</span><span>AI Genius / S6 E2 / 10</span></div>
+        </article>
+
+        <article class="slide template-demo section-evaluation" data-title="Demo 4 - Evaluate Across Cases" data-minutes="6">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 4</span>
+            <h2>Evaluate Across Cases</h2>
+            <p class="lead">How consistently does the agent handle different purchases, dates and missing information?</p>
+          </div>
+          <div class="footer"><span>Task-specific evidence decides</span><span>AI Genius / S6 E2 / 11</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-optimisation presenter-steps" data-title="Optimise" data-minutes="3">
+          <p class="slide-kicker">Agent Optimizer</p>
+          <h2>Optimise</h2>
+          <div class="concept-grid">
+            <div class="concept-card story-reveal reveal-1">
+              <span class="concept-icon">B</span>
+              <h3>Baseline</h3>
+              <p>Record the starting configuration and evaluation results.</p>
+              <div class="concept-detail">How consistently does the starting agent meet the rubric?</div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-2">
+              <span class="concept-icon">C</span>
+              <h3>Candidates</h3>
+              <p>Test changes to instructions, tool descriptions and model choice.</p>
+              <div class="concept-detail">Which changes improve the results on the same tests?</div>
+            </div>
+            <div class="concept-card green story-reveal reveal-3">
+              <span class="concept-icon">3</span>
+              <h3>Compare</h3>
+              <p>Compare scores and configuration changes.</p>
+              <div class="concept-detail">Does quality improve, or hold at lower cost?</div>
+            </div>
+          </div>
+          <div class="footer"><span>Optimisation is controlled search</span><span>AI Genius / S6 E2 / 12</span></div>
+        </article>
+
+        <article class="slide template-demo section-optimisation" data-title="Demo 5 - Agent Optimizer" data-minutes="6">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 5</span>
+            <h2>Agent Optimizer</h2>
+            <p class="lead">Compare answer consistency, speed and cost, then inspect the configuration changes.</p>
+          </div>
+          <div class="footer"><span>Compare candidates with the baseline</span><span>AI Genius / S6 E2 / 13</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Automate" data-minutes="2">
+          <p class="slide-kicker">Continuous evaluation and CI/CD</p>
+          <h2>Automate</h2>
+          <div class="concept-grid">
+            <div class="concept-card blue story-reveal reveal-1">
+              <span class="concept-icon">1</span>
+              <h3>Trigger</h3>
+              <p>Agent changes, source updates and scheduled checks.</p>
+              <div class="concept-detail">When should the checks run?</div>
+            </div>
+            <div class="concept-card green story-reveal reveal-2">
+              <span class="concept-icon">2</span>
+              <h3>Evaluate</h3>
+              <p>Run the release test suite, including cases outside optimisation.</p>
+              <div class="concept-detail">Evaluate sampled production runs after deployment.</div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-3">
+              <span class="concept-icon">3</span>
+              <h3>Release</h3>
+              <p>Review, gate, deploy and retain a rollback path.</p>
+              <div class="concept-detail">Does the change preserve the required quality?</div>
+            </div>
+          </div>
+          <div class="footer"><span>Evaluation evidence travels with the change</span><span>AI Genius / S6 E2 / 14</span></div>
+        </article>
+
+        <article class="slide template-demo section-delivery" data-title="Demo 6 - Release Check" data-minutes="5">
+          <div class="demo-bumper">
+            <span class="demo-number">Demo 6</span>
+            <h2>Release Check</h2>
+            <p class="lead">Follow the selected configuration through release checks, then test a deliberate regression.</p>
+          </div>
+          <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 15</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-delivery" data-title="From test cases to production" data-minutes="2">
+          <p class="slide-kicker">The complete delivery process</p>
+          <h2>From test cases to production</h2>
+          <div class="delivery-cycle">
+          <div class="delivery-flow">
+            <section class="delivery-panel">
+              <span class="delivery-phase">Build / pre-launch</span>
+              <h3>Simulation</h3>
+              <p>Explore behaviour before real users arrive.</p>
+              <div class="delivery-node">
+                <strong>Golden dataset</strong>
+                <p>Review expected outcomes. Version the cases and rubric.</p>
+              </div>
+            </section>
+            <section class="delivery-panel">
+              <span class="delivery-phase">On every change / CI/CD</span>
+              <ol class="delivery-pipeline">
+                <li><span class="step-number">1</span><strong>Pull request</strong></li>
+                <li><span class="step-number">2</span><strong>Build &amp; test</strong></li>
+                <li><span class="step-number">3</span><strong>Evaluate agent</strong></li>
+                <li><span class="step-number">4</span><strong>Release gates</strong></li>
+                <li><span class="step-number">5</span><strong>Deploy</strong></li>
+              </ol>
+            </section>
+            <section class="delivery-panel">
+              <span class="delivery-phase">In production</span>
+              <h3>Agent traces</h3>
+              <p>Check behaviour on real requests.</p>
+              <div class="delivery-node">
+                <strong>Evaluate &amp; alert</strong>
+                <p>Sample traces. Monitor quality, latency and cost.</p>
+              </div>
+            </section>
+          </div>
+          <div class="delivery-feedback" role="group" aria-label="Improvement loop returning to the CI/CD pull request">
+            <div class="delivery-feedback-step optimise"><strong>Optimise</strong><small>Compare candidates</small></div>
+          </div>
+          <svg class="delivery-connectors" viewBox="0 0 1344 507" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <marker id="delivery-loop-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              </marker>
+            </defs>
+            <path d="M 1175 393 V 423" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#delivery-loop-arrow)"/>
+            <path d="M 1006 466 H 672 V 393" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#delivery-loop-arrow)"/>
+          </svg>
+          </div>
+          <div class="footer"><span>Microsoft Foundry + GitHub Actions</span><span>AI Genius / S6 E2 / 16</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-delivery" data-title="Worth exploring next" data-minutes="1">
+          <p class="slide-kicker">More in Microsoft Foundry</p>
+          <h2>Worth exploring next</h2>
+          <div class="agenda-grid">
+            <div class="agenda-step">
+              <span class="agenda-marker">01</span>
+              <h3>Human Annotation</h3>
+              <p>Bring domain experts into evaluation</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">02</span>
+              <h3>Synthetic Test Data</h3>
+              <p>Expand the cases you test</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">03</span>
+              <h3>AI Red Teaming</h3>
+              <p>Test adversarial behaviour</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">04</span>
+              <h3>Guardrails</h3>
+              <p>Protect inputs and tool responses</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">05</span>
+              <h3>Identity &amp; Permissions</h3>
+              <p>Limit what the agent can access</p>
+            </div>
+            <div class="agenda-step">
+              <span class="agenda-marker">06</span>
+              <h3>Human Approvals</h3>
+              <p>Keep people in control of actions</p>
+            </div>
+          </div>
+          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 17</span></div>
+        </article>
+
+        <article class="slide template-qa section-delivery" data-title="Build measure improve repeat" data-minutes="10">
+          <div class="demo-bumper">
+            <span class="demo-number">Q&amp;A</span>
+            <h2>Build → Measure → Improve → Repeat</h2>
+            <p class="lead">One working agent. Consistent answers. Measured trade-offs. Repeatable release checks.</p>
+          </div>
+          <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 18</span></div>
+        </article>
+        </div>
+      </div>
+    </section>
+
+    <nav class="controls" aria-label="Presentation controls">
+      <div class="control-group">
+        <button class="control-button" id="prev" aria-label="Previous slide">&larr;</button>
+        <button class="control-button" id="next" aria-label="Next slide">&rarr;</button>
+        <button class="control-button" id="overviewButton">Overview</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+        <span class="slide-count" id="slideCount">1 / 18</span>
+      </div>
+      <div class="control-group">
+        <span class="timer" id="timer">00:00</span>
+        <button class="control-button" id="timerButton">Start</button>
+        <button class="control-button" id="notesButton">Notes</button>
+        <button class="control-button" id="fullscreenButton">Full</button>
+      </div>
+    </nav>
+  </main>
+
+  <aside class="notes-panel" id="notesPanel" aria-hidden="true">
+    <div class="notes-spacer" id="notesSpacer" aria-label="Close notes"></div>
+    <div class="notes-content">
+      <button class="control-button" id="closeNotes">Close notes</button>
+      <h2 id="notesTitle"></h2>
+      <p><strong>Suggested timing:</strong> <span id="notesTiming"></span> minutes</p>
+      <div id="notesBody"></div>
+    </div>
+  </aside>
+
+  <section class="overview" id="overview" aria-hidden="true">
+    <div class="overview-grid" id="overviewGrid"></div>
+  </section>
+
+  <script>
+    const notes = [
+      {
+        key: "Microsoft Foundry connects model choice, context, evaluation, optimisation and delivery.",
+        definition: "An agent combines a model, instructions, tools and context to work towards a goal.",
+        transition: "Preview the agenda, starting with model choice.",
+        talk: "Frame the session around a working purchasing agent. The question is how consistently it answers across real tasks, what each successful answer costs and how to improve it. Follow the same implementation through six saved checkpoints, using live questions and traces alongside completed evaluation and optimisation runs.",
+        source: "Session framing."
+      },
+      {
+        key: "Model Choice, Grounding, Observe, Evaluate, Optimise, Automate.",
+        definition: "These are the six topics we will cover, in presentation order.",
+        transition: "First, meet the agent we'll use throughout the session.",
+        talk: "Introduce the six topics and their corresponding stage folders. One shared agent implementation runs throughout; each stage records configuration, actions and evidence. Observe and Evaluate add visibility and measurement without requiring a different agent.",
+        source: "Session structure."
+      },
+      {
+        key: "One purchasing advice agent and one question connect the demonstrations.",
+        definition: "The agent helps employees interpret purchasing guidance and identify the approvals they need.",
+        transition: "The first choice is normally which model to use.",
+        talk: "Introduce the learning coordinator and read the Nova Learning question. The agent advises on purchasing; the employee follows the approval process. Use this question to establish the baseline, then expand to different dates, purchase types and incomplete requests when evaluating consistency.",
+        source: "Nova Learning scenario."
+      },
+      {
+        key: "The first choice is normally which model to use.",
+        definition: "Quality, speed and cost are different priorities when choosing a model.",
+        transition: "Open the Foundry portal to compare real models and see where Model Router fits.",
+        talk: "Model 1 handles complex reasoning, at higher cost and with slower responses. Model 2 prioritises speed but is less capable on complex tasks. Model 3 keeps high-volume work inexpensive but is less suited to nuanced requests. Compare the trade-offs in Foundry, then revisit the starting choice with task-specific evaluations.",
+        source: "Session framing."
+      },
+      {
+        key: "The first model choice is a hypothesis.",
+        definition: "A starting configuration is an engineering choice that must later be tested against the real business task.",
+        transition: "Now give the starting agent the organisational context it needs.",
+        talk: "Compare a small fixed-model shortlist and Model Router in Foundry. Record the starting model or routing configuration and explain the choice. Keep later baseline comparisons tied to that exact configuration.",
+        checkpoint: "01-model-choice: save the starting model/configuration and portal comparison evidence. The stage playbook records prerequisites, commands, portal steps and the reset procedure.",
+        source: "Microsoft Foundry model catalog and Model Router demonstration."
+      },
+      {
+        key: "Different sources provide different kinds of organisational context.",
+        definition: "Foundry IQ provides institutional knowledge, Fabric IQ provides governed business entities and state, and Work IQ provides workplace context.",
+        transition: "Let's ask the agent and explore the context available to it.",
+        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Foundry IQ is connected, Fabric IQ is a conceptual spend example and Work IQ uses a sample adapter.",
+        source: "Microsoft IQ concepts and fictional scenario."
+      },
+      {
+        key: "Establish the working baseline and preserve its evidence.",
+        definition: "Instructions define the task and boundaries; tool descriptions explain when a source is useful and what it returns.",
+        transition: "Open the trace to inspect how the answer was produced.",
+        talk: "Run the opening question with Foundry IQ and the sample Work IQ adapter available. Read the actual answer, then inspect the policy and synthetic email: one quotation and Head of Learning approval by 30 November 2026. Save the configuration, source versions, question, answer and run ID. A correct first answer is the starting point for measuring consistency across cases.",
+        checkpoint: "02-grounding: save a working baseline, source fixtures and the run ID. Use the saved run if the live service is unavailable, identifying it as a prepared run.",
+        source: "Demo implementation to be rehearsed."
+      },
+      {
+        key: "Inspect the calls, inputs and outputs behind the answer.",
+        definition: "A trace records LLM calls, tool calls and timings, with captured prompts and responses.",
+        transition: "Let's follow the run that produced this answer.",
+        talk: "Introduce the three things to inspect: call order, inputs and outputs, and duration. Explain how these let us reconstruct a run. Ask what evidence the audience would look for in the trace.",
+        source: "Microsoft Foundry observability concepts."
+      },
+      {
+        key: "Understand how the agent produced the answer and where it spent time.",
+        definition: "Tool-call inputs and outputs show what was requested and returned.",
+        transition: "We've inspected one run. How consistently does the agent handle other purchasing situations?",
+        talk: "Open the saved baseline run and follow the LLM and tool calls, including both context sources when used. Inspect captured prompts, returned evidence, responses and timings. Discuss repeated calls or slow steps only where the trace shows them. Use the request and expected outcome as an evaluation case.",
+        checkpoint: "03-observe: save the trace, call sequence and timing evidence. Keep the same agent configuration as stage 02.",
+        source: "Microsoft Foundry tracing demonstration."
+      },
+      {
+        key: "Start with built-in evaluators, then add the criteria that matter for your task.",
+        definition: "Groundedness checks support from supplied context. Customer Satisfaction predicts satisfaction across the conversation. Rubric scores custom, weighted criteria using an LLM judge.",
+        transition: "Let's measure the starting agent against these criteria across purchasing cases.",
+        talk: "Introduce Groundedness and Customer Satisfaction, then the custom purchasing rubric. Explain how approval route, expiry, citations and an actionable next step are checked across different purchases, dates and missing information. Customer Satisfaction assesses helpfulness, completeness, clarity, tone, resolution and adaptability. Keep criteria fixed across versions. Customer Satisfaction and Rubric are in preview.",
+        source: "Microsoft Learn, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rag-evaluators ; https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/agent-evaluators ; https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators"
+      },
+      {
+        key: "Measure consistency across cases, not just the opening answer.",
+        definition: "Tokens are units of model input and output; response time is the user's end-to-end wait.",
+        transition: "Use these results to set the optimisation goal, then keep the tests fixed.",
+        talk: "Open the baseline evaluation across valid and expired exceptions, different purchase types and missing information. Inspect per-case Groundedness, Customer Satisfaction and Rubric results alongside response time, tokens, tool calls and estimated cost. Repeat representative cases to assess variation. Identify measured opportunities: more consistent task completion, clearer responses or lower cost while preserving quality. Save the baseline before opening any Optimizer candidates.",
+        checkpoint: "04-evaluate: freeze the baseline configuration, dataset, rubric and report. Record per-case results and operational metrics; choose the optimisation objective from this evidence.",
+        source: "Microsoft Foundry model comparison and evaluation demonstration."
+      },
+      {
+        key: "Compare candidate scores and configuration changes with the baseline.",
+        definition: "A baseline is the starting configuration; candidates are alternatives generated and evaluated by Agent Optimizer.",
+        transition: "Let's open the Optimizer run and compare the candidates.",
+        talk: "The primary experiment is more consistent answers across purchasing cases. Compare candidate instructions, tool descriptions and model choices against fixed criteria. Alongside quality, inspect response time and estimated cost. If the baseline already meets the quality requirement, investigate whether another configuration preserves it at lower cost.",
+        source: "Microsoft Foundry Agent Optimizer concepts."
+      },
+      {
+        key: "Inspect the evidence behind the recommended candidate.",
+        definition: "The optional validation dataset supplies separate evaluation cases within the optimisation run.",
+        transition: "Carry the same evidence into the release process.",
+        talk: "Show the stage playbook command azd ai agent optimize --config eval.yaml, then open its completed run. Compare per-case rubric results, built-in scores, response time and estimated cost with the frozen baseline. Inspect the actual configuration diff and optional validation dataset. Revisit the opening question and a changed date or purchase type. Apply a candidate only if the evidence supports the trade-off; otherwise keep the baseline.",
+        checkpoint: "05-optimise: preserve the operation ID, candidate IDs, reports and configuration diff. Record azd ai agent optimize status OPERATION_ID --watch and azd ai agent optimize apply --candidate CANDIDATE_ID in the playbook. Applying selects configuration; release checks precede deployment.",
+        source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models; Agent optimizer cost and token usage overview. Checked 24 September 2026."
+      },
+      {
+        key: "Check changes before release and keep checking after release.",
+        definition: "CI/CD automates repeatable change, evaluation and deployment steps; continuous evaluation monitors behaviour after deployment.",
+        transition: "Let's follow a change through the workflow.",
+        talk: "Explain how the chosen configuration moves through broader release tests, operational limits, approval and deployment. Include cases kept outside optimisation and candidate selection. Show where scheduled production evaluations fit. The pipeline preserves the quality requirement as the agent changes.",
+        source: "Microsoft Foundry continuous evaluation and GitHub Actions concepts."
+      },
+      {
+        key: "The workflow must show why a change stopped or advanced.",
+        definition: "Release gates check evaluation thresholds; approvals record the release decision.",
+        transition: "Now put the release checks into the complete delivery process.",
+        talk: "Follow the selected configuration through a prepared GitHub Actions run. Inspect release-test evidence before revealing its gate result. Then introduce a separately labelled, deliberate configuration regression and inspect its check results. Keep this regression separate from the original baseline and Optimizer experiment. Finish with approvals, deployment, rollback and scheduled evaluation.",
+        checkpoint: "06-automate: retain the selected configuration, release reports and workflow run IDs. Keep the deliberate regression as a separate resettable checkpoint with its exact diff and test evidence.",
+        source: "GitHub Actions release-check demonstration."
+      },
+      {
+        key: "Production evidence improves the tests used for the next release.",
+        definition: "A golden dataset is a reviewed, versioned set of cases with agreed expected outcomes. It is a test asset, not a guarantee of correctness.",
+        transition: "Here are six related capabilities worth exploring beyond today's demonstrations.",
+        talk: "Read the top row left to right. Before launch, simulation establishes expected behaviour. Review generated examples before promoting them into the golden dataset. Follow the five CI/CD steps: pull request, build and test code and tool contracts, evaluate the agent against the release dataset, enforce pre-agreed quality and operational limits, then deploy and smoke-test the versioned release. Failed checks stop promotion. Keep the candidate artifact, source versions, dataset, rubric, judge configuration and reports pinned. In production, evaluate sampled traces and alert on defined thresholds. Follow the simple return path: production to Optimise, then back into the CI/CD pull request. Compare Agent Optimizer candidates against fixed criteria and retain the baseline if the evidence does not support a change. A selected candidate re-enters the same CI/CD checks; optimisation does not deploy directly. Review case outcomes rather than automatically accepting the agent's own response as ground truth. Keep optimisation and candidate-selection cases separate from final release cases; curate and version the datasets deliberately. Simulation and trace-to-dataset generation are preview capabilities; this slide describes the intended lifecycle, not extra completed demos. Gates, alert thresholds and orchestration must be wired explicitly in the application and workflow. Allow two minutes.",
+        source: "Microsoft Learn and GitHub Docs, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
+      },
+      {
+        key: "Six next steps for extending the purchasing agent.",
+        definition: "Human annotation assesses an answer; human approval authorises an action.",
+        transition: "Return to the complete process, then take questions.",
+        talk: "Spend no more than one minute signposting these topics. Human annotation captures expert assessments: explicitly curate that feedback into better criteria and tests rather than imply automatic learning. Synthetic data expands purchase types, dates and ambiguous requests; review generated cases. AI Red Teaming probes adversarial behaviour, while guardrails such as Prompt Shields help detect malicious instructions in requests and retrieved emails or documents. Identity and permissions limit real enterprise access. Human approval workflows are an extension beyond our advice-only agent: pause before submitting a purchase request and resume after an authorised decision. Human Evaluation, synthetic data generation and the documented long-running hosted-agent approval workflow are in preview; verify availability and agent support before implementation.",
+        source: "Microsoft Learn, checked 24 September 2026: Human Evaluation https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/human-evaluation ; Synthetic Test Data https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; AI Red Teaming https://learn.microsoft.com/en-us/azure/foundry/concepts/ai-red-teaming-agent ; Prompt Shields https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/content-filter-prompt-shields ; Agent Identity https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-identity ; Human Approval https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/add-human-in-the-loop"
+      },
+      {
+        key: "Build, measure, improve and repeat.",
+        definition: "No new definition. This slide summarises the complete process.",
+        transition: "Move into questions.",
+        talk: "Close on one working agent, consistent answers, measured trade-offs and repeatable release checks. Return to the six stage playbooks: each records what changed, how it was run and the evidence collected. Discuss what the measured runs demonstrated and which configuration was retained, then take questions.",
+        source: "Session synthesis."
+      }
+    ];
+
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const stage = document.querySelector(".stage");
+    const slideViewport = document.getElementById("slideViewport");
+    const progressBar = document.getElementById("progressBar");
+    const slideCount = document.getElementById("slideCount");
+    const notesPanel = document.getElementById("notesPanel");
+    const notesTitle = document.getElementById("notesTitle");
+    const notesTiming = document.getElementById("notesTiming");
+    const notesBody = document.getElementById("notesBody");
+    const overview = document.getElementById("overview");
+    const overviewGrid = document.getElementById("overviewGrid");
+    const timer = document.getElementById("timer");
+    const timerButton = document.getElementById("timerButton");
+    const storySlides = new Map(
+      Array.from(document.querySelectorAll(".presenter-steps"), slide => [
+        slide,
+        { steps: Array.from(slide.querySelectorAll(".story-reveal")), revealed: 0 }
+      ])
+    );
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const printMode = window.matchMedia("print");
+
+    function slideFromUrl() {
+      const hashSlide = /^#slide-(\d+)$/.exec(window.location.hash);
+      const requestedSlide = Number.parseInt(
+        hashSlide ? hashSlide[1] : new URLSearchParams(window.location.search).get("slide"),
+        10
+      );
+      return Number.isFinite(requestedSlide)
+        ? Math.max(0, Math.min(slides.length - 1, requestedSlide - 1))
+        : 0;
+    }
+
+    let current = slideFromUrl();
+    let timerStartedAt = null;
+    let timerInterval = null;
+
+    function fitDeck() {
+      const styles = getComputedStyle(stage);
+      const horizontalPadding =
+        Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
+      const verticalPadding =
+        Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
+      const availableWidth = Math.max(1, stage.clientWidth - horizontalPadding);
+      const availableHeight = Math.max(1, stage.clientHeight - verticalPadding);
+      const scale = Math.min(availableWidth / 1600, availableHeight / 900);
+      slideViewport.style.setProperty("--deck-scale", String(scale));
+    }
+
+    function renderSlide() {
+      slides.forEach((slide, index) => slide.classList.toggle("active", index === current));
+      renderStorySteps();
+      progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      slideCount.textContent = `${current + 1} / ${slides.length}`;
+      document.title = `${current + 1}. ${slides[current].dataset.title} - From Prompt to Production`;
+      const hash = `#slide-${current + 1}`;
+      if (window.location.hash !== hash) {
+        window.history.replaceState(null, "", hash);
+      }
+      renderNotes();
+    }
+
+    function goTo(index) {
+      const target = Math.max(0, Math.min(slides.length - 1, index));
+      const story = storySlides.get(slides[target]);
+      if (target !== current && story) {
+        story.revealed = 0;
+      }
+      current = target;
+      renderSlide();
+      closeOverview();
+    }
+
+    function renderStorySteps() {
+      storySlides.forEach(({ steps, revealed }) => {
+        steps.forEach((step, index) => {
+          step.classList.toggle("is-revealed", index < revealed);
+        });
+      });
+    }
+
+    function stepStory(direction) {
+      const story = storySlides.get(slides[current]);
+      if (!story ||
+          document.documentElement.classList.contains("capture") ||
+          reducedMotion.matches || printMode.matches) {
+        return false;
+      }
+      const count = story.revealed + direction;
+      if (count < 0 || count > story.steps.length) {
+        return false;
+      }
+      story.revealed = count;
+      renderStorySteps();
+      return true;
+    }
+
+    function next() {
+      goTo(current + 1);
+    }
+
+    function previous() {
+      goTo(current - 1);
+    }
+
+    function renderNotes() {
+      const note = notes[current];
+      notesTitle.textContent = `${current + 1}. ${slides[current].dataset.title}`;
+      notesTiming.textContent = slides[current].dataset.minutes;
+      notesBody.innerHTML = `
+        <h3>Key message</h3>
+        <p>${note.key}</p>
+        <h3>Plain-English definition</h3>
+        <p>${note.definition}</p>
+        <h3>Talk track</h3>
+        <p>${note.talk}</p>
+        <h3>Transition</h3>
+        <p>${note.transition}</p>
+        ${note.checkpoint ? `<h3>Demo checkpoint</h3><p>${note.checkpoint}</p>` : ""}
+        <h3>Source note</h3>
+        <p>${note.source}</p>
+      `;
+    }
+
+    function toggleNotes(force) {
+      const open = typeof force === "boolean" ? force : !notesPanel.classList.contains("open");
+      notesPanel.classList.toggle("open", open);
+      notesPanel.setAttribute("aria-hidden", String(!open));
+    }
+
+    function buildOverview() {
+      slides.forEach((slide, index) => {
+        const card = document.createElement("button");
+        card.className = "overview-card";
+        card.innerHTML = `<strong>Slide ${index + 1}</strong><span>${slide.dataset.title}</span>`;
+        card.addEventListener("click", () => goTo(index));
+        overviewGrid.appendChild(card);
+      });
+    }
+
+    function toggleOverview(force) {
+      const open = typeof force === "boolean" ? force : !overview.classList.contains("open");
+      overview.classList.toggle("open", open);
+      overview.setAttribute("aria-hidden", String(!open));
+    }
+
+    function closeOverview() {
+      toggleOverview(false);
+    }
+
+    function toggleTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerButton.textContent = "Resume";
+        return;
+      }
+
+      if (!timerStartedAt) {
+        timerStartedAt = Date.now();
+      } else {
+        const displayed = timer.textContent.split(":").map(Number);
+        timerStartedAt = Date.now() - ((displayed[0] * 60 + displayed[1]) * 1000);
+      }
+
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+        const minutes = String(Math.floor(elapsed / 60)).padStart(2, "0");
+        const seconds = String(elapsed % 60).padStart(2, "0");
+        timer.textContent = `${minutes}:${seconds}`;
+      }, 250);
+      timerButton.textContent = "Pause";
+    }
+
+    async function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    }
+
+    document.getElementById("prev").addEventListener("click", previous);
+    document.getElementById("next").addEventListener("click", next);
+    document.getElementById("notesButton").addEventListener("click", () => toggleNotes());
+    document.getElementById("closeNotes").addEventListener("click", () => toggleNotes(false));
+    document.getElementById("notesSpacer").addEventListener("click", () => toggleNotes(false));
+    document.getElementById("overviewButton").addEventListener("click", () => toggleOverview());
+    document.getElementById("fullscreenButton").addEventListener("click", toggleFullscreen);
+    timerButton.addEventListener("click", toggleTimer);
+    window.addEventListener("resize", fitDeck);
+    window.addEventListener("hashchange", () => goTo(slideFromUrl()));
+
+    const stageResizeObserver = new ResizeObserver(fitDeck);
+    stageResizeObserver.observe(stage);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.repeat && storySlides.has(slides[current]) &&
+          (event.key === "ArrowRight" || event.key === "ArrowLeft" || event.key === " ")) {
+        event.preventDefault();
+        return;
+      }
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+        event.preventDefault();
+        // Page keys and toolbar buttons keep direct slide navigation.
+        if (event.key === "PageDown" || !stepStory(1)) {
+          next();
+        }
+      } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        if (event.key === "PageUp" || !stepStory(-1)) {
+          previous();
+        }
+      } else if (event.key.toLowerCase() === "n") {
+        toggleNotes();
+      } else if (event.key.toLowerCase() === "o") {
+        toggleOverview();
+      } else if (event.key.toLowerCase() === "f") {
+        toggleFullscreen();
+      } else if (event.key === "Escape") {
+        toggleNotes(false);
+        closeOverview();
+      }
+    });
+
+    buildOverview();
+    renderSlide();
+    fitDeck();
+  </script>
+</body>
+</html>

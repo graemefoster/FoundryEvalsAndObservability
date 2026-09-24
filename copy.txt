@@ -1,0 +1,48 @@
+Episode 2 
+
+Measure, benchmark, and continuously improve Microsoft Foundry AI Agents using Microsoft IQ, Evaluations, and the Agent optimiser.   
+
+ 
+
+Session Introduction 
+
+ 
+Building an AI agent is just the beginning. Getting it right up front means giving it excellent context - but once it's live, keeping it good is a job of its own: evaluations to monitor quality, optimisation to keep cost in check, and reliable ways to tell whether any change actually helps 
+
+ 
+
+In this session, you'll learn how to measure, benchmark, and continuously improve AI workflow quality using Microsoft Foundry, Evaluations, and the Agent Optimizer, and how Microsoft IQ gives your agent excellent context. You'll see how continuous evaluation replaces guesswork with measurable signals across your agent's lifecycle. 
+
+You Will Learn 
+
+How to compare and select models with Microsoft Foundry 
+
+How to add organisational context to your Agents 
+
+How to build continuous evaluation pipelines for your Agents 
+
+How to profile the balance between quality, speed, and token cost 
+
+How to use Agent Optimizer to improve your Agents 
+
+How to manage your Agent in a CI/CD pipeline 
+
+Technologies Used 
+
+Microsoft Foundry 
+
+Microsoft Foundry Extension for Visual Studio Code 
+
+Microsoft Foundry Evaluations and the Agent Optimizer 
+
+GitHub actions to integrate with Foundry 
+
+Who Should Attend 
+
+Anyone interested in building, evaluating and optimizing Agents, in Microsoft Foundry 
+
+Teams introducing Agents into GitHub and CI/CD processes 
+
+Speaker 
+
+Graeme Foster 
