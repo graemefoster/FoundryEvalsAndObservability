@@ -3,7 +3,7 @@
 **Working title:** From Prompt to Production  
 **Speaker:** Graeme Foster  
 **Series:** Microsoft AI Genius, Season 6, Episode 2  
-**Status:** Narrative and HTML skeleton approved; demos and final PowerPoint remain to be built  
+**Status:** Approved HTML deck and editable PowerPoint export; demos remain to be built  
 **Brief updated:** 24 September 2026
 
 ## Purpose
@@ -559,7 +559,7 @@ Do not include the template's **Classified as Microsoft Confidential** label.
 
 The HTML prototype uses extracted template artwork to approximate the intended look and feel. It is an iteration tool, not the final marketing asset.
 
-The marketing team is expected to rebuild the approved content in the official PowerPoint template.
+The marketing team can use the editable PowerPoint export for final template/master integration and production polish.
 
 ## HTML Prototype
 
@@ -586,7 +586,18 @@ Prototype functionality:
 - `?slide=N` query parameter for direct slide rendering.
 - `#slide-N` URL fragments for shareable slide links and restoring the current slide after refresh. Navigation updates the fragment without adding a browser-history entry for every slide; a valid fragment takes precedence over `?slide=N`.
 
-The HTML should remain easy to change. Do not over-optimise its implementation because the final deliverable will be rebuilt in PowerPoint.
+The HTML remains the narrative source of truth. Keep it easy to change and regenerate the PowerPoint export when the approved content changes.
+
+## PowerPoint Export
+
+- **File:** `AI_Genius_S6_E2_From_Prompt_to_Production.pptx`
+- **Content:** All 18 approved slides, speaker notes, timings and documentation references.
+- **Editable elements:** Native PowerPoint text, cards and process-diagram shapes. Model/agent illustrations are SVG artwork with PNG fallbacks.
+- **Reveals:** Three click-to-reveal groups on each of the six concept slides.
+- **Template treatment:** Uses the official exported AI Genius artwork in reusable PowerPoint layouts. The supplied template is rights-protected, so its original slide-master structure is not inherited.
+- **Typography:** Arial for portable rendering; final brand-font substitution can be applied during marketing polish.
+
+The user approved this artwork-based, editable export approach. Original template and reference files are unchanged.
 
 ## Terminology and Language
 
@@ -641,4 +652,4 @@ Dates agreed from the planning conversation:
 8. Choose an objective from baseline evidence and preserve a completed Agent Optimizer run, actual candidate diffs and the selection decision.
 9. Add a GitHub Actions release workflow with prepared results and a separately labelled, resettable regression checkpoint.
 10. Replace HTML demo wireframes with screenshots or confirmed click paths.
-11. Hand the approved narrative and assets to marketing for the official PowerPoint rebuild.
+11. Hand the editable PowerPoint, approved narrative and assets to marketing for final template integration and polish.
