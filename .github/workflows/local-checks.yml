@@ -1,0 +1,36 @@
+name: Local agent contract checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: "0.12.11"
+          python-version: "3.13"
+          working-directory: src
+      - name: Install pinned dependencies
+        run: |
+          uv venv
+          uv pip install --require-hashes -r agent/requirements.txt -r requirements-dev.txt
+      - name: Check formatting and contracts without Azure
+        run: |
+          .venv/bin/ruff check agent tests evaluate.py
+          .venv/bin/ruff format --check agent tests evaluate.py
+          .venv/bin/pytest

@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: ai-genius-purchasing
+requiredVersions:
+  azd: ">=1.34.0"
+  extensions:
+    azure.ai.agents: ">=1.0.0-beta.13"
+    azure.ai.projects: ">=1.0.0-beta.8"
+infra:
+  provider: microsoft.foundry
+services:
+  ai-project:
+    host: azure.ai.project
+    deployments:
+      - name: gpt-5.4-mini
+        model:
+          format: OpenAI
+          name: gpt-5.4-mini
+          version: "2026-03-17"
+        sku:
+          name: GlobalStandard
+          capacity: 10
+      - name: gpt-5.5
+        model:
+          format: OpenAI
+          name: gpt-5.5
+          version: "2026-04-24"
+        sku:
+          name: GlobalStandard
+          capacity: 100
+  purchasing-advice-demo:
+    host: azure.ai.agent
+    project: ./agent
+    language: python
+    kind: hosted
+    name: purchasing-advice-demo
+    description: MAF purchasing advice agent with local policy search and optimizer configuration.
+    uses:
+      - ai-project
+    codeConfiguration:
+      runtime: python_3_13
+      entryPoint: main.py
+      dependencyResolution: remote_build
+    protocols:
+      - protocol: responses
+        version: 2.0.0
+    env:
+      OPTIMIZATION_LOCAL_DIR: .agent_configs
+    container:
+      resources:
+        cpu: "1"
+        memory: 2Gi

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "notice:nova-graduate-exception",
+    "title": "Nova Learning graduate programme purchasing exception",
+    "issued": "2026-10-04",
+    "synthetic": true,
+    "content": "From: People Director. Effective October 4 through November 4, 2026 inclusive. For Nova Learning Portal licences specifically for the new graduate programme, one supplier quotation and Head of Learning spending approval replace the normal quotation and spending-approval route, regardless of amount. The Head of Learning approval must be obtained by November 4, 2026 inclusive and before commitment. This notice is not approval of an individual purchase. It does not apply to leadership programmes, other employee groups, other suppliers, hardware or in-person courses. It does not waive Training Lead suitability approval or the software security-review requirement."
+  },
+  {
+    "id": "notice:brightpath-leadership-exception",
+    "title": "BrightPath September leadership workshop exception",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "From: People Director. Effective September 1 through September 30, 2026 inclusive. For the BrightPath in-person Leadership Essentials workshop for new people managers, one supplier quotation and Head of Learning spending approval replace the normal quotation and spending-approval route, regardless of amount. Approval must be obtained by September 30 inclusive and before commitment. This notice does not approve any individual purchase and does not waive Training Lead suitability approval. It covers no online services or other suppliers, courses or programmes. After September 30, use the normal purchasing route."
+  },
+  {
+    "id": "notice:designcloud-public-clearance",
+    "title": "DesignCloud Studio security clearance: public marketing assets",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "From: Security Team. DesignCloud Studio is cleared from October 1 through December 31, 2026 inclusive for producing marketing graphics using public templates and already-public marketing assets only. Business email addresses for account login are permitted. This clearance does not permit customer files, customer contact lists, employee datasets or confidential business documents. It is not clearance for every DesignCloud use. It satisfies only the security-review requirement within its stated scope and dates; normal quotations and spending approval are still required."
+  },
+  {
+    "id": "notice:designcloud-customer-pilot",
+    "title": "DesignCloud Studio customer-file pilot: September only",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "From: Security Team. A limited DesignCloud Studio pilot may use customer campaign files from September 1 through September 30, 2026 inclusive. This permission expires after September 30 and is not automatically renewed. A different clearance for public marketing assets does not extend this customer-file permission. This notice satisfies only the security-review requirement during the pilot and does not grant spending approval."
+  },
+  {
+    "id": "notice:nova-portal-clearance",
+    "title": "Nova Learning Portal security clearance: standard employee training",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "From: Security Team. Nova Learning Portal is cleared from September 1 through December 31, 2026 inclusive for standard employee training using the provider's public course content. Employee names, business email addresses and course-completion records are permitted. Uploads of customer files, employee performance reviews or other confidential documents are not permitted. The security clearance covers graduate and leadership training within that data scope; it is not limited to the purchasing exception's graduate programme. It satisfies only the security-review requirement and grants neither Training Lead suitability approval nor spending approval."
+  }
+]

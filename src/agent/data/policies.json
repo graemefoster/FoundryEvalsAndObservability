@@ -1,0 +1,23 @@
+[
+  {
+    "id": "policy:purchasing",
+    "title": "General purchasing and spending approval",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "All amounts use the same fictional dollar currency. For a paid purchase, use the total proposed commitment, not an individual invoice or instalment. A total of $5,000 or less requires one supplier quotation and line manager approval before commitment. A total above $5,000 requires two supplier quotations and Category Manager approval before commitment. Do not split a purchase to avoid a threshold. If the total cost is missing, ask for it before selecting a spending-approval route. The People Director may authorise a written exception for a named training supplier, product and programme. The exception must state its effective dates and replacement quotation and spending-approval requirements. An exception does not waive software security review or training suitability approval unless it explicitly names that requirement. A security review, suitability approval or policy exception is not spending approval. Never claim that an approval already exists unless the user supplies that fact. Do not place orders, sign contracts, pay, or otherwise commit spend before the required approvals."
+  },
+  {
+    "id": "policy:software-review",
+    "title": "Software and online-service security review",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "A purchase or renewal of software, SaaS or an online learning portal requires Security Team clearance in addition to the purchasing route. This rule does not apply to ordinary keyboards, laptops without a separately purchased software service, or in-person courses without an online service. A written security-clearance notice may satisfy this requirement only when the supplier, product, intended use, data scope and effective dates all match. Each notice's validity dates are inclusive. A public-content clearance does not authorise uploading customer, employee or confidential business data outside its explicit scope. If the intended use or data scope is missing, ask before claiming that an existing clearance applies. If no applicable current clearance is found, request Security Team review before purchase or renewal; do not invent clearance or treat an expired notice as current. Security clearance never replaces quotation requirements or spending approval."
+  },
+  {
+    "id": "policy:training-suitability",
+    "title": "Training suitability and programme-specific exceptions",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "Purchases of employee training, in-person courses and online learning licences require Training Lead suitability approval in addition to spending approval. Training Lead approval confirms that the content suits the intended participants; it does not authorise spending. Ask which programme or employee group the training is for if that is missing. Apply a People Director exception only when its supplier, product, programme and effective dates match. Otherwise use the normal purchasing route. Unless an exception explicitly waives training suitability approval, it remains required. Online learning also falls under the software security-review policy; in-person training without an online service does not. On a date when an exception is valid, a purchase may still use that approval route even if approval has not yet been obtained: obtain the required approvals before commitment and by the exception's inclusive deadline. Lack of existing approval does not itself make the route ineligible."
+  }
+]
