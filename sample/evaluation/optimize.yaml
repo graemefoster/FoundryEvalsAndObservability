@@ -4,16 +4,17 @@ name: purchasing-next-action-optimisation
 agent:
   name: purchasing-advice-demo
   kind: hosted
-  version: "3"
+  version: "1"
   model: gpt-5.4-mini
   config: ../agent/.agent_configs/baseline/metadata.yaml
+# azd resolves dataset paths from the service's project directory: sample/agent/.
 dataset:
-  local_uri: datasets/golden-development.jsonl
+  local_uri: ../evaluation/datasets/golden-development.jsonl
 validation_dataset:
-  local_uri: datasets/golden-holdout.jsonl
+  local_uri: ../evaluation/datasets/golden-holdout.jsonl
 evaluators:
   - name: purchasing-next-action
-    version: "8"
+    version: "1"
     initialization_parameters:
       deployment_name: gpt-5.5
       threshold: 1

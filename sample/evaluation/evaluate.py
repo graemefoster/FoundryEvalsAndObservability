@@ -11,10 +11,11 @@ from azure.identity import DefaultAzureCredential
 
 # The agent answers the questions; a separate model acts as the judge.
 # Versions identify the deployed agent and the marking rubric already stored in Foundry.
+# A fresh project normally starts at version 1; use the actual setup/deployment results.
 AGENT_NAME = "purchasing-advice-demo"
-AGENT_VERSION = "3"
+AGENT_VERSION = "1"
 EVALUATOR_NAME = "purchasing-next-action"
-EVALUATOR_VERSION = "8"
+EVALUATOR_VERSION = "1"
 JUDGE_MODEL = "gpt-5.5"
 DATASET = Path(__file__).resolve().parent / "datasets/golden-development.jsonl"
 
