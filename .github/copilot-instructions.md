@@ -3,7 +3,8 @@
 ## Start here
 
 Read `PLAYBOOK.md` before changing this repository. It is the single source for
-the presentation flow, recorded experiment results, service IDs and commands.
+the presentation flow, reusable setup and commands. Keep run history, scores,
+cloud resource IDs and machine-specific handoffs outside the repository.
 These instructions guide coding assistants; the hosted agent's instructions
 are in `sample/agent/.agent_configs/baseline/instructions.md`.
 
@@ -80,41 +81,19 @@ Python workflow. `azd ai agent eval` and the separate `azd ai eval` extension
 have different configurations; do not conflate them or claim golden-data
 evaluation is unsupported. Do not restart that migration without a request.
 
-## Recorded state at October 7, 2026
+## Demo conventions
 
-Treat this as a dated handoff, not a substitute for checking live state:
-
-- Fresh-project baseline: `purchasing-advice-demo:1` in
-  `ai-genius-fresh-20261007`, GPT-5.4-mini, low reasoning. Registered judge
-  version 1; judge/generator GPT-5.5. No candidate promoted.
-- Current corpus: 19 policies and five notices; 32 development and 24 validation
-  cases. All 56 questions have explicit decision dates.
-- Historical October 6 version-3 experiment: development baseline 16/32; same-set validation baseline
-  16/24, candidate 1 16/24, selected candidate 2 17/24. Policy facts remained
-  embedded. Only six distinct development cases appeared in recorded training
-  mini-batches; all 24 validation cases appeared in each full comparison.
-- The source without the October 5 fallback date is deployed in the fresh
-  project. Do not label historical version-3 scores as results for this source.
-- Native provisioning omitted monitoring and gave the caller only project-level
-  Foundry User access. The companion Bicep supplies monitoring and account-level
-  Foundry User; OpenAI-only access did not suffice for cloud judging.
-- Two initial full evaluations errored during judging; these are not quality
-  scores. The one-case RBAC verification subsequently produced a valid judgment.
-  The full replacement scored 22/32 with zero errors/skips. Fresh optimisation:
-  validation baseline 17/24, selected candidate 1 18/24, candidate 2 18/24.
-  All 84 optimiser judgments completed without errors/skips. Both candidates
-  embedded policy facts; their effective system prompts grew from 243 to 912 words.
-  Six distinct development questions appeared in the training mini-batches.
-  No candidate was applied or promoted; baseline version 1 remains live.
-- Continuous evaluation is a setup walkthrough, not an enabled live service.
-- An optional CLI investigation created an evaluation definition, but no model
-  run. Details are in the playbook. The fresh-environment rehearsal is complete;
-  no further evaluation, optimisation, deployment or promotion is authorised.
-
-Cleanup archives, including the modified brief, prior tests and full raw evidence,
-were saved outside the repository under:
-`~/.copilot/session-state/4bd6dbe2-282c-419c-aa03-8bf15d01dfd9/files/repo-cleanup-2026-10-07/`.
-They are local recovery material, not a dependency available in a fresh clone.
+- Use the Foundry project display name **Agent Evaluation Demo** and agent name
+  `purchasing-advice-demo`. Get actual resource IDs from the selected azd environment.
+- Agent and judge versions default to 1 for a fresh project. Check actual returned
+  versions and align the script/YAML; do not infer live state from documentation.
+- The agent uses GPT-5.4-mini with low reasoning; judge/generator use GPT-5.5.
+- The corpus contains 19 policies and five notices; datasets contain 32 development
+  and 24 validation cases. All questions supply an explicit decision date.
+- The companion Bicep provides monitoring and account-level Foundry User access.
+  Project-only or OpenAI-only access is insufficient for cloud judging.
+- Continuous evaluation is a setup walkthrough. Do not enable it or promote a
+  candidate as part of routine demo preparation.
 
 ## Change and execution discipline
 
@@ -123,8 +102,8 @@ or cloud changes. Preserve unrelated user edits. Do not commit or push unless
 asked. Keep source comments and documentation concise.
 
 Do not run billable evaluations/searches, deploy, promote candidates, provision,
-delete resources or change RBAC/networking without explicit approval. Existing
-project/environment details are in the playbook. An authorised app-only
+delete resources or change RBAC/networking without explicit approval. Discover
+project/environment details from local azd state. An authorised app-only
 deployment uses `azd deploy purchasing-advice-demo`, not `azd up`.
 
 Use Python 3.13 and the existing locked dependencies. CI performs Ruff lint and
@@ -140,7 +119,6 @@ The dry run prints the request without writing files or making cloud calls. Chec
 mapping, dataset separation and file paths when editing the evaluation helper.
 Do not recreate a test framework as part of routine cleanup.
 
-For this workstation's uv package operations, use
-`UV_DEFAULT_INDEX=https://packagefeedproxy.microsoft.io/pypi/simple/`.
+Use the package index approved for the current environment.
 Do not casually upgrade agent dependencies or azd extensions during a demo task.
 Never check in credentials, environment secrets or unreviewed raw telemetry.
