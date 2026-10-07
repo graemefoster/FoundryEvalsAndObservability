@@ -1,0 +1,26 @@
+# From sample/: azd ai agent optimize --config evaluation/optimize.yaml
+# Align the deployed agent version with the local baseline before submitting.
+name: purchasing-next-action-optimisation
+agent:
+  name: purchasing-advice-demo
+  kind: hosted
+  version: "3"
+  model: gpt-5.4-mini
+  config: ../agent/.agent_configs/baseline/metadata.yaml
+dataset:
+  local_uri: datasets/golden-development.jsonl
+validation_dataset:
+  local_uri: datasets/golden-holdout.jsonl
+evaluators:
+  - name: purchasing-next-action
+    version: "8"
+    initialization_parameters:
+      deployment_name: gpt-5.5
+      threshold: 1
+options:
+  eval_model: gpt-5.5
+  optimization_model: gpt-5.5
+  max_candidates: 2
+# Holdout cases go to native validation, never into the training dataset.
+# No model_search_space: the agent model is fixed.
+# Native optimisation can change instructions and tool descriptions, not Python tools.

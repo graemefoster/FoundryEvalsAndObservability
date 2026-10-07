@@ -1,0 +1,34 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_policies",
+      "description": "Search organisational policies by topic: purchasing, software security, training, travel, hospitality, home-office equipment, accessibility, consultants, events, marketing, data handling, renewals, disposal, regional pilots, supplier restrictions, conference funding, consultant record closeout and contract amendments. Returns up to three ranked source documents with IDs, dates and content. Use focused queries and search again for additional relevant policies.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "Policy topic or key terms to search."}
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_workplace_notices",
+      "description": "Search workplace notices by supplier, product or topic. Returns up to three ranked exceptions or security clearances, including expired or inapplicable notices. Check each source's scope and dates; search matches are not approvals.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "Supplier, product or notice topic to search."}
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  }
+]

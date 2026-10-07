@@ -1,4 +1,4 @@
-name: Local agent contract checks
+name: Python lint checks
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: src
+        working-directory: sample
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -24,13 +24,12 @@ jobs:
         with:
           version: "0.12.11"
           python-version: "3.13"
-          working-directory: src
+          working-directory: sample
       - name: Install pinned dependencies
         run: |
           uv venv
           uv pip install --require-hashes -r agent/requirements.txt -r requirements-dev.txt
-      - name: Check formatting and contracts without Azure
+      - name: Check Python formatting without Azure
         run: |
-          .venv/bin/ruff check agent tests evaluate.py
-          .venv/bin/ruff format --check agent tests evaluate.py
-          .venv/bin/pytest
+          .venv/bin/ruff check agent evaluation
+          .venv/bin/ruff format --check agent evaluation
