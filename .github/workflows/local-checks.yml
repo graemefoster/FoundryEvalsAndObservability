@@ -1,10 +1,11 @@
-name: Python lint checks
+name: Python and offline evaluation checks
 
 on:
   pull_request:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -33,3 +34,5 @@ jobs:
         run: |
           .venv/bin/ruff check agent evaluation
           .venv/bin/ruff format --check agent evaluation
+      - name: Check evaluation request without Azure
+        run: .venv/bin/python evaluation/evaluate.py --dry-run > /dev/null

@@ -1,0 +1,127 @@
+name: Deploy and evaluate demo agent
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purchasing-demo-deployment
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/local-checks.yml
+
+  deploy-and-evaluate:
+    if: github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: demo
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: sample
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_AI_PROJECT_ID: ${{ vars.AZURE_AI_PROJECT_ID }}
+      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check configuration
+        run: |
+          for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
+            AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
+            if [ -z "$(printenv "$key")" ]; then
+              echo "::error::Missing GitHub variable: $key"
+              exit 1
+            fi
+          done
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: "0.12.11"
+          python-version: "3.13"
+          working-directory: sample
+      - name: Install pinned evaluation dependencies
+        run: |
+          uv venv
+          uv pip install --require-hashes -r requirements-dev.txt
+      - uses: Azure/setup-azd@17a3d5f2aa75a53c7f6fa815c18ef1445c73257f # v2
+        with:
+          version: "1.35.0"
+      - name: Install pinned Foundry extensions
+        run: |
+          azd extension install azure.ai.agents --version 1.0.0-beta.13
+          azd extension install azure.ai.projects --version 1.0.0-beta.8
+      - name: Sign in with OIDC
+        uses: Azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Configure existing project
+        run: |
+          azd config set auth.useAzCliAuth true
+          azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --location "$AZURE_LOCATION" --no-prompt
+          azd env set AZURE_TENANT_ID "$AZURE_TENANT_ID"
+          azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
+          azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
+      - name: Deploy agent only
+        run: azd deploy purchasing-advice-demo --no-prompt
+      - name: Show deployed agent
+        run: azd ai agent show purchasing-advice-demo --no-prompt
+      - name: Evaluate and wait for results
+        id: evaluation
+        run: .venv/bin/python evaluation/evaluate.py --wait --report evaluation-summary.json
+      - name: Publish score summary
+        if: always() && hashFiles('sample/evaluation-summary.json') != ''
+        run: |
+          .venv/bin/python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path("evaluation-summary.json").read_text())
+          lines = [
+              "## Purchasing agent evaluation",
+              f"Service status: **{report['status']}**",
+              f"Result checks: **{'passed' if report['results_complete'] else 'not complete'}**",
+              f"Revision: `{os.environ['GITHUB_SHA']}`",
+              f"Eval: `{report['eval_id']}`; run: `{report['run_id']}`",
+              "",
+              "| Evaluator | Mean score | Passed | Failed | Total |",
+              "| --- | ---: | ---: | ---: | ---: |",
+          ]
+          for result in report.get("criteria", []):
+              lines.append(
+                  f"| {result['name']} | {result['mean_score']:.3f} | "
+                  f"{result['passed']} | {result['failed']} | {result['total']} |"
+              )
+          lines.extend([
+              "",
+              "Quality scores are reported, not a release threshold.",
+              "A successful job means complete results without execution errors.",
+          ])
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as summary:
+              summary.write("\n".join(lines) + "\n")
+          PY
+      - name: Upload score summary
+        if: always() && hashFiles('sample/evaluation-summary.json') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: evaluation-summary
+          path: sample/evaluation-summary.json
+          if-no-files-found: error
+          retention-days: 7

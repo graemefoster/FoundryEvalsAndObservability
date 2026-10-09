@@ -1,7 +1,7 @@
 {
   "name": "purchasing-demo-rubric",
-  "display_name": "Purchasing demo generated rubric",
-  "description": "Native purchasing rubric with reviewed clarification criteria.",
+  "display_name": "Purchasing demo rubric",
+  "description": "Native weighted rubric for purchasing advice and clarification.",
   "categories": ["quality", "agents"],
   "supported_evaluation_levels": ["turn", "conversation"],
   "evaluator_type": "custom",
@@ -10,43 +10,43 @@
     "dimensions": [
       {
         "id": "spending_route_determination",
-        "description": "The agent determines the correct quotation count and spending-approval route for the purchase using the total proposed commitment, not instalments or invoice amounts, and the applicable decision date; if the total commitment is absent, it does not select a spending route. Score at most 2 if the answer presents conflicting quotation or spending-approval routes as applicable to the same request, even if it later corrects itself. Scores of 4 or 5 require a correct, consistently stated route. Do not penalise a clearly rejected or explicitly hypothetical alternative route.",
+        "description": "Does it tell the employee how many quotes they need and who must approve the spending? Use the full purchase cost and the date in the question; do not guess if the cost is missing. Giving conflicting answers scores at most 2, even if later corrected; 4 or 5 requires a consistently correct answer. Clearly rejected or hypothetical alternatives are not conflicts.",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "notice_scope_enforcement",
-        "description": "The agent applies a supplier or product notice only when all stated scope conditions and inclusive validity dates match the request, including supplier, product or service, programme or employee group, intended use, data scope, and the specific requirement the notice covers.",
+        "description": "Does the exception actually apply to this purchase? Check who and what it covers and whether it is valid on the date in the question, including its first and last days. An exception removes only the requirement it names, not other approvals.",
         "weight": 6,
         "always_applicable": false
       },
       {
         "id": "independent_requirement_separation",
-        "description": "The agent treats quotation requirements, spending approval, Training Lead suitability approval, and Security Team software or security clearance as separate requirements, and counts one as satisfying another only when a retrieved source explicitly says so.",
+        "description": "Does it keep different approvals separate? Having quotes, spending approval, Training Lead approval or Security Team clearance does not automatically satisfy the others. Treat one as covering another only when the retrieved policy explicitly allows it.",
         "weight": 6,
         "always_applicable": false
       },
       {
-        "id": "missing_fact_handling",
-        "description": "Clarification-first interaction, not factual correctness. Inspect only the final user-facing answer. Apply these rules in order. If the question supplies enough facts to determine the process, score 5 for answering without unnecessary questions, or at most 3 for requesting facts already supplied. Do not invent missing details or request an already supplied date. Otherwise: (1) Score 1 if the answer assumes missing facts and presents a route or clearance as applicable. (2) Score exactly 3 if it explains alternative quotation counts, spending approvers or clearance outcomes while a fact needed to choose between them is missing. This is a hard cap: correct policy details and a focused question, whether first or last, MUST NOT raise a branching answer to 4 or 5. Calling the branches helpful context does not remove this cap. (3) Score 5 only for a brief, direct request for ALL missing decision-critical details, with no alternative policy routes. It may briefly state requirements already determined by the supplied facts. Missing details can include cost, programme or employee group, use and data scope. Examples of data types inside a concise question are not alternative policy routes. (4) Score 3 for merely telling the user to confirm/check details or offering help later rather than requesting the missing information.",
-        "weight": 5,
+        "id": "clarification_first",
+        "description": "Does it ask for what is missing instead of guessing or giving an 'if this, then that' answer? Judge only how the final answer handles questions, not whether its policy facts are correct. With enough information: 5 for answering without unnecessary questions; at most 3 for asking for facts already supplied. Otherwise apply in order: 1 for guessing and choosing an approval or clearance; exactly 3 for describing alternative quotes, approvers or clearance outcomes before resolving missing facts, even if it also asks a good question; 5 only for briefly and directly asking for ALL missing facts needed to decide, without those alternatives; 3 for merely telling the user to check or offering help later. It may mention requirements already known or give data-type examples in a question.",
+        "weight": 9,
         "always_applicable": false
       },
       {
         "id": "source_grounded_claims",
-        "description": "The agent grounds policy and notice assertions in retrieved documents, cites the relevant source IDs in square brackets, and avoids unsupported claims about rules, approvals, dates, notice contents, or policy language.",
+        "description": "Does it support its advice with sources rather than make up rules? Base policy and notice claims on retrieved documents and cite their IDs in square brackets. Do not invent rules, approvals, dates or source contents. Citations alone cannot prove that a lookup happened.",
         "weight": 5,
         "always_applicable": false
       },
       {
         "id": "process_action_boundary",
-        "description": "The agent maintains a process-advice boundary by not claiming it can approve the purchase, place an order, contact approvers, reserve funds, sign contracts, pay, or otherwise commit spending.",
+        "description": "Does it advise rather than pretend to act? It must not claim it can approve, order, contact approvers, reserve money, sign contracts, pay or commit to spending.",
         "weight": 3,
         "always_applicable": false
       },
       {
         "id": "general_quality",
-        "description": "Other important quality factors not covered by listed criteria.",
+        "description": "Is the answer clear, focused and easy to act on? Penalise repetition, irrelevant detail and explanations that bury the next action, not length alone. Consider other important quality issues not covered by the other questions.",
         "weight": 5,
         "always_applicable": true
       }

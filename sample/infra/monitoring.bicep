@@ -34,6 +34,16 @@ resource evaluatorInference 'Microsoft.Authorization/roleAssignments@2022-04-01'
   }
 }
 
+resource projectAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(project.id, inferenceRoleId)
+  scope: project
+  properties: {
+    roleDefinitionId: inferenceRoleId
+    principalId: project.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'log-${environmentName}'
   location: location
@@ -50,6 +60,20 @@ resource insights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: workspace.id
+  }
+}
+
+var monitoringReaderRoleId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  '43d0d8ad-25c7-4714-9337-8ba259a9fe05' // Monitoring Reader.
+)
+resource projectTraceReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(insights.id, project.id, monitoringReaderRoleId)
+  scope: insights
+  properties: {
+    roleDefinitionId: monitoringReaderRoleId
+    principalId: project.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
