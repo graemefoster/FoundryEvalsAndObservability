@@ -11,11 +11,13 @@ In Foundry, use project **Agent Evaluation Demo** and agent
 resource name; commands obtain resource IDs and endpoints from your azd environment.
 
 The agent uses Microsoft Agent Framework, GPT-5.4-mini with low reasoning, and
-three read-only tools: policy search, workplace-notice search (both over fictional
-documents) and a department budget lookup that returns a fixed number.
+three read-only tools shaped like the Microsoft IQ MCP tools: `knowledge_base_retrieve`
+(Foundry IQ, policies), `ask` (Work IQ, workplace notices) and `search_ontology`
+(Fabric IQ, returns a fixed department budget).
 It advises; it cannot approve, buy or contact anyone.
-None of the tools connects to real Foundry IQ, Work IQ or Fabric IQ; the budget
-tool stands in for a Fabric IQ business-data lookup.
+None connects to a real IQ source. The real ones are LLM-backed and have generic tool
+descriptions, with domain guidance held in the knowledge base or ontology; ours are
+deterministic local stand-ins.
 Hosting and Agent Framework own the model/tool loop and tracing.
 
 The question we evaluate is **"does the employee know their next action?"**
@@ -47,8 +49,18 @@ Open a fresh conversation with the baseline agent:
 > authorisation. Travel Desk will book. Can we rely on the regional pilot for
 > the cabin?
 
+Use single quotes when pasting into a shell, or `$6,400` becomes `,400` and the agent
+invents a cost. From `sample/`:
+
+```bash
+azd ai agent invoke purchasing-advice-demo --version 2 --new-session --new-conversation \
+  'Decision date: 2026-10-20. An Orion field-service employee is flying business class from Australia to Japan. The itinerary says 11 hours including a connection, but does not break down flight segments. The $6,400 trip has two quotations, Category Manager spending approval and line-manager trip authorisation. Travel Desk will book. Can we rely on the regional pilot for the cabin?'
+```
+
 The missing fact is the individual flight-segment duration, not total itinerary
-time. Show the answer, instructions and two tools. Live wording varies.
+time. Look for the answer to say "No, not yet", cite the single-segment 9-hour rule
+and ask for the segment breakdown. The agent also checks the budget, so expect a
+budget line. Show the instructions and the three IQ-shaped tools. Live wording varies.
 
 ### 2. Evaluate the next action
 
@@ -109,10 +121,10 @@ deployed/registered versions in `evaluation/evaluate.py` and
 For a fresh invocation, reset both the session and conversation:
 
 ```bash
-# BILLABLE. Replace --version if you have deployed a later baseline.
+# BILLABLE. Use the deployed agent version; single quotes keep $ amounts intact.
 azd ai agent invoke purchasing-advice-demo \
-  "Decision date: 2026-10-20. I need a mouse for an Orion employee in Singapore. What information do you need?" \
-  --version 1 --new-session --new-conversation -e "$ENVIRONMENT"
+  'Decision date: 2026-10-20. I need a mouse for an Orion employee in Singapore. What information do you need?' \
+  --version 2 --new-session --new-conversation -e "$ENVIRONMENT"
 ```
 
 Check that an answer arrives, not just exit code 0. In Foundry Tracing or the

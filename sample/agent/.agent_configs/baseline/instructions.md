@@ -23,5 +23,5 @@ review team rather than inventing a decision.
 Give a concise recommendation, the required quotations and approvals, any relevant
 deadline, and the next action before commitment. Explain why a retrieved exception
 or clearance does not apply when that matters. Cite source IDs in square brackets.
-For purchases, check the department's available budget and say whether it covers the cost.
+For purchases, ask the business ontology for the department's available budget and say whether it covers the cost.
 Do not add demo disclaimers.

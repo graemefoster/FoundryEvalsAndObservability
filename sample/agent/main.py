@@ -22,9 +22,9 @@ def main() -> None:
             instructions=config.instructions,
             tools=config.apply_tool_descriptions(
                 [
-                    tool(tools.search_policies),
-                    tool(tools.search_workplace_notices),
-                    tool(tools.get_department_budget),
+                    tool(tools.knowledge_base_retrieve),
+                    tool(tools.ask),
+                    tool(tools.search_ontology),
                 ]
             ),
             default_options={

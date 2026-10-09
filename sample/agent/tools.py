@@ -11,7 +11,7 @@ def read_documents(filename: str) -> list[dict]:
     return json.loads((DATA / filename).read_text(encoding="utf-8"))
 
 
-def _search(filename: str, query: str) -> str:
+def _search(filename: str, query: str) -> list[dict]:
     terms = sorted(set(re.findall(r"[a-z0-9]+", query.lower())) - STOP_WORDS)
     if not terms:
         raise ValueError("Provide searchable words, such as a supplier, product or policy topic.")
@@ -32,21 +32,28 @@ def _search(filename: str, query: str) -> str:
             "ORDER BY bm25(documents, 0, 3, 1), id LIMIT 3",
             (" OR ".join(f'"{term}"' for term in terms),),
         ).fetchall()
-    return json.dumps({"query": query, "documents": [by_id[row[0]] for row in matches]})
+    return [by_id[row[0]] for row in matches]
 
 
-def search_policies(query: str) -> str:
-    """Search organisational policies relevant to purchases and related commitments."""
-    return _search("policies.json", query)
+# The three tools below mimic the shape of the Microsoft IQ MCP tools. The real IQ
+# sources are LLM-backed; these are deterministic stand-ins over local data.
 
 
-def search_workplace_notices(query: str) -> str:
-    """Search workplace exceptions and security clearances."""
-    return _search("notices.json", query)
+def knowledge_base_retrieve(queries: list[str]) -> str:
+    """Simulated Foundry IQ knowledge base: policy documents."""
+    references = {}
+    for query in queries:
+        for document in _search("policies.json", query):
+            references.setdefault(document["id"], document)
+    return json.dumps({"queries": queries, "references": list(references.values())})
 
 
-def get_department_budget() -> str:
-    """Return the requester's available department budget."""
-    # Stands in for a Fabric IQ lookup of governed business data; the value is fixed.
-    budget = {"available_budget": 50000, "currency": "AUD", "source": "fabric-iq-simulated"}
-    return json.dumps(budget)
+def ask(question: str) -> str:
+    """Simulated Work IQ: workplace messages, exceptions and clearances."""
+    return json.dumps({"question": question, "results": _search("notices.json", question)})
+
+
+def search_ontology(question: str) -> str:
+    """Simulated Fabric IQ ontology: business entities such as department budgets."""
+    result = {"entity": "Department", "available_budget": 50000, "currency": "AUD"}
+    return json.dumps({"question": question, "results": [result]})

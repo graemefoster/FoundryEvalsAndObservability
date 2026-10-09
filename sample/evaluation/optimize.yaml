@@ -4,7 +4,7 @@ name: purchasing-next-action-optimisation
 agent:
   name: purchasing-advice-demo
   kind: hosted
-  version: "1"
+  version: "2"
   model: gpt-5.4-mini
   config: ../agent/.agent_configs/baseline/metadata.yaml
 # azd resolves dataset paths from the service's project directory: sample/agent/.

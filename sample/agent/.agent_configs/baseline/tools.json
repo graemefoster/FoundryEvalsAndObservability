@@ -2,14 +2,18 @@
   {
     "type": "function",
     "function": {
-      "name": "search_policies",
-      "description": "Search organisational policies by topic: purchasing, software security, training, travel, hospitality, home-office equipment, accessibility, consultants, events, marketing, data handling, renewals, disposal, regional pilots, supplier restrictions, conference funding, consultant record closeout and contract amendments. Returns up to three ranked source documents with IDs, dates and content. Use focused queries and search again for additional relevant policies.",
+      "name": "knowledge_base_retrieve",
+      "description": "Retrieve grounding data from the organisation's knowledge base. Returns ranked source documents with IDs, dates and content. Use focused queries and call again for additional topics.",
       "parameters": {
         "type": "object",
         "properties": {
-          "query": {"type": "string", "description": "Policy topic or key terms to search."}
+          "queries": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Natural-language search queries."
+          }
         },
-        "required": ["query"],
+        "required": ["queries"],
         "additionalProperties": false
       },
       "strict": true
@@ -18,14 +22,14 @@
   {
     "type": "function",
     "function": {
-      "name": "search_workplace_notices",
-      "description": "Search workplace notices by supplier, product or topic. Returns up to three ranked exceptions or security clearances, including expired or inapplicable notices. Check each source's scope and dates; search matches are not approvals.",
+      "name": "ask",
+      "description": "Ask a question about workplace information such as messages, exceptions, clearances and notices. Returns matching items; a match is not an approval, so check each item's scope and dates.",
       "parameters": {
         "type": "object",
         "properties": {
-          "query": {"type": "string", "description": "Supplier, product or notice topic to search."}
+          "question": {"type": "string", "description": "Natural-language question, naming the supplier, product or topic."}
         },
-        "required": ["query"],
+        "required": ["question"],
         "additionalProperties": false
       },
       "strict": true
@@ -34,12 +38,14 @@
   {
     "type": "function",
     "function": {
-      "name": "get_department_budget",
-      "description": "Get the requester's available department budget in AUD. Takes no arguments. Use it to check that a purchase is affordable.",
+      "name": "search_ontology",
+      "description": "Answer a natural-language question from the business ontology, which holds business entities and their current state. Returns raw results in JSON format.",
       "parameters": {
         "type": "object",
-        "properties": {},
-        "required": [],
+        "properties": {
+          "question": {"type": "string", "description": "Natural-language question about business entities."}
+        },
+        "required": ["question"],
         "additionalProperties": false
       },
       "strict": true

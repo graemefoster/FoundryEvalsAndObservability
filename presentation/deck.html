@@ -3300,19 +3300,19 @@
               <span class="concept-icon">FIQ</span>
               <h3>Foundry IQ</h3>
               <p>Institutional knowledge and authoritative content.</p>
-              <div class="concept-detail">Policies, procedures and reference documents.<small>Connected in this demo</small></div>
+              <div class="concept-detail">Policies, procedures and reference documents.<small>Simulated: knowledge_base_retrieve</small></div>
             </div>
             <div class="concept-card blue story-reveal reveal-2">
               <span class="concept-icon">BIQ</span>
               <h3>Fabric IQ</h3>
               <p>Governed business entities and current business state.</p>
-              <div class="concept-detail">Spend so far, remaining budget and business records.<small>Simulated by a budget tool in code</small></div>
+              <div class="concept-detail">Spend so far, remaining budget and business records.<small>Simulated: search_ontology</small></div>
             </div>
             <div class="concept-card green story-reveal reveal-3">
               <span class="concept-icon">WIQ</span>
               <h3>Work IQ</h3>
               <p>People, collaboration and workflow context.</p>
-              <div class="concept-detail">Recent decisions, conversations and approvals.<small>Synthetic email via sample adapter</small></div>
+              <div class="concept-detail">Recent decisions, conversations and approvals.<small>Simulated: ask</small></div>
             </div>
           </div>
           <div class="footer"><span>Policy + business state + workplace context</span><span>AI Genius / S6 E2 / 06</span></div>
@@ -3642,7 +3642,7 @@
         key: "Different sources provide different kinds of organisational context.",
         definition: "Foundry IQ provides institutional knowledge, Fabric IQ provides governed business entities and state, and Work IQ provides workplace context.",
         transition: "Let's ask the agent and explore the context available to it.",
-        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Foundry IQ is represented by the policy and notice search tools over fictional documents, Fabric IQ by the get_department_budget tool in tools.py, which returns one fixed number standing in for a governed business-data lookup (open the function and point to the comment), and Work IQ by a sample adapter. None is a real IQ connection.",
+        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Open tools.py: each IQ is a tool shaped like the real MCP tool. Foundry IQ is knowledge_base_retrieve over policies, Work IQ is ask over workplace notices, and Fabric IQ is search_ontology returning one fixed budget. Real IQs are LLM-backed agents with generic tool descriptions; domain guidance lives in the knowledge base or ontology. Ours are deterministic local stand-ins, so none is a real IQ connection.",
         source: "Microsoft IQ concepts and fictional scenario."
       },
       {
