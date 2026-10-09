@@ -43,3 +43,10 @@ def search_policies(query: str) -> str:
 def search_workplace_notices(query: str) -> str:
     """Search workplace exceptions and security clearances."""
     return _search("notices.json", query)
+
+
+def get_department_budget() -> str:
+    """Return the requester's available department budget."""
+    # Stands in for a Fabric IQ lookup of governed business data; the value is fixed.
+    budget = {"available_budget": 50000, "currency": "AUD", "source": "fabric-iq-simulated"}
+    return json.dumps(budget)

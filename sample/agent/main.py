@@ -21,7 +21,11 @@ def main() -> None:
             name="purchasing-advice-demo",
             instructions=config.instructions,
             tools=config.apply_tool_descriptions(
-                [tool(tools.search_policies), tool(tools.search_workplace_notices)]
+                [
+                    tool(tools.search_policies),
+                    tool(tools.search_workplace_notices),
+                    tool(tools.get_department_budget),
+                ]
             ),
             default_options={
                 "store": False,

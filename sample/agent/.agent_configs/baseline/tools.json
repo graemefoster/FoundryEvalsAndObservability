@@ -30,5 +30,19 @@
       },
       "strict": true
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_department_budget",
+      "description": "Get the requester's available department budget in AUD. Takes no arguments. Use it to check that a purchase is affordable.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
   }
 ]

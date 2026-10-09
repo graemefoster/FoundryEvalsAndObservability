@@ -11,9 +11,11 @@ In Foundry, use project **Agent Evaluation Demo** and agent
 resource name; commands obtain resource IDs and endpoints from your azd environment.
 
 The agent uses Microsoft Agent Framework, GPT-5.4-mini with low reasoning, and
-two read-only tools over fictional purchasing policies and workplace notices.
+three read-only tools: policy search, workplace-notice search (both over fictional
+documents) and a department budget lookup that returns a fixed number.
 It advises; it cannot approve, buy or contact anyone.
-Neither tool connects to real Foundry IQ or Work IQ.
+None of the tools connects to real Foundry IQ, Work IQ or Fabric IQ; the budget
+tool stands in for a Fabric IQ business-data lookup.
 Hosting and Agent Framework own the model/tool loop and tracing.
 
 The question we evaluate is **"does the employee know their next action?"**
