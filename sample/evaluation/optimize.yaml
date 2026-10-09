@@ -13,11 +13,10 @@ dataset:
 validation_dataset:
   local_uri: ../evaluation/datasets/golden-holdout.jsonl
 evaluators:
-  - name: purchasing-next-action
+  - name: purchasing-demo-rubric
     version: "1"
     initialization_parameters:
-      deployment_name: gpt-5.5
-      threshold: 1
+      model: gpt-5.5
 options:
   eval_model: gpt-5.5
   optimization_model: gpt-5.5
@@ -25,3 +24,4 @@ options:
 # Holdout cases go to native validation, never into the training dataset.
 # No model_search_space: the agent model is fixed.
 # Native optimisation can change instructions and tool descriptions, not Python tools.
+# Optimise weighted rubric quality; the initial evaluation also checks binary correctness.

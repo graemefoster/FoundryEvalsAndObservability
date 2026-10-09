@@ -16,6 +16,8 @@ AGENT_NAME = "purchasing-advice-demo"
 AGENT_VERSION = "2"
 EVALUATOR_NAME = "purchasing-next-action"
 EVALUATOR_VERSION = "1"
+RUBRIC_NAME = "purchasing-demo-rubric"
+RUBRIC_VERSION = "1"
 JUDGE_MODEL = "gpt-5.5"
 DATASET = Path(__file__).resolve().parent / "datasets/golden-development.jsonl"
 
@@ -48,12 +50,12 @@ def main() -> None:
             # Also make the agent's generated output available to the judge.
             "include_sample_schema": True,
         },
-        "testing_criteria": [  # One judge for this demo; an evaluation can have several.
+        "testing_criteria": [
             {
                 "type": "azure_ai_evaluator",
                 "name": "next_action_success",  # Label for this criterion in the results.
                 "evaluator_name": EVALUATOR_NAME,  # Registered marking rubric.
-                "evaluator_version": EVALUATOR_VERSION,  # Exact stored copy of that rubric.
+                "evaluator_version": EVALUATOR_VERSION,  # Exact stored prompt evaluator.
                 # Our existing rubric returns 1 for the correct next action, otherwise 0.
                 "initialization_parameters": {
                     "deployment_name": JUDGE_MODEL,  # Model doing the marking, not the agent.
@@ -66,7 +68,19 @@ def main() -> None:
                     "ground_truth": "{{item.ground_truth}}",
                     "response": "{{sample.output_text}}",  # Newly generated agent answer.
                 },
-            }
+            },
+            {
+                "type": "azure_ai_evaluator",
+                "name": "purchasing_behaviour",
+                "evaluator_name": RUBRIC_NAME,
+                "evaluator_version": RUBRIC_VERSION,
+                "initialization_parameters": {"model": JUDGE_MODEL},
+                # Native rubric scores behaviour without the reference answer.
+                "data_mapping": {
+                    "query": "{{item.query}}",
+                    "response": "{{sample.output_text}}",
+                },
+            },
         ],
     }
     # 3. Ask the deployed agent to answer each question, including using its own tools.

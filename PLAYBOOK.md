@@ -65,13 +65,16 @@ budget line. Show the instructions and the three IQ-shaped tools. Live wording v
 ### 2. Evaluate the next action
 
 Open a completed development evaluation. Show a dataset question and its
-`ground_truth`, the judge in `evaluation/purchasing-next-action.json`, and the
-agent's answer.
+`ground_truth`, the agent's answer and both evaluator definitions in `evaluation/`:
+`purchasing-next-action.json` (custom prompt) and `purchasing-demo-rubric.json`
+(native `type: rubric`).
 
-Only the question reaches the agent. The judge sees the question, reference and
-final answer. Discuss a failed case: an answer can quote the right policy yet
+Only the question reaches the agent. The binary judge sees the question, reference
+and final answer. The native rubric sees the question and final answer, producing
+weighted dimension scores and reasons. Discuss a failed case: an answer can quote the right policy yet
 ask for a supplied fact, reopen a completed approval or offer unresolved routes.
-Check execution errors separately from quality failures.
+Check execution errors separately from quality failures. Neither text-only
+evaluator proves that the agent retrieved its evidence.
 
 ### 3. Inspect the trace
 
@@ -102,6 +105,14 @@ Validation influences candidate selection; it is not untouched acceptance
 testing. Inspect which development cases the training mini-batches actually used.
 **Do not promote a candidate as part of the walkthrough.**
 
+Ask **"what are we optimising for?"** This job optimises the native rubric's weighted
+quality score, not the binary reference-correctness pass rate. Its missing-fact
+dimension caps conditional branching at 3/5 and rewards direct clarification at
+5/5. Other dimensions can still lift the overall score; its existing pass threshold
+is 0.5, not a guarantee that every dimension is strong. Use the binary judge in the
+initial evaluation to show the stricter, all-or-nothing view. Scores from earlier
+binary-only optimisation jobs are not directly comparable to rubric scores.
+
 ## Run the sample
 
 Run all commands from `sample/`. For a new environment, complete **First-time
@@ -114,7 +125,7 @@ export FOUNDRY_PROJECT_ENDPOINT="$(azd env get-value FOUNDRY_PROJECT_ENDPOINT -e
 azd ai agent show purchasing-advice-demo -e "$ENVIRONMENT"
 ```
 
-The sample defaults to **agent version 1 and judge version 1**. Use the actual
+Fresh registrations normally start at **version 1**. Use the actual
 deployed/registered versions in `evaluation/evaluate.py` and
 `evaluation/optimize.yaml`; redeployment does not update those values for you.
 
@@ -138,15 +149,17 @@ automatically. For an authorised app-only update, use
 
 ### Evaluate and optimise
 
-**Python submits evaluation; azd submits optimisation.** Both use the registered
-`purchasing-next-action` judge with GPT-5.5. Editing the local rubric does not
-update the stored judge: register a new version and align both configurations.
+**Python submits evaluation; azd submits optimisation.** Evaluation uses both
+registered evaluators with GPT-5.5: binary `purchasing-next-action` for
+reference correctness and native `purchasing-demo-rubric` for weighted quality.
+Optimisation uses only `purchasing-demo-rubric`, keeping its objective explicit.
+Editing either local definition does not update its registered version.
 
 ```bash
 # Local preview: no credentials, cloud calls or generated files.
 uv run --frozen python evaluation/evaluate.py --dry-run
 
-# BILLABLE: 32 questions sent to the deployed agent, then judged.
+# BILLABLE: 32 questions sent to the agent, then scored by both evaluators.
 uv run --frozen python evaluation/evaluate.py
 
 # BILLABLE: one optimisation, capped at two candidates.
@@ -166,7 +179,8 @@ during optimisation. The static YAML uses separate development and validation
 datasets; its paths resolve from `sample/agent/`, not from the YAML directory.
 No preparation script or copied input package is needed.
 
-References go to the evaluation/optimisation service, not the agent. The exact
+References go to the evaluation/optimisation service, not the agent. The binary
+judge receives them; the native rubric has no ground_truth input. The exact
 internal reflector inputs are not established. Inspect full resolved candidate
 configuration, not only mutation records. The installed optimisation SDK applies
 function descriptions but not parameter descriptions.
@@ -260,13 +274,14 @@ from pathlib import Path
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
-rubric = json.loads(Path("evaluation/purchasing-next-action.json").read_text())
-name = rubric.pop("name")
 with DefaultAzureCredential() as credential, AIProjectClient(
     endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"], credential=credential
 ) as project:
-    judge = project.beta.evaluators.create_version(name, evaluator_version=rubric)
-    print(f"Judge: {name}:{judge.version}")
+    for filename in ("purchasing-next-action.json", "purchasing-demo-rubric.json"):
+        definition = json.loads((Path("evaluation") / filename).read_text())
+        name = definition.pop("name")
+        judge = project.beta.evaluators.create_version(name, evaluator_version=definition)
+        print(f"Evaluator: {name}:{judge.version} ({definition['definition']['type']})")
 PY
 
 azd deploy purchasing-advice-demo -e "$ENVIRONMENT" --no-prompt

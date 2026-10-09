@@ -1,0 +1,86 @@
+{
+  "name": "purchasing-demo-rubric",
+  "display_name": "Purchasing demo generated rubric",
+  "description": "Native purchasing rubric with reviewed clarification criteria.",
+  "categories": ["quality", "agents"],
+  "supported_evaluation_levels": ["turn", "conversation"],
+  "evaluator_type": "custom",
+  "definition": {
+    "type": "rubric",
+    "dimensions": [
+      {
+        "id": "spending_route_determination",
+        "description": "The agent determines the correct quotation count and spending-approval route for the purchase using the total proposed commitment, not instalments or invoice amounts, and the applicable decision date; if the total commitment is absent, it does not select a spending route. Score at most 2 if the answer presents conflicting quotation or spending-approval routes as applicable to the same request, even if it later corrects itself. Scores of 4 or 5 require a correct, consistently stated route. Do not penalise a clearly rejected or explicitly hypothetical alternative route.",
+        "weight": 9,
+        "always_applicable": false
+      },
+      {
+        "id": "notice_scope_enforcement",
+        "description": "The agent applies a supplier or product notice only when all stated scope conditions and inclusive validity dates match the request, including supplier, product or service, programme or employee group, intended use, data scope, and the specific requirement the notice covers.",
+        "weight": 6,
+        "always_applicable": false
+      },
+      {
+        "id": "independent_requirement_separation",
+        "description": "The agent treats quotation requirements, spending approval, Training Lead suitability approval, and Security Team software or security clearance as separate requirements, and counts one as satisfying another only when a retrieved source explicitly says so.",
+        "weight": 6,
+        "always_applicable": false
+      },
+      {
+        "id": "missing_fact_handling",
+        "description": "Clarification-first interaction, not factual correctness. Inspect only the final user-facing answer. Apply these rules in order. If the question supplies enough facts to determine the process, score 5 for answering without unnecessary questions, or at most 3 for requesting facts already supplied. Do not invent missing details or request an already supplied date. Otherwise: (1) Score 1 if the answer assumes missing facts and presents a route or clearance as applicable. (2) Score exactly 3 if it explains alternative quotation counts, spending approvers or clearance outcomes while a fact needed to choose between them is missing. This is a hard cap: correct policy details and a focused question, whether first or last, MUST NOT raise a branching answer to 4 or 5. Calling the branches helpful context does not remove this cap. (3) Score 5 only for a brief, direct request for ALL missing decision-critical details, with no alternative policy routes. It may briefly state requirements already determined by the supplied facts. Missing details can include cost, programme or employee group, use and data scope. Examples of data types inside a concise question are not alternative policy routes. (4) Score 3 for merely telling the user to confirm/check details or offering help later rather than requesting the missing information.",
+        "weight": 5,
+        "always_applicable": false
+      },
+      {
+        "id": "source_grounded_claims",
+        "description": "The agent grounds policy and notice assertions in retrieved documents, cites the relevant source IDs in square brackets, and avoids unsupported claims about rules, approvals, dates, notice contents, or policy language.",
+        "weight": 5,
+        "always_applicable": false
+      },
+      {
+        "id": "process_action_boundary",
+        "description": "The agent maintains a process-advice boundary by not claiming it can approve the purchase, place an order, contact approvers, reserve funds, sign contracts, pay, or otherwise commit spending.",
+        "weight": 3,
+        "always_applicable": false
+      },
+      {
+        "id": "general_quality",
+        "description": "Other important quality factors not covered by listed criteria.",
+        "weight": 5,
+        "always_applicable": true
+      }
+    ],
+    "pass_threshold": 0.5,
+    "init_parameters": {
+      "required": ["model"],
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Model deployment name for the LLM judge"
+        }
+      }
+    },
+    "metrics": {
+      "purchasing-demo-rubric": {
+        "type": "continuous",
+        "desirable_direction": "increase",
+        "min_value": 0.0,
+        "max_value": 1.0,
+        "is_primary": true
+      }
+    },
+    "data_schema": {
+      "required": [],
+      "type": "object",
+      "properties": {
+        "query": {"type": "string", "description": "User query (turn mode)"},
+        "response": {"type": "string", "description": "Agent response (turn mode)"},
+        "messages": {"type": "array", "description": "Conversation messages (conversation mode)"},
+        "tool_definitions": {"type": "array", "description": "Tool definitions available to the agent"}
+      }
+    },
+    "prompt_text": ""
+  }
+}
