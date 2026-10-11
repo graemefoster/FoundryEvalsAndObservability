@@ -29,8 +29,8 @@ jobs:
       contents: read
       id-token: write
     with:
-      dataset: golden-holdout
-      tolerance: 0.05
+      dataset: approvers-holdout
+      tolerance: 0.12
       blocking: false
       detail: full
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

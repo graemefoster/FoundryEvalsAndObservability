@@ -75,10 +75,10 @@ jobs:
       contents: read
       id-token: write
     with:
-      dataset: demo-storyline
+      dataset: approvers-development
       # 8 rows: one binary row flipping moves a mean by 0.125, so the noise band
       # here is one row, not Foundry's 0.03 (which is for large optimizer runs).
-      tolerance: 0.13
+      tolerance: 0.07
       blocking: true
       detail: full
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

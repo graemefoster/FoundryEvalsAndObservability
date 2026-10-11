@@ -28,7 +28,7 @@ jobs:
       contents: read
       id-token: write
     with:
-      dataset: drift-lockbox
+      dataset: approvers-drift
       tolerance: 0.03
       must_pass: next_action_success
       blocking: true
