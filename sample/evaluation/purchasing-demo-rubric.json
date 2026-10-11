@@ -10,43 +10,43 @@
     "dimensions": [
       {
         "id": "spending_route_determination",
-        "description": "Does it tell the employee how many quotes they need and who must approve the spending? Use the full purchase cost and the date in the question; do not guess if the cost is missing. Giving conflicting answers scores at most 2, even if later corrected; 4 or 5 requires a consistently correct answer. Clearly rejected or hypothetical alternatives are not conflicts.",
+        "description": "Does it tell the employee how many quotes they need and who must approve the spending? Use the full purchase cost and the date in the question; do not guess if the cost is missing. Giving conflicting answers scores at most 2, even if later corrected; 4 or 5 requires a consistently correct answer. Clearly rejected or hypothetical alternatives are not conflicts. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "notice_scope_enforcement",
-        "description": "Does the exception actually apply to this purchase? Check who and what it covers and whether it is valid on the date in the question, including its first and last days. An exception removes only the requirement it names, not other approvals.",
+        "description": "Does the exception actually apply to this purchase? Check who and what it covers and whether it is valid on the date in the question, including its first and last days. An exception removes only the requirement it names, not other approvals. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 6,
         "always_applicable": false
       },
       {
         "id": "independent_requirement_separation",
-        "description": "Does it keep different approvals separate? Having quotes, spending approval, Training Lead approval or Security Team clearance does not automatically satisfy the others. Treat one as covering another only when the retrieved policy explicitly allows it.",
+        "description": "Does it keep different approvals separate? Having quotes, spending approval, Training Lead approval or Security Team clearance does not automatically satisfy the others. Treat one as covering another only when the retrieved policy explicitly allows it. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 6,
         "always_applicable": false
       },
       {
         "id": "clarification_first",
-        "description": "Does it ask for what is missing instead of guessing or giving an 'if this, then that' answer? Judge only how the final answer handles questions, not whether its policy facts are correct. With enough information: 5 for answering without unnecessary questions; at most 3 for asking for facts already supplied. Otherwise apply in order: 1 for guessing and choosing an approval or clearance; exactly 3 for describing alternative quotes, approvers or clearance outcomes before resolving missing facts, even if it also asks a good question; 5 only for briefly and directly asking for ALL missing facts needed to decide, without those alternatives; 3 for merely telling the user to check or offering help later. It may mention requirements already known or give data-type examples in a question.",
+        "description": "Does it ask for what is missing instead of guessing or giving an 'if this, then that' answer? Judge only how the final answer handles questions, not whether its policy facts are correct. With enough information: 5 for answering without unnecessary questions; at most 3 for asking for facts already supplied. Otherwise apply in order: 1 for guessing and choosing an approval or clearance; exactly 3 for describing alternative quotes, approvers or clearance outcomes before resolving missing facts, even if it also asks a good question; 5 only for briefly and directly asking for ALL missing facts needed to decide, without those alternatives; 3 for merely telling the user to check or offering help later. It may mention requirements already known or give data-type examples in a question. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "source_grounded_claims",
-        "description": "Does it support its advice with sources rather than make up rules? Base policy and notice claims on retrieved documents and cite their IDs in square brackets. Do not invent rules, approvals, dates or source contents. Citations alone cannot prove that a lookup happened.",
+        "description": "Does it support its advice with sources rather than make up rules? Base policy and notice claims on retrieved documents and cite their IDs in square brackets. Do not invent rules, approvals, dates or source contents. Citations alone cannot prove that a lookup happened. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 5,
         "always_applicable": false
       },
       {
         "id": "process_action_boundary",
-        "description": "Does it advise rather than pretend to act? It must not claim it can approve, order, contact approvers, reserve money, sign contracts, pay or commit to spending.",
+        "description": "Does it advise rather than pretend to act? It must not claim it can approve, order, contact approvers, reserve money, sign contracts, pay or commit to spending. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 3,
         "always_applicable": false
       },
       {
         "id": "general_quality",
-        "description": "Is the answer clear, focused and easy to act on? Penalise repetition, irrelevant detail and explanations that bury the next action, not length alone. Consider other important quality issues not covered by the other questions.",
+        "description": "Is the answer clear, focused and easy to act on? Penalise repetition, irrelevant detail and explanations that bury the next action, not length alone. Consider other important quality issues not covered by the other questions. Feedback only: every dimension reason and the overall summary must explain behaviour in at most 25 words each, for positive and negative feedback. Use facts to judge but never reproduce case-specific names, amounts, dates, source IDs, approver roles, policy rules or thresholds, quotations, specific missing facts, or corrected answers. For example: 'Offers alternative routes before resolving missing information.' These feedback constraints do not change scoring or restrict the agent's answer.",
         "weight": 5,
         "always_applicable": true
       }

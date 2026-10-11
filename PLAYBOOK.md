@@ -39,6 +39,8 @@ Prepare the portal tabs and a completed evaluation/optimisation before the talk.
 Evaluations and optimisations can take tens of minutes or longer. Pre-run both
 well before the session and confirm they have finished; show their saved results
 on stage rather than waiting for live runs. Do not wait for deployment on stage.
+Use the labelled ten-second **Stage replays** below to demonstrate submission,
+then switch to the real pre-run results. Say that the terminal output is simulated.
 
 ### 1. Ask the agent
 
@@ -67,6 +69,16 @@ different things; the tracing comes from hosting and Agent Framework.
 
 ### 3. Evaluate the next action
 
+From `sample/`, show the offline submission replay:
+
+```bash
+.venv/bin/python evaluation/evaluate.py --demo-replay "$DEMO_REPLAY_DIR/evaluation.txt"
+```
+
+Use a full evaluation transcript ending in completed results and the real portal
+report link, not submission alone. A reconstructed smoke-test replay must identify
+its smaller dataset; do not present its scores as the development evaluation.
+
 Open a completed development evaluation. Show a dataset question and its
 `ground_truth`, the agent's answer and both evaluator definitions in `evaluation/`:
 `purchasing-next-action.json` (custom prompt) and `purchasing-demo-rubric.json`
@@ -88,6 +100,17 @@ Live traffic has no golden references: use a compatible reference-free evaluator
 not this dataset-based judge.
 
 ### 5. Optimise, then inspect
+
+From `sample/`, show the offline optimisation replay:
+
+```bash
+.venv/bin/python evaluation/demo_replay.py optimize --transcript "$DEMO_REPLAY_DIR/optimisation.txt"
+```
+
+Use a full transcript with the captured completed-status table, scores and candidate
+IDs after submission. Label separately captured status output as a continuation,
+not a continuous recording. CLI apply/deploy suggestions are display only;
+do not execute them during the walkthrough.
 
 Open a completed optimisation and compare baseline and candidates on the
 **same 24 validation cases**, not against the 32-case development score.
@@ -113,13 +136,15 @@ Validation influences candidate selection; it is not untouched acceptance
 testing. Inspect which development cases the training mini-batches actually used.
 **Do not promote a candidate as part of the walkthrough.**
 
-Ask **"what are we optimising for?"** This job optimises the native rubric's weighted
-quality score, not the binary reference-correctness pass rate. Its clarification-first
+Ask **"what are we optimising for?"** This job uses both binary next-action
+correctness and the native rubric's weighted quality score. Its clarification-first
 dimension caps conditional branching at 3/5 and rewards direct clarification at
 5/5. Other dimensions can still lift the overall score; its existing pass threshold
 is 0.5, not a guarantee that every dimension is strong. Use the binary judge in the
-initial evaluation to show the stricter, all-or-nothing view. Scores from earlier
-binary-only optimisation jobs are not directly comparable to rubric scores.
+initial evaluation and optimisation to show the stricter, all-or-nothing view.
+Multiple evaluators do not establish a hard selection gate; their exact aggregation
+has not been verified. Scores from earlier single-evaluator jobs are not directly
+comparable to this combined objective.
 
 ## Run the sample
 
@@ -159,7 +184,11 @@ automatically. For an authorised app-only update, use
 **Python submits evaluation; azd submits optimisation.** Evaluation uses both
 evaluators with GPT-5.5: binary `purchasing-next-action` for
 reference correctness and native `purchasing-demo-rubric` for weighted quality.
-Optimisation uses only `purchasing-demo-rubric`, keeping its objective explicit.
+Optimisation uses the same two evaluators. Both request behaviour-only feedback:
+use facts to judge, but do not reproduce case facts, policy rules, specific missing
+facts or corrected answers in explanations. The native rubric requests this for
+each dimension and the overall summary. This limits feedback, not answer content
+or scoring; inspect returned reasons to verify compliance rather than assume it.
 Editing either local definition does not update its registered version.
 `evaluate.py` makes two explicit `ensure_evaluator` calls before submission:
 reuse the latest registered version, or register its JSON definition if the
@@ -177,13 +206,39 @@ uv run --frozen python evaluation/evaluate.py --register-only
 # BILLABLE: 32 questions sent to the agent, then scored by both evaluators.
 uv run --frozen python evaluation/evaluate.py
 
-# BILLABLE: one optimisation, capped at three candidates.
+# BILLABLE: submit, wait for completion and save a score summary.
+uv run --frozen python evaluation/evaluate.py --wait --report evaluation-summary.json
+
+# BILLABLE: one optimisation, capped at two candidates.
 azd ai agent optimize --config evaluation/optimize.yaml \
   -e "$ENVIRONMENT" --no-wait --no-prompt
 
 # Read-only progress for the returned job ID.
 azd ai agent optimize status JOB_ID -e "$ENVIRONMENT"
 ```
+
+### Stage replays
+
+Keep terminal transcripts outside the repository, in a presenter-owned directory.
+Set `DEMO_REPLAY_DIR` to that directory before the talk. These commands replay
+the transcript unchanged on stdout over roughly ten seconds:
+
+```bash
+# OFFLINE: no authentication, cloud calls, generated files or billable work.
+.venv/bin/python evaluation/evaluate.py --demo-replay "$DEMO_REPLAY_DIR/evaluation.txt"
+.venv/bin/python evaluation/demo_replay.py optimize --transcript "$DEMO_REPLAY_DIR/optimisation.txt"
+```
+
+Both begin and end with **DEMO REPLAY** banners on stderr. Transcript IDs, statuses
+and scores belong to the earlier run, not a new submission. Open that run in the
+portal afterwards. Use captured output where available; disclose any reconstruction
+from recorded script output and saved run metadata, including a smoke test's smaller
+dataset. Do not add invented progress or scores. Replays do not create portal results.
+The optimisation replay does not replace or override `azd`. The evaluation replay
+cannot be combined with `--dry-run`, `--register-only`, `--wait` or `--report`;
+without `--demo-replay`, the real evaluation command is unchanged.
+
+### Inspect real runs
 
 Use the returned IDs to view answers and scores in Foundry. A `completed` run
 can still contain errored or skipped rows; these are not quality judgments.

@@ -30,6 +30,12 @@ def main() -> None:
     mode.add_argument(
         "--register-only", action="store_true", help="Ensure evaluators exist; no scoring run."
     )
+    mode.add_argument(
+        "--demo-replay",
+        type=Path,
+        metavar="TRANSCRIPT",
+        help="Replay historical output; no cloud calls.",
+    )
     parser.add_argument(
         "--wait", action="store_true", help="Wait for results; fail on execution errors."
     )
@@ -37,10 +43,15 @@ def main() -> None:
         "--report", type=Path, help="Write a score summary JSON file; requires --wait."
     )
     args = parser.parse_args()
-    if args.wait and (args.dry_run or args.register_only):
+    if args.wait and (args.dry_run or args.register_only or args.demo_replay):
         parser.error("--wait requires an evaluation run")
     if args.report and not args.wait:
         parser.error("--report requires --wait")
+    if args.demo_replay:
+        from demo_replay import replay
+
+        replay(args.demo_replay)
+        return
 
     with ExitStack() as stack:
         # 1. Ensure both evaluators exist, except during the offline dry run.
