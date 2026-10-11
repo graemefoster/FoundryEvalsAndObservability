@@ -3,17 +3,17 @@
 A presentation and runnable sample exploring agent evaluation, observability
 and optimisation with Microsoft Foundry and Microsoft Agent Framework.
 
-**Agent -> evaluation -> traces -> continuous evaluation -> optimisation**
+**Model choice -> grounding -> traces -> evaluation -> optimisation -> CI/CD**
 
-The sample agent answers purchasing questions using fictional policies and
-workplace notices. Its two read-only search tools simulate knowledge retrieval;
-they do not connect to real Foundry IQ or Work IQ.
+The sample agent answers purchasing questions using fictional policies, a workplace
+directory and a department budget. Its three read-only tools are local stand-ins for
+Foundry IQ, Work IQ and Fabric IQ; they don't connect to the real services.
 
 ## Start here
 
 - [Playbook](PLAYBOOK.md): demo walkthrough, prerequisites, setup and run commands.
 - Presentation: [HTML deck](presentation/deck.html) or [PowerPoint](presentation/presentation.pptx).
-- [Sample](sample/): agent, evaluation datasets, judge and Azure configuration.
+- [Sample](sample/): agent, evaluation datasets, judges and Azure configuration.
 
 Azure hosting, model calls and telemetry can incur charges. Follow the playbook
 before deploying or starting evaluation and optimisation runs.

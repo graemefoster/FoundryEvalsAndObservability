@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 
 GENERIC_FACTS = {
-    "amount": re.compile(r"\$\s?\d[\d,]*(?:\.\d+)?"),
+    "amount": re.compile(r"\$\s?\d{1,3}(?:,\d{3})+(?:\.\d+)?|\$\s?\d+(?:\.\d+)?"),
     "duration": re.compile(r"\b\d+\s*(?:calendar\s+)?(?:hours?|days?|months?|years?)\b", re.I),
     "date": re.compile(
         r"\b(?:\d{4}-\d{2}-\d{2}|(?:January|February|March|April|May|June|July|August|"

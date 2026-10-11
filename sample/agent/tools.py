@@ -50,7 +50,11 @@ def knowledge_base_retrieve(queries: list[str]) -> str:
 
 def ask(question: str) -> str:
     """Simulated Work IQ: people, roles, availability, messages, notices and clearances."""
-    results = _search("notices.json", question) + _search("people.json", question)
+    results = (
+        _search("notices.json", question)
+        + _search("people.json", question)
+        + _search("roster.json", question)
+    )
     return json.dumps({"question": question, "results": results})
 
 

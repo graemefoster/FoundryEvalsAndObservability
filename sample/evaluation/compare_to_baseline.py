@@ -9,11 +9,11 @@ Both files use the JSON written by `evaluation/evaluate.py --wait --report`.
 Usage (from sample/):
     # Once, from a known-good run on main:
     python evaluation/compare_to_baseline.py --report drift-summary.json \
-        --baseline evaluation/baselines/drift-lockbox.json --write-baseline
+        --baseline evaluation/baselines/approvers-drift.json --write-baseline
 
     # In CI, on every pull request:
     python evaluation/compare_to_baseline.py --report drift-summary.json \
-        --baseline evaluation/baselines/drift-lockbox.json \
+        --baseline evaluation/baselines/approvers-drift.json \
         --tolerance 0.03 --must-pass next_action_success
 """
 

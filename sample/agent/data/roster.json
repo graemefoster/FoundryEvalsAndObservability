@@ -1,0 +1,324 @@
+[
+  {
+    "id": "people:mgr-grace-okafor",
+    "title": "Grace Okafor: Finance manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Grace Okafor manages the Finance team and gives line-manager spending approval for its staff. Calendar: annual leave from 16 November 2026 through 20 November 2026 inclusive, back at work 23 November 2026."
+  },
+  {
+    "id": "register:delegation-grace-okafor-1116",
+    "title": "Approvals Register: Grace Okafor delegation to Ben Carter",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Grace Okafor. Ben Carter holds Grace Okafor's line-manager spending approval for Finance staff from 16 November 2026 through 20 November 2026 inclusive. The delegation ends automatically after 20 November 2026."
+  },
+  {
+    "id": "people:ana-silva",
+    "title": "Ana Silva: Finance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Ana Silva works in the Finance team. Line manager: Grace Okafor."
+  },
+  {
+    "id": "people:ben-carter",
+    "title": "Ben Carter: Finance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Ben Carter works in the Finance team. Line manager: Grace Okafor."
+  },
+  {
+    "id": "people:chiara-rossi",
+    "title": "Chiara Rossi: Finance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Chiara Rossi works in the Finance team. Line manager: Grace Okafor."
+  },
+  {
+    "id": "people:dev-patel",
+    "title": "Dev Patel: Finance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Dev Patel works in the Finance team. Line manager: Grace Okafor."
+  },
+  {
+    "id": "people:mgr-hannah-lindqvist",
+    "title": "Hannah Lindqvist: Legal manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Hannah Lindqvist manages the Legal team and gives line-manager spending approval for its staff. Calendar: annual leave from 14 October 2026 through 23 October 2026 inclusive, back at work 26 October 2026; annual leave from 1 December 2026 through 4 December 2026 inclusive, back at work 7 December 2026 (no delegation recorded in the Approvals Register)."
+  },
+  {
+    "id": "register:delegation-hannah-lindqvist-1014",
+    "title": "Approvals Register: Hannah Lindqvist delegation to Omar Haddad",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Hannah Lindqvist. Omar Haddad holds Hannah Lindqvist's line-manager spending approval for Legal staff from 14 October 2026 through 23 October 2026 inclusive. The delegation ends automatically after 23 October 2026."
+  },
+  {
+    "id": "people:omar-haddad",
+    "title": "Omar Haddad: Legal team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Omar Haddad works in the Legal team. Line manager: Hannah Lindqvist."
+  },
+  {
+    "id": "people:priscilla-adeyemi",
+    "title": "Priscilla Adeyemi: Legal team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Priscilla Adeyemi works in the Legal team. Line manager: Hannah Lindqvist."
+  },
+  {
+    "id": "people:quentin-blake",
+    "title": "Quentin Blake: Legal team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Quentin Blake works in the Legal team. Line manager: Hannah Lindqvist."
+  },
+  {
+    "id": "people:rosa-martinez",
+    "title": "Rosa Martinez: Legal team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Rosa Martinez works in the Legal team. Line manager: Hannah Lindqvist."
+  },
+  {
+    "id": "people:mgr-rafael-moreno",
+    "title": "Rafael Moreno: Facilities manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Rafael Moreno manages the Facilities team and gives line-manager spending approval for its staff. Calendar: annual leave from 19 October 2026 through 30 October 2026 inclusive, back at work 2 November 2026 (no delegation recorded in the Approvals Register); annual leave from 7 December 2026 through 11 December 2026 inclusive, back at work 14 December 2026."
+  },
+  {
+    "id": "register:delegation-rafael-moreno-1207",
+    "title": "Approvals Register: Rafael Moreno delegation to Tara Nguyen",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Rafael Moreno. Tara Nguyen holds Rafael Moreno's line-manager spending approval for Facilities staff from 7 December 2026 through 11 December 2026 inclusive. The delegation ends automatically after 11 December 2026."
+  },
+  {
+    "id": "people:sione-taufa",
+    "title": "Sione Taufa: Facilities team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Sione Taufa works in the Facilities team. Line manager: Rafael Moreno."
+  },
+  {
+    "id": "people:tara-nguyen",
+    "title": "Tara Nguyen: Facilities team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Tara Nguyen works in the Facilities team. Line manager: Rafael Moreno."
+  },
+  {
+    "id": "people:umar-siddiqui",
+    "title": "Umar Siddiqui: Facilities team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Umar Siddiqui works in the Facilities team. Line manager: Rafael Moreno."
+  },
+  {
+    "id": "people:valentina-greco",
+    "title": "Valentina Greco: Facilities team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Valentina Greco works in the Facilities team. Line manager: Rafael Moreno."
+  },
+  {
+    "id": "people:mgr-yuki-tanaka",
+    "title": "Yuki Tanaka: Marketing manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Yuki Tanaka manages the Marketing team and gives line-manager spending approval for its staff. Calendar: annual leave from 12 October 2026 through 21 October 2026 inclusive, back at work 22 October 2026 (out-of-office reply: 'Away for a bit - Dev can sign things off for me.') (no delegation recorded in the Approvals Register); annual leave from 9 November 2026 through 13 November 2026 inclusive, back at work 16 November 2026."
+  },
+  {
+    "id": "register:delegation-yuki-tanaka-1109",
+    "title": "Approvals Register: Yuki Tanaka delegation to Zoe Fletcher",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Yuki Tanaka. Zoe Fletcher holds Yuki Tanaka's line-manager spending approval for Marketing staff from 9 November 2026 through 13 November 2026 inclusive. The delegation ends automatically after 13 November 2026."
+  },
+  {
+    "id": "people:wiremu-parata",
+    "title": "Wiremu Parata: Marketing team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Wiremu Parata works in the Marketing team. Line manager: Yuki Tanaka."
+  },
+  {
+    "id": "people:xin-zhao",
+    "title": "Xin Zhao: Marketing team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Xin Zhao works in the Marketing team. Line manager: Yuki Tanaka."
+  },
+  {
+    "id": "people:yara-haddad",
+    "title": "Yara Haddad: Marketing team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Yara Haddad works in the Marketing team. Line manager: Yuki Tanaka."
+  },
+  {
+    "id": "people:zoe-fletcher",
+    "title": "Zoe Fletcher: Marketing team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Zoe Fletcher works in the Marketing team. Line manager: Yuki Tanaka."
+  },
+  {
+    "id": "people:mgr-samuel-mensah",
+    "title": "Samuel Mensah: Engineering manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Samuel Mensah manages the Engineering team and gives line-manager spending approval for its staff. Calendar: annual leave from 20 October 2026 through 6 November 2026 inclusive, back at work 9 November 2026."
+  },
+  {
+    "id": "register:delegation-samuel-mensah-1020",
+    "title": "Approvals Register: Samuel Mensah delegation to Leah Fischer",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Samuel Mensah. Leah Fischer holds Samuel Mensah's line-manager spending approval for Engineering staff from 20 October 2026 through 31 October 2026 inclusive. The delegation ends automatically after 31 October 2026."
+  },
+  {
+    "id": "people:leah-fischer",
+    "title": "Leah Fischer: Engineering team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Leah Fischer works in the Engineering team. Line manager: Samuel Mensah."
+  },
+  {
+    "id": "people:marcus-webb",
+    "title": "Marcus Webb: Engineering team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Marcus Webb works in the Engineering team. Line manager: Samuel Mensah."
+  },
+  {
+    "id": "people:nadia-petrova",
+    "title": "Nadia Petrova: Engineering team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Nadia Petrova works in the Engineering team. Line manager: Samuel Mensah."
+  },
+  {
+    "id": "people:oscar-lindgren",
+    "title": "Oscar Lindgren: Engineering team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Oscar Lindgren works in the Engineering team. Line manager: Samuel Mensah."
+  },
+  {
+    "id": "people:mgr-chloe-dubois",
+    "title": "Chloe Dubois: Logistics manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Chloe Dubois manages the Logistics team and gives line-manager spending approval for its staff. Calendar: annual leave from 13 October 2026 through 22 October 2026 inclusive, back at work 23 October 2026; annual leave from 23 November 2026 through 27 November 2026 inclusive, back at work 30 November 2026 (no delegation recorded in the Approvals Register)."
+  },
+  {
+    "id": "register:delegation-chloe-dubois-1013",
+    "title": "Approvals Register: Chloe Dubois delegation to Ibrahim Rahman",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Recorded by Chloe Dubois. Ibrahim Rahman holds Chloe Dubois's line-manager spending approval for Logistics staff from 13 October 2026 through 22 October 2026 inclusive. The delegation ends automatically after 22 October 2026."
+  },
+  {
+    "id": "people:ibrahim-rahman",
+    "title": "Ibrahim Rahman: Logistics team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Ibrahim Rahman works in the Logistics team. Line manager: Chloe Dubois."
+  },
+  {
+    "id": "people:jasmine-kaur",
+    "title": "Jasmine Kaur: Logistics team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Jasmine Kaur works in the Logistics team. Line manager: Chloe Dubois."
+  },
+  {
+    "id": "people:kenji-mori",
+    "title": "Kenji Mori: Logistics team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Kenji Mori works in the Logistics team. Line manager: Chloe Dubois."
+  },
+  {
+    "id": "people:lucia-fernandez",
+    "title": "Lucia Fernandez: Logistics team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Lucia Fernandez works in the Logistics team. Line manager: Chloe Dubois."
+  },
+  {
+    "id": "people:mgr-mateus-costa",
+    "title": "Mateus Costa: Customer Support manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Mateus Costa manages the Customer Support team and gives line-manager spending approval for its staff. Calendar: annual leave from 15 October 2026 through 28 October 2026 inclusive, back at work 29 October 2026 (out-of-office reply: 'Away for a bit - Nina can sign things off for me.') (no delegation recorded in the Approvals Register)."
+  },
+  {
+    "id": "people:nina-kowalski",
+    "title": "Nina Kowalski: Customer Support team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Nina Kowalski works in the Customer Support team. Line manager: Mateus Costa."
+  },
+  {
+    "id": "people:olivia-brennan",
+    "title": "Olivia Brennan: Customer Support team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Olivia Brennan works in the Customer Support team. Line manager: Mateus Costa."
+  },
+  {
+    "id": "people:pedro-alves",
+    "title": "Pedro Alves: Customer Support team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Pedro Alves works in the Customer Support team. Line manager: Mateus Costa."
+  },
+  {
+    "id": "people:ruth-mbeki",
+    "title": "Ruth Mbeki: Customer Support team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Ruth Mbeki works in the Customer Support team. Line manager: Mateus Costa."
+  },
+  {
+    "id": "people:mgr-amara-nwosu",
+    "title": "Amara Nwosu: Quality Assurance manager, availability and leave",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Amara Nwosu manages the Quality Assurance team and gives line-manager spending approval for its staff. Calendar: annual leave from 2 November 2026 through 6 November 2026 inclusive, back at work 9 November 2026 (no delegation recorded in the Approvals Register)."
+  },
+  {
+    "id": "people:stefan-novak",
+    "title": "Stefan Novak: Quality Assurance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Stefan Novak works in the Quality Assurance team. Line manager: Amara Nwosu."
+  },
+  {
+    "id": "people:talia-cohen",
+    "title": "Talia Cohen: Quality Assurance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Talia Cohen works in the Quality Assurance team. Line manager: Amara Nwosu."
+  },
+  {
+    "id": "people:vikram-rao",
+    "title": "Vikram Rao: Quality Assurance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Vikram Rao works in the Quality Assurance team. Line manager: Amara Nwosu."
+  },
+  {
+    "id": "people:wen-li",
+    "title": "Wen Li: Quality Assurance team member",
+    "issued": "2026-10-01",
+    "synthetic": true,
+    "content": "Directory: Wen Li works in the Quality Assurance team. Line manager: Amara Nwosu."
+  }
+]

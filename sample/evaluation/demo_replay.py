@@ -6,7 +6,7 @@ Transcripts live outside the repository in $DEMO_REPLAY_DIR:
 
 Before going live, run `demo_replay.py check` in the terminal you will present from.
 Capture a transcript from a real run with, for example:
-    azd ai agent optimize --config evaluation/optimize-storyline.yaml 2>&1 \
+    azd ai agent optimize --config evaluation/optimize.yaml 2>&1 \
         | tee "$DEMO_REPLAY_DIR/optimisation.txt"
 """
 
@@ -22,7 +22,7 @@ TRANSCRIPTS = {"evaluate": "evaluation.txt", "optimize": "optimisation.txt"}
 RUN_INPUTS = [
     "evaluation/datasets",
     "evaluation/optimize.yaml",
-    "evaluation/optimize-storyline.yaml",
+    "evaluation/overfitting-demo",
     "evaluation/purchasing-next-action.json",
     "evaluation/purchasing-demo-rubric.json",
     "agent/.agent_configs/baseline",

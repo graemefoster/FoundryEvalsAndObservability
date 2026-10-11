@@ -23,7 +23,7 @@ JUDGE_MODEL = "gpt-5.5"
 # EVAL_DATASET lets CI run the drift set (or any other JSONL) through the same judges.
 DATASET = Path(
     os.environ.get(
-        "EVAL_DATASET", Path(__file__).resolve().parent / "datasets/golden-development.jsonl"
+        "EVAL_DATASET", Path(__file__).resolve().parent / "datasets/approvers-development.jsonl"
     )
 )
 
