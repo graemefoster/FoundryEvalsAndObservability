@@ -1,0 +1,84 @@
+name: Agent PR gate
+
+# Every pull request: cheapest checks first.
+#   1. Offline: lint, the evaluation request, and the prompt fact check (seconds, no Azure).
+#   2. Development set (the 8-question storyline) against its baseline.
+# The drift set never runs here; it is kept for releases so it stays a surprise exam.
+on:
+  pull_request:
+    paths:
+      - "sample/**"
+      - ".github/workflows/agent-*.yml"
+      - ".github/workflows/_agent-eval.yml"
+  workflow_dispatch:
+    inputs:
+      write_baseline:
+        description: Save this run as the development baseline
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purchasing-demo-deployment
+  cancel-in-progress: false
+
+jobs:
+  offline:
+    name: 1. Offline checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+        working-directory: sample
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: "0.12.11"
+          python-version: "3.13"
+          working-directory: sample
+      - name: Install pinned dependencies
+        run: |
+          uv venv
+          uv pip install --require-hashes -r agent/requirements.txt -r requirements-dev.txt
+      - name: Lint and format
+        run: |
+          .venv/bin/ruff check agent evaluation
+          .venv/bin/ruff format --check agent evaluation
+      - name: Check evaluation request without Azure
+        run: .venv/bin/python evaluation/evaluate.py --dry-run > /dev/null
+      - name: Facts in the prompt
+        if: github.event_name == 'pull_request'
+        run: |
+          mkdir -p /tmp/base-config
+          for f in instructions.md tools.json; do
+            git show "origin/${GITHUB_BASE_REF}:sample/agent/.agent_configs/baseline/$f" \
+              > "/tmp/base-config/$f"
+          done
+          python3 evaluation/check_prompt_facts.py \
+            --baseline /tmp/base-config \
+            --candidate agent/.agent_configs/baseline \
+            --data agent/data/*.json
+
+  development:
+    name: 2. Development set vs baseline
+    needs: offline
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/_agent-eval.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      dataset: demo-storyline
+      # 8 rows: one binary row flipping moves a mean by 0.125, so the noise band
+      # here is one row, not Foundry's 0.03 (which is for large optimizer runs).
+      tolerance: 0.13
+      blocking: true
+      detail: full
+      write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

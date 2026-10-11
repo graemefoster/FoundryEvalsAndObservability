@@ -1,0 +1,33 @@
+# Storyline run: 8 natural questions with per-row criteria (behaviour, not facts).
+# The drift set (drift-lockbox.jsonl) is deliberately NOT listed here: the optimizer must never see it.
+# From sample/: azd ai agent optimize --config evaluation/optimize.yaml
+# Keep the latest deployed agent aligned with the local baseline before submitting.
+# 4 things - agent, dataset, holdout, and evaluators must be specified.
+name: purchasing-storyline-optimisation
+agent:
+  name: purchasing-advice-demo
+  kind: hosted
+  model: gpt-5.4-mini
+  config: ../agent/.agent_configs/baseline/metadata.yaml
+# azd resolves dataset paths from the service's project directory: sample/agent/.
+dataset:
+  local_uri: ../evaluation/datasets/demo-storyline.jsonl
+validation_dataset:
+  local_uri: ../evaluation/datasets/golden-holdout.jsonl
+evaluators:
+  - name: purchasing-next-action
+    initialization_parameters:
+      deployment_name: gpt-5.5
+      threshold: 1
+  - name: purchasing-demo-rubric
+    initialization_parameters:
+      model: gpt-5.5
+options:
+  eval_model: gpt-5.5
+  optimization_model: gpt-5.5
+  max_candidates: 2
+# Holdout cases go to native validation, never into the training dataset.
+# No model_search_space: the agent model is fixed.
+# Native optimisation can change instructions and tool descriptions, not Python tools.
+# Optimise with binary next-action correctness and weighted rubric quality.
+# Both judges request behaviour-only feedback; neither is a documented hard selection gate.

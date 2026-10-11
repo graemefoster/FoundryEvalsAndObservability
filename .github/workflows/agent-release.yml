@@ -1,0 +1,53 @@
+name: Agent release
+
+# Releasing: the drift set (the "surprise exam") must pass, then a person approves.
+# Only scores and failed-row counts are published, never which questions failed,
+# so the set doesn't quietly become something people tune against.
+on:
+  workflow_dispatch:
+    inputs:
+      write_baseline:
+        description: Save this run as the drift baseline (no release)
+        type: boolean
+        default: false
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purchasing-demo-deployment
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    name: Drift set (must pass)
+    uses: ./.github/workflows/_agent-eval.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      dataset: drift-lockbox
+      tolerance: 0.03
+      must_pass: next_action_success
+      blocking: true
+      detail: counts
+      write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}
+
+  approve:
+    name: Release approval
+    needs: drift
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.write_baseline) }}
+    runs-on: ubuntu-latest
+    # Add required reviewers to the "production" environment in the repo settings.
+    environment: production
+    steps:
+      - name: Record the release
+        run: |
+          {
+            echo "## Released"
+            echo "Revision \`${GITHUB_SHA}\` passed the drift set and was approved."
+            echo "Demo note: there is one Foundry project, so the drift job's deploy is the"
+            echo "release. With a separate production project, deploy to it here."
+          } >> "$GITHUB_STEP_SUMMARY"

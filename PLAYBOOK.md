@@ -224,10 +224,18 @@ Set `DEMO_REPLAY_DIR` to that directory before the talk. These commands replay
 the transcript unchanged on stdout over roughly ten seconds:
 
 ```bash
+# BEFORE GOING LIVE, in the terminal you will present from:
+export DEMO_REPLAY_DIR="/path/to/your/transcripts"
+.venv/bin/python evaluation/demo_replay.py check   # MISSING / EMPTY / STALE / OK
+
 # OFFLINE: no authentication, cloud calls, generated files or billable work.
 .venv/bin/python evaluation/evaluate.py --demo-replay "$DEMO_REPLAY_DIR/evaluation.txt"
-.venv/bin/python evaluation/demo_replay.py optimize --transcript "$DEMO_REPLAY_DIR/optimisation.txt"
+.venv/bin/python evaluation/demo_replay.py optimize   # defaults to $DEMO_REPLAY_DIR/optimisation.txt
 ```
+
+Capture a transcript from a real run with `2>&1 | tee "$DEMO_REPLAY_DIR/<name>.txt"`.
+`check` reports STALE when a transcript is older than the agent config, data, datasets or
+evaluators, i.e. a fresh run would print something different.
 
 Both begin and end with **DEMO REPLAY** banners on stderr. Transcript IDs, statuses
 and scores belong to the earlier run, not a new submission. Open that run in the

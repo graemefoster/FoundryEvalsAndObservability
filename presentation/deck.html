@@ -363,6 +363,41 @@
       line-height: 1.35;
     }
 
+    .gate-slide .concept-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .gate-slide .concept-card {
+      padding: 22px;
+    }
+
+    .gate-slide .concept-card h3 {
+      font-size: 24px;
+    }
+
+    .gate-slide .concept-card p {
+      font-size: 18px;
+    }
+
+    .slide-takeaway {
+      margin: -30px 36px 34px 0;
+      color: var(--cp-text);
+      font-size: 24px;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+    }
+
+    .slide-takeaway.router-question {
+      margin: 0 36px 34px 0;
+      text-align: center;
+    }
+
+    .slide-takeaway em {
+      color: var(--slide-accent);
+      font-style: normal;
+    }
+
     .evaluator-slide .concept-card h3 {
       min-height: 62px;
     }
@@ -3166,13 +3201,13 @@
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">03</span>
-              <h3>Observe</h3>
-              <p>Foundry tracing + tool calls</p>
+              <h3>Observability</h3>
+              <p>Foundry tracing</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">04</span>
               <h3>Evaluate</h3>
-              <p>Quality, latency, tokens + cost</p>
+              <p>Quality, safety, stays on-task</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">05</span>
@@ -3208,8 +3243,8 @@
               <p>Helps employees understand<br>what they can buy and<br>which approvals they need.</p>
             </div>
             <figure class="agent-intro-question">
-              <figcaption>A learning coordinator asks:</figcaption>
-              <blockquote>“Can I spend $6,250 on 25 Nova Learning licences for our new graduate employees?”</blockquote>
+              <figcaption>A team lead asks:</figcaption>
+              <blockquote>“Can I book a team dinner for six this Thursday? It’s about $540, and my manager’s approved it.”</blockquote>
             </figure>
           </div>
           <div class="footer"><span>Purchasing advice / Microsoft Foundry</span><span>AI Genius / S6 E2 / 03</span></div>
@@ -3280,6 +3315,7 @@
               <p class="model-downside">Trade-off: less suited<br>to nuanced requests</p>
             </div>
           </div>
+          <p class="slide-takeaway router-question story-reveal reveal-4">Or a model which can decide on the fly?</p>
           <div class="footer"><span>Model Choice</span><span>AI Genius / S6 E2 / 04</span></div>
         </article>
 
@@ -3312,10 +3348,11 @@
               <span class="concept-icon">WIQ</span>
               <h3>Work IQ</h3>
               <p>People, collaboration and workflow context.</p>
-              <div class="concept-detail">Recent decisions, conversations and approvals.<small>Simulated: ask</small></div>
+              <div class="concept-detail">Who holds a role today, who’s away and who’s covering.<small>Simulated: ask</small></div>
             </div>
           </div>
-          <div class="footer"><span>Policy + business state + workplace context</span><span>AI Genius / S6 E2 / 06</span></div>
+          <p class="slide-takeaway story-reveal reveal-4">Policy tells you <em>who must approve</em>. Work IQ tells you <em>who that is today</em>.</p>
+          <div class="footer"><span>Policy tells you who must approve. Work IQ tells you who that is today.</span><span>AI Genius / S6 E2 / 06</span></div>
         </article>
 
         <article class="slide template-demo section-context" data-title="Demo 2 - Run the Starting Agent" data-minutes="5">
@@ -3432,89 +3469,98 @@
           <div class="footer"><span>Compare candidates with the baseline</span><span>AI Genius / S6 E2 / 13</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Automate" data-minutes="2">
+        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Three test sets" data-minutes="2">
           <p class="slide-kicker">Continuous evaluation and CI/CD</p>
-          <h2>Automate</h2>
+          <h2>Three test sets, three jobs</h2>
+          <div class="concept-grid">
+            <div class="concept-card blue story-reveal reveal-1">
+              <span class="concept-icon">D</span>
+              <h3>Development</h3>
+              <p>The optimizer trains on it.</p>
+              <div class="concept-detail">Runs on every pull request, as a small, quick subset.</div>
+            </div>
+            <div class="concept-card green story-reveal reveal-2">
+              <span class="concept-icon">H</span>
+              <h3>Holdout</h3>
+              <p>The optimizer validates against it.</p>
+              <div class="concept-detail">Runs on merge to main.</div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-3">
+              <span class="concept-icon">Δ</span>
+              <h3>Drift</h3>
+              <p>Never shown to the optimizer. The right answers change with the date.</p>
+              <div class="concept-detail">Runs before a candidate is promoted.</div>
+            </div>
+          </div>
+          <p class="slide-takeaway story-reveal reveal-4">Homework, practice exam, <em>surprise exam</em>.</p>
+          <div class="footer"><span>Homework, practice exam, surprise exam</span><span>AI Genius / S6 E2 / 14</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-delivery presenter-steps gate-slide" data-title="What the gate checks" data-minutes="2">
+          <p class="slide-kicker">Release gates for agents</p>
+          <h2>What the gate checks</h2>
           <div class="concept-grid">
             <div class="concept-card blue story-reveal reveal-1">
               <span class="concept-icon">1</span>
-              <h3>Trigger</h3>
-              <p>Agent changes, source updates and scheduled checks.</p>
-              <div class="concept-detail">When should the checks run?</div>
+              <h3>Facts in the prompt</h3>
+              <p>Did the candidate copy amounts, dates or names into its instructions?</p>
+              <div class="concept-detail">Seconds. No LLM needed.</div>
             </div>
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">2</span>
-              <h3>Evaluate</h3>
-              <p>Run the release test suite, including cases outside optimisation.</p>
-              <div class="concept-detail">Evaluate sampled production runs after deployment.</div>
+              <h3>Change vs baseline</h3>
+              <p>Fail on a drop bigger than the noise, not below a fixed number.</p>
+              <div class="concept-detail">Foundry treats changes under 0.03 as noise.</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">3</span>
-              <h3>Release</h3>
-              <p>Review, gate, deploy and retain a rollback path.</p>
-              <div class="concept-detail">Does the change preserve the required quality?</div>
+              <h3>Must-pass cases</h3>
+              <p>Wrong approver, or obeying an email, blocks the release whatever the average.</p>
+              <div class="concept-detail">Averages hide the failures that matter.</div>
+            </div>
+            <div class="concept-card purple story-reveal reveal-4">
+              <span class="concept-icon">4</span>
+              <h3>Pinned together</h3>
+              <p>Prompt, tool descriptions, model and dataset version.</p>
+              <div class="concept-detail">A score is only comparable if all four are recorded.</div>
             </div>
           </div>
-          <div class="footer"><span>Evaluation evidence travels with the change</span><span>AI Genius / S6 E2 / 14</span></div>
+          <div class="footer"><span>Cheapest check first</span><span>AI Genius / S6 E2 / 15</span></div>
         </article>
 
-        <article class="slide template-demo section-delivery" data-title="Demo 6 - Release Check" data-minutes="5">
+        <article class="slide template-demo section-delivery" data-title="Demo 6 - The PR that goes red" data-minutes="5">
           <div class="demo-bumper">
             <span class="demo-number">Demo 6</span>
-            <h2>Release Check</h2>
-            <p class="lead">Follow the selected configuration through release checks, then test a deliberate regression.</p>
+            <h2>The PR that goes red</h2>
+            <p class="lead">Open a pull request with the optimizer’s fact-stuffed candidate and watch the gate stop it.</p>
           </div>
-          <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 15</span></div>
+          <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 16</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery" data-title="From test cases to production" data-minutes="2">
-          <p class="slide-kicker">The complete delivery process</p>
-          <h2>From test cases to production</h2>
-          <div class="delivery-cycle">
-          <div class="delivery-flow">
-            <section class="delivery-panel">
-              <span class="delivery-phase">Build / pre-launch</span>
-              <h3>Simulation</h3>
-              <p>Explore behaviour before real users arrive.</p>
-              <div class="delivery-node">
-                <strong>Golden dataset</strong>
-                <p>Review expected outcomes. Version the cases and rubric.</p>
-              </div>
-            </section>
-            <section class="delivery-panel">
-              <span class="delivery-phase">On every change / CI/CD</span>
-              <ol class="delivery-pipeline">
-                <li><span class="step-number">1</span><strong>Pull request</strong></li>
-                <li><span class="step-number">2</span><strong>Build &amp; test</strong></li>
-                <li><span class="step-number">3</span><strong>Evaluate agent</strong></li>
-                <li><span class="step-number">4</span><strong>Release gates</strong></li>
-                <li><span class="step-number">5</span><strong>Deploy</strong></li>
-              </ol>
-            </section>
-            <section class="delivery-panel">
-              <span class="delivery-phase">In production</span>
-              <h3>Agent traces</h3>
-              <p>Check behaviour on real requests.</p>
-              <div class="delivery-node">
-                <strong>Evaluate &amp; alert</strong>
-                <p>Sample traces. Monitor quality, latency and cost.</p>
-              </div>
-            </section>
+        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Production feeds the tests" data-minutes="2">
+          <p class="slide-kicker">After release</p>
+          <h2>Production feeds the tests</h2>
+          <div class="concept-grid">
+            <div class="concept-card blue story-reveal reveal-1">
+              <span class="concept-icon">1</span>
+              <h3>Sample traces</h3>
+              <p>Continuous evaluation scores a sample of real conversations.</p>
+              <div class="concept-detail">Alert on quality, latency and cost.</div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-2">
+              <span class="concept-icon">2</span>
+              <h3>Keep the failures</h3>
+              <p>Turn interesting failures into new, reviewed test rows.</p>
+              <div class="concept-detail">Redact personal data first.</div>
+            </div>
+            <div class="concept-card green story-reveal reveal-3">
+              <span class="concept-icon">3</span>
+              <h3>Same gate</h3>
+              <p>The next change, human or optimizer, runs against them.</p>
+              <div class="concept-detail">Every production failure becomes a test.</div>
+            </div>
           </div>
-          <div class="delivery-feedback" role="group" aria-label="Improvement loop returning to the CI/CD pull request">
-            <div class="delivery-feedback-step optimise"><strong>Optimise</strong><small>Compare candidates</small></div>
-          </div>
-          <svg class="delivery-connectors" viewBox="0 0 1344 507" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <marker id="delivery-loop-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              </marker>
-            </defs>
-            <path d="M 1175 393 V 423" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#delivery-loop-arrow)"/>
-            <path d="M 1006 466 H 672 V 393" fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#delivery-loop-arrow)"/>
-          </svg>
-          </div>
-          <div class="footer"><span>Microsoft Foundry + GitHub Actions</span><span>AI Genius / S6 E2 / 16</span></div>
+          <div class="footer"><span>Microsoft Foundry + GitHub Actions</span><span>AI Genius / S6 E2 / 17</span></div>
         </article>
 
         <article class="slide template-content-minimal section-delivery" data-title="Worth exploring next" data-minutes="1">
@@ -3552,7 +3598,7 @@
               <p>Keep people in control of actions</p>
             </div>
           </div>
-          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 17</span></div>
+          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 18</span></div>
         </article>
 
         <article class="slide template-qa section-delivery" data-title="Build measure improve repeat" data-minutes="10">
@@ -3561,7 +3607,7 @@
             <h2>Build → Measure → Improve → Repeat</h2>
             <p class="lead">One working agent. Consistent answers. Measured trade-offs. Repeatable release checks.</p>
           </div>
-          <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 18</span></div>
+          <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 19</span></div>
         </article>
         </div>
       </div>
@@ -3575,7 +3621,7 @@
       </div>
       <div class="progress-wrap">
         <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
-        <span class="slide-count" id="slideCount">1 / 18</span>
+        <span class="slide-count" id="slideCount">1 / 19</span>
       </div>
       <div class="control-group">
         <span class="timer" id="timer">00:00</span>
@@ -3620,8 +3666,8 @@
         key: "One purchasing advice agent and one question connect the demonstrations.",
         definition: "The agent helps employees interpret purchasing guidance and identify the approvals they need.",
         transition: "The first choice is normally which model to use.",
-        talk: "Introduce the learning coordinator and read the Nova Learning question. The agent advises on purchasing; the employee follows the approval process. Use this question to establish the baseline, then expand to different dates, purchase types and incomplete requests when evaluating consistency.",
-        source: "Nova Learning scenario."
+        talk: "Introduce the team lead and read the dinner question. Leave alcohol out on purpose: the agent should ask about it. The agent advises on purchasing; the employee follows the approval process. This one question carries the whole session: policy (Foundry IQ), who can approve today (Work IQ), and budget (Fabric IQ). Later we expand to different dates, purchase types and incomplete requests when evaluating consistency.",
+        source: "Team dinner scenario (fictional)."
       },
       {
         key: "The first choice is normally which model to use.",
@@ -3642,14 +3688,14 @@
         key: "Different sources provide different kinds of organisational context.",
         definition: "Foundry IQ provides institutional knowledge, Fabric IQ provides governed business entities and state, and Work IQ provides workplace context.",
         transition: "Let's ask the agent and explore the context available to it.",
-        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Open tools.py: each IQ is a tool shaped like the real MCP tool. Foundry IQ is knowledge_base_retrieve over policies, Work IQ is ask over workplace notices, and Fabric IQ is search_ontology returning one fixed budget. Real IQs are LLM-backed agents with generic tool descriptions; domain guidance lives in the knowledge base or ontology. Ours are deterministic local stand-ins, so none is a real IQ connection.",
+        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Open tools.py: each IQ is a tool shaped like the real MCP tool. Foundry IQ is knowledge_base_retrieve over policies, Work IQ is ask over people, roles, leave, recorded delegations and messages, and Fabric IQ is search_ontology returning one fixed budget. Line to land: policy tells you who must approve; Work IQ tells you who that is today. Tim, the Hospitality Lead, is on leave; the Approvals Register records Priya as his delegate. A chat message or an email can tell you who to contact, but never transfers approval authority. Real IQs are LLM-backed agents with generic tool descriptions; domain guidance lives in the knowledge base or ontology. Ours are deterministic local stand-ins, so none is a real IQ connection.",
         source: "Microsoft IQ concepts and fictional scenario."
       },
       {
         key: "Establish the working baseline and preserve its evidence.",
         definition: "Instructions define the task and boundaries; tool descriptions explain when a source is useful and what it returns.",
         transition: "Open the trace to inspect how the answer was produced.",
-        talk: "Run the opening question with Foundry IQ and the sample Work IQ adapter available. Read the actual answer, then inspect the policy and synthetic email: one quotation and Head of Learning approval by 30 November 2026. Save the configuration, source versions, question, answer and run ID. A correct first answer is the starting point for measuring consistency across cases.",
+        talk: "Run the opening question with Foundry IQ and the sample Work IQ adapter available. Read the actual answer: it should ask whether alcohol is included. Answer 'yes, there is wine' and show it find the current approver: Hospitality Lead approval is needed, Tim is on leave, Priya holds the recorded delegation. Save the configuration, source versions, question, answer and run ID. A correct first answer is the starting point for measuring consistency across cases.",
         checkpoint: "02-grounding: save a working baseline, source fixtures and the run ID. Use the saved run if the live service is unavailable, identifying it as a prepared run.",
         source: "Demo implementation to be rehearsed."
       },
@@ -3699,25 +3745,32 @@
         source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models; Agent optimizer cost and token usage overview. Checked 24 September 2026."
       },
       {
-        key: "Check changes before release and keep checking after release.",
-        definition: "CI/CD automates repeatable change, evaluation and deployment steps; continuous evaluation monitors behaviour after deployment.",
-        transition: "Let's follow a change through the workflow.",
-        talk: "Explain how the chosen configuration moves through broader release tests, operational limits, approval and deployment. Include cases kept outside optimisation and candidate selection. Show where scheduled production evaluations fit. The pipeline preserves the quality requirement as the agent changes.",
-        source: "Microsoft Foundry continuous evaluation and GitHub Actions concepts."
+        key: "Three test sets, three jobs.",
+        definition: "Development data trains the optimizer, holdout data validates it, and a drift set is never shown to it.",
+        transition: "So what does the gate actually check?",
+        talk: "Homework, practice exam, surprise exam. The optimizer trains on development and validates on holdout, and we look at both often, so both wear down over time. Our holdout was the same kind of question about the same policies, so a candidate that memorised the policies passed both. The drift set is never shown to the optimizer and its answers change with the date: Tim comes back, Priya's delegation ends, 2027 thresholds start. An agent that looks things up passes; an agent with facts in its prompt confidently gives the old answer.",
+        source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models (validation_dataset)."
       },
       {
-        key: "The workflow must show why a change stopped or advanced.",
-        definition: "Release gates check evaluation thresholds; approvals record the release decision.",
-        transition: "Now put the release checks into the complete delivery process.",
-        talk: "Follow the selected configuration through a prepared GitHub Actions run. Inspect release-test evidence before revealing its gate result. Then introduce a separately labelled, deliberate configuration regression and inspect its check results. Keep this regression separate from the original baseline and Optimizer experiment. Finish with approvals, deployment, rollback and scheduled evaluation.",
-        checkpoint: "06-automate: retain the selected configuration, release reports and workflow run IDs. Keep the deliberate regression as a separate resettable checkpoint with its exact diff and test evidence.",
+        key: "Cheapest check first.",
+        definition: "A release gate is an automated check that can stop a change from being promoted.",
+        transition: "Let's open a pull request that should fail.",
+        talk: "One: a script scans the candidate prompt and tool descriptions for amounts, dates, durations and names that the baseline didn't have. Seconds, no LLM. Two: compare against the stored baseline, not a fixed threshold. LLM-judged scores move between runs; Foundry's own optimizer guidance treats changes under 0.03 as noise, so fail on a bigger drop. Three: some failures block regardless of the average, such as sending someone to the wrong approver or following an instruction in an email. Four: pin prompt, tool descriptions, model and dataset version together, or scores aren't comparable.",
+        source: "Microsoft Learn: Agent optimizer overview (score interpretation)."
+      },
+      {
+        key: "The workflow must show why a change stopped.",
+        definition: "Release gates check evaluation results; approvals record the release decision.",
+        transition: "And after release, production keeps feeding the tests.",
+        talk: "Open a pull request containing the optimizer's fact-stuffed candidate. The fact check goes red first, showing the copied names and amounts. Then show the drift-set result: on 27 October, Tim is back, and the stuffed prompt still sends the employee to Priya. The baseline, which looks it up, gets it right. Merge blocked.",
+        checkpoint: "06-automate: keep the stuffed candidate as a separate, resettable branch with its exact diff and the failing workflow run ID.",
         source: "GitHub Actions release-check demonstration."
       },
       {
-        key: "Production evidence improves the tests used for the next release.",
-        definition: "A golden dataset is a reviewed, versioned set of cases with agreed expected outcomes. It is a test asset, not a guarantee of correctness.",
+        key: "Every production failure becomes a test.",
+        definition: "Continuous evaluation scores a sample of real conversations after release.",
         transition: "Here are six related capabilities worth exploring beyond today's demonstrations.",
-        talk: "Read the top row left to right. Before launch, simulation establishes expected behaviour. Review generated examples before promoting them into the golden dataset. Follow the five CI/CD steps: pull request, build and test code and tool contracts, evaluate the agent against the release dataset, enforce pre-agreed quality and operational limits, then deploy and smoke-test the versioned release. Failed checks stop promotion. Keep the candidate artifact, source versions, dataset, rubric, judge configuration and reports pinned. In production, evaluate sampled traces and alert on defined thresholds. Follow the simple return path: production to Optimise, then back into the CI/CD pull request. Compare Agent Optimizer candidates against fixed criteria and retain the baseline if the evidence does not support a change. A selected candidate re-enters the same CI/CD checks; optimisation does not deploy directly. Review case outcomes rather than automatically accepting the agent's own response as ground truth. Keep optimisation and candidate-selection cases separate from final release cases; curate and version the datasets deliberately. Simulation and trace-to-dataset generation are preview capabilities; this slide describes the intended lifecycle, not extra completed demos. Gates, alert thresholds and orchestration must be wired explicitly in the application and workflow. Allow two minutes.",
+        talk: "Turn on continuous evaluation in Foundry to score a sample of real conversations and alert on quality, latency and cost. Review interesting failures, redact personal data, and add them as new test rows. The next change, whether from a person or the optimizer, goes through the same gate against them. Simulation and trace-to-dataset generation are preview capabilities; verify before relying on them.",
         source: "Microsoft Learn and GitHub Docs, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
       },
       {

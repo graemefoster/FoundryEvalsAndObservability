@@ -1,0 +1,36 @@
+name: Agent holdout on main
+
+# Every merge to main: run the holdout set and report. It doesn't block, because the
+# change is already merged; a drop is a signal to investigate before the next release.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sample/**"
+  workflow_dispatch:
+    inputs:
+      write_baseline:
+        description: Save this run as the holdout baseline
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purchasing-demo-deployment
+  cancel-in-progress: false
+
+jobs:
+  holdout:
+    name: Holdout vs baseline (report only)
+    uses: ./.github/workflows/_agent-eval.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      dataset: golden-holdout
+      tolerance: 0.05
+      blocking: false
+      detail: full
+      write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

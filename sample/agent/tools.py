@@ -49,8 +49,9 @@ def knowledge_base_retrieve(queries: list[str]) -> str:
 
 
 def ask(question: str) -> str:
-    """Simulated Work IQ: workplace messages, exceptions and clearances."""
-    return json.dumps({"question": question, "results": _search("notices.json", question)})
+    """Simulated Work IQ: people, roles, availability, messages, notices and clearances."""
+    results = _search("notices.json", question) + _search("people.json", question)
+    return json.dumps({"question": question, "results": results})
 
 
 def search_ontology(question: str) -> str:

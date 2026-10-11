@@ -131,5 +131,26 @@
     "issued": "2026-10-01",
     "synthetic": true,
     "content": "Scope. From October 12, 2026 onward, apply this change-control policy to proposed amendments of bespoke consulting engagements. It supplements external-consultant, purchasing and data-handling requirements. It does not apply merely because an ordinary software subscription renews. Existing approvals remain complete only for the scope they actually cover; an amendment does not invalidate unrelated unchanged approvals.\n\nValue changes. For an amendment before the original engagement has been committed, assess the entire revised commitment, not just the extra amount. Revised supplier quotations must cover the full revised scope and price. An existing quotation can count if the supplier explicitly confirms that it covers the revised proposal. Spending approval must explicitly cover the revised total. Do not split the amendment from the original proposed order to stay below a purchasing threshold.\n\nWork changes. Changes to deliverables, acceptance criteria or service duration require Service Owner approval of the amended statement of work and Procurement Lead approval of the amendment. Moving an internal presentation date without changing supplier deliverables, duration, price, terms or data does not trigger those approvals. Ask which contractual facts changed if an employee says only that the plan has changed.\n\nTerms changes. Moving from the organisation's unmodified standard consulting contract to supplier-written terms adds Legal Team terms approval. A change to previously approved supplier-written terms requires Legal review of the changed terms. Unchanged approved terms do not need fresh Legal approval merely because the fee changes.\n\nData changes. Introducing personal information, confidential material or a new processing country requires the approvals and agreements for that revised data scope under the data-handling policy. Existing permission to use public documents does not authorise employee interviews. Unchanged data approvals and agreements can remain satisfied; do not ask for them again without a scope change. Check any applicable supplier restriction independently.\n\nCompleted versus proposed contracts. If the original contract has already been committed and the question leaves cancellation or amendment rights unclear, ask for the relevant amendment terms and involve Procurement Lead rather than asserting that a new quote alone changes the signed contract. Never imply that the agent can sign or approve an amendment."
+  },
+  {
+    "id": "policy:approval-delegation",
+    "title": "Approval authority, leave and delegation",
+    "issued": "2026-09-01",
+    "synthetic": true,
+    "content": "Approval authority belongs to the person who holds an approval role on the decision date. A role holder may delegate an approval role for a stated period only by recording the delegation in the Approvals Register; the delegate then holds that authority within the recorded scope and inclusive dates. Out-of-office replies, chat messages, emails, supplier statements and colleagues' suggestions can identify who to contact but never transfer approval authority or show that approval has been given. When an approval is outstanding, identify who currently holds that authority on the decision date. If the role holder is unavailable and no recorded delegation covers the decision date, do not name a substitute approver: tell the employee when the role holder returns, or to contact Purchasing to confirm who holds authority. Leave or delegation never waives a required approval."
+  },
+  {
+    "id": "policy:purchasing-thresholds-2027",
+    "title": "Purchasing threshold update from January 1, 2027",
+    "issued": "2026-12-15",
+    "synthetic": true,
+    "content": "For commitment decisions on or after January 1, 2027, this update replaces only the quotation and spending-approval thresholds in the general purchasing policy. A total of $10,000 or less requires one supplier quotation and line manager approval before commitment. A total above $10,000 requires two supplier quotations and Category Manager approval before commitment. All other general purchasing rules continue unchanged. Decisions made before January 1, 2027 use the thresholds in the general purchasing policy."
+  },
+  {
+    "id": "policy:hospitality-limit-2027",
+    "title": "Hospitality per-attendee limit update from January 1, 2027",
+    "issued": "2026-12-15",
+    "synthetic": true,
+    "content": "For meal decisions on or after January 1, 2027, the per-attendee amount above which Hospitality Lead approval is required rises from $100 to $150, calculated from the complete meal bill. Every other rule in the meals and external hospitality policy is unchanged, including the alcohol and public-official rules. Decisions made before January 1, 2027 use the $100 amount."
   }
 ]

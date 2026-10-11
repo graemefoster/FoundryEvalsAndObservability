@@ -20,7 +20,12 @@ AGENT_NAME = "purchasing-advice-demo"
 EVALUATOR_NAME = "purchasing-next-action"
 RUBRIC_NAME = "purchasing-demo-rubric"
 JUDGE_MODEL = "gpt-5.5"
-DATASET = Path(__file__).resolve().parent / "datasets/golden-development.jsonl"
+# EVAL_DATASET lets CI run the drift set (or any other JSONL) through the same judges.
+DATASET = Path(
+    os.environ.get(
+        "EVAL_DATASET", Path(__file__).resolve().parent / "datasets/golden-development.jsonl"
+    )
+)
 
 
 def main() -> None:
@@ -68,11 +73,16 @@ def main() -> None:
                 return
 
         # 2. Load the questions and references; the agent answers are generated during the run.
-        rows = [json.loads(line) for line in DATASET.read_text().splitlines() if line.strip()]
+        # Keep only the fields the item schema allows; optimizer-only fields such as
+        # "criteria" would otherwise fail validation.
+        rows = [
+            {key: row[key] for key in ("name", "query", "ground_truth")}
+            for row in map(json.loads, filter(str.strip, DATASET.read_text().splitlines()))
+        ]
 
         # 3. Define the evaluation and map its inputs.
         evaluation = {
-            "name": "purchasing-next-action-evaluation-development",
+            "name": f"purchasing-next-action-evaluation-{DATASET.stem}",
             "data_source_config": {
                 "type": "custom",
                 "item_schema": {

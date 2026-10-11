@@ -1,0 +1,158 @@
+name: Evaluate agent (reusable)
+
+# Shared by agent-pr.yml, agent-main.yml and agent-release.yml.
+# Deploys the checked-out agent, runs one dataset through the judges, then either
+# compares with a stored baseline or saves this run as the new baseline.
+on:
+  workflow_call:
+    inputs:
+      dataset:
+        description: JSONL file under sample/evaluation/datasets/
+        type: string
+        required: true
+      tolerance:
+        description: Allowed drop in each evaluator's mean score before failing.
+        type: number
+        default: 0.03
+      must_pass:
+        description: Space-separated evaluators where any failed row blocks.
+        type: string
+        default: ""
+      blocking:
+        description: Fail the job on a regression (false = report only).
+        type: boolean
+        default: true
+      detail:
+        description: "full = publish the Foundry report link; counts = scores only (for the drift set)."
+        type: string
+        default: full
+      write_baseline:
+        description: Save this run as the baseline artifact instead of comparing.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: demo
+    defaults:
+      run:
+        shell: bash
+        working-directory: sample
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_AI_PROJECT_ID: ${{ vars.AZURE_AI_PROJECT_ID }}
+      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+      DATASET_STEM: ${{ inputs.dataset }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check configuration
+        run: |
+          for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
+            AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
+            if [ -z "$(printenv "$key")" ]; then
+              echo "::error::Missing GitHub variable: $key"
+              exit 1
+            fi
+          done
+          test -f "evaluation/datasets/${DATASET_STEM}.jsonl" \
+            || { echo "::error::No dataset evaluation/datasets/${DATASET_STEM}.jsonl"; exit 1; }
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: "0.12.11"
+          python-version: "3.13"
+          working-directory: sample
+      - name: Install pinned evaluation dependencies
+        run: |
+          uv venv
+          uv pip install --require-hashes -r requirements-dev.txt
+      - uses: Azure/setup-azd@17a3d5f2aa75a53c7f6fa815c18ef1445c73257f # v2
+        with:
+          version: "1.35.0"
+      - name: Install pinned Foundry extensions
+        run: |
+          azd extension install azure.ai.agents --version 1.0.0-beta.13
+          azd extension install azure.ai.projects --version 1.0.0-beta.8
+      - name: Sign in with OIDC
+        uses: Azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Configure existing project
+        run: |
+          azd config set auth.useAzCliAuth true
+          azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --location "$AZURE_LOCATION" --no-prompt
+          azd env set AZURE_TENANT_ID "$AZURE_TENANT_ID"
+          azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
+          azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
+      # Demo simplification: one Foundry project, so this deploys over the shared demo agent.
+      # With separate projects, point this at a staging agent instead.
+      - name: Deploy agent
+        run: azd deploy purchasing-advice-demo --no-prompt
+      - name: Run ${{ inputs.dataset }}
+        env:
+          EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
+        run: |
+          if [ "${{ inputs.detail }}" = "counts" ]; then
+            # Keep per-question detail and the report link out of the logs for the drift set.
+            .venv/bin/python evaluation/evaluate.py --wait --report report.json > eval.log
+          else
+            .venv/bin/python evaluation/evaluate.py --wait --report report.json
+          fi
+      - name: Save as baseline
+        if: inputs.write_baseline
+        run: |
+          mkdir -p baseline-out
+          cp report.json "baseline-out/${DATASET_STEM}.json"
+          {
+            echo "## New baseline: ${DATASET_STEM}"
+            echo "Download the **baseline-${DATASET_STEM}** artifact and commit it as"
+            echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload baseline
+        if: inputs.write_baseline
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: baseline-${{ inputs.dataset }}
+          path: sample/baseline-out/${{ inputs.dataset }}.json
+          if-no-files-found: error
+      - name: Compare with baseline
+        if: ${{ !inputs.write_baseline }}
+        run: |
+          set +e
+          .venv/bin/python evaluation/compare_to_baseline.py \
+            --report report.json \
+            --baseline "evaluation/baselines/${DATASET_STEM}.json" \
+            --tolerance "${{ inputs.tolerance }}" \
+            --must-pass ${{ inputs.must_pass }} > gate.txt
+          status=$?
+          cat gate.txt
+          {
+            echo "## ${DATASET_STEM}: $([ $status -eq 0 ] && echo passed || echo regression)"
+            echo "Revision: \`${GITHUB_SHA}\`"
+            echo '```'
+            cat gate.txt
+            echo '```'
+            if [ "${{ inputs.detail }}" = "full" ]; then
+              python3 -c "import json; print('Foundry report:', json.load(open('report.json')).get('report_url'))"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ $status -ne 0 ]; then
+            if [ "${{ inputs.blocking }}" = "true" ]; then
+              exit 1
+            fi
+            echo "::warning::${DATASET_STEM} regressed against its baseline (report only)."
+          fi
