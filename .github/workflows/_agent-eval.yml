@@ -167,7 +167,11 @@ jobs:
           azd env set AGENT_NAME "$AGENT_NAME"
       - name: Deploy agent
         if: inputs.deploy_agent
-        run: azd deploy purchasing-advice-demo --no-prompt
+        run: |
+          # The pinned extension validates the name before expanding environment variables.
+          yq -i '.services.purchasing-advice-demo.name = strenv(AGENT_NAME) |
+            .services.purchasing-advice-demo.env.AGENT_NAME = strenv(AGENT_NAME)' azure.yaml
+          azd deploy purchasing-advice-demo --no-prompt
       - name: Verify evaluation target
         if: inputs.deploy_agent
         run: |

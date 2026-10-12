@@ -345,10 +345,11 @@ agent names isolate deployments, not separate projects.
 | Main candidate | `purchasing-advice-demo-dev` | Holdout and drift gates |
 | Approved release | `purchasing-advice-demo-release` | Deployed only after holdout, production review and drift |
 
-The azd service key stays `purchasing-advice-demo`; its deployed name is controlled by
-`AGENT_NAME`. That value also reaches the hosted runtime and Python evaluator. With no override,
-local commands still target the original demo. The embedding hook uses the service key to read
-the newly deployed agent's identity.
+The azd service key stays `purchasing-advice-demo`. CI uses the runner's `yq` to set its
+deployed name and hosted `AGENT_NAME` in that runner's checkout before deployment: the pinned
+extension validates the name before expanding variables. The evaluator targets the same name.
+The committed YAML retains the original demo for local commands. The embedding hook uses the
+service key to read the newly deployed agent's identity.
 
 **The PR gate, step by step:** lint, a dry run of the evaluation request, and (on pull
 requests) the prompt fact check, all in seconds without Azure. Then sign in, deploy,
@@ -411,13 +412,15 @@ each other mid-evaluation. Different PRs can run independently but share model q
 Runner jobs use `ubuntu-latest`. PR and check agents are not automatically deleted; stop or
 remove them deliberately after the demo to manage hosting costs.
 
-To select a different target locally, set both azd's value and the evaluator's shell variable:
+To evaluate a different existing agent locally, set the evaluator's shell variable:
 
 ```bash
-azd env set AGENT_NAME purchasing-advice-demo-dev
-export AGENT_NAME="$(azd env get-value AGENT_NAME)"
-# Reset both to purchasing-advice-demo before live questions or manual optimisation.
+export AGENT_NAME=purchasing-advice-demo-dev
+# Unset AGENT_NAME before live questions or manual optimisation.
 ```
+
+Local deployment still uses the literal name and hosted environment in `azure.yaml`;
+setting a shell or azd environment variable alone does not rename the deployed agent.
 
 `evaluation/optimize.yaml` deliberately retains the original demo agent as its target; changing
 the deployment target does not silently redirect optimisation.

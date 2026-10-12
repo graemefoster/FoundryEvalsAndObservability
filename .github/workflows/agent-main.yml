@@ -176,6 +176,9 @@ jobs:
           azd env set AGENT_NAME "$AGENT_NAME"
       - name: Deploy approved revision
         run: |
+          # Resolve both names in this runner's checkout before native azd validation.
+          yq -i '.services.purchasing-advice-demo.name = strenv(AGENT_NAME) |
+            .services.purchasing-advice-demo.env.AGENT_NAME = strenv(AGENT_NAME)' azure.yaml
           azd deploy purchasing-advice-demo --no-prompt
           azd ai agent show purchasing-advice-demo --output json | python3 -c '
           import json, os, sys
