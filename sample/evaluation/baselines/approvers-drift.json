@@ -1,0 +1,66 @@
+{
+  "eval_id": "eval_ab2d05fd1dcc4549a549991682515dcb",
+  "run_id": "evalrun_cbe67f13cfd3424d89f2c7e8b35ba6ac",
+  "status": "completed",
+  "results_complete": true,
+  "provenance": {
+    "dataset_sha256": "0714ff8f4e6f1bd9814355a6f9996c60ee9f3e86dd539032f843b84ff844241f",
+    "judges": {
+      "next_action_success": {
+        "evaluator_name": "purchasing-next-action",
+        "definition_sha256": "4e517e035e979244c170044dce4f89c5b6e464c278bfe466dfc2aa9d0050ad8a",
+        "initialization_parameters": {
+          "deployment_name": "gpt-5.5",
+          "threshold": 1
+        },
+        "data_mapping": {
+          "query": "{{item.query}}",
+          "ground_truth": "{{item.ground_truth}}",
+          "response": "{{sample.output_text}}",
+          "tool_calls": "{{sample.tool_calls}}"
+        }
+      },
+      "purchasing_behaviour": {
+        "evaluator_name": "purchasing-demo-rubric",
+        "definition_sha256": "0648ae9c85566834c55d81085e17ae6918e78a4ae5dad2e079a789adee8f4f5a",
+        "initialization_parameters": {
+          "model": "gpt-5.5"
+        },
+        "data_mapping": {
+          "query": "{{item.query}}",
+          "response": "{{sample.output_text}}"
+        }
+      }
+    }
+  },
+  "evaluator_versions": {
+    "next_action_success": "1",
+    "purchasing_behaviour": "1"
+  },
+  "report_url": "https://ai.azure.com/nextgen/r/2GWNiIh2Q0SncAVts-jFyA,rg-ai-genius-clean,,cog-fwaptdktcxxy6,ai-genius-clean/build/evaluations/eval_ab2d05fd1dcc4549a549991682515dcb/run/evalrun_cbe67f13cfd3424d89f2c7e8b35ba6ac",
+  "result_counts": {
+    "errored": 0,
+    "failed": 0,
+    "passed": 8,
+    "total": 8,
+    "skipped": 0
+  },
+  "criteria": [
+    {
+      "name": "next_action_success",
+      "mean_score": 1.0,
+      "passed": 8,
+      "failed": 0,
+      "total": 8,
+      "unscored": 0
+    },
+    {
+      "name": "purchasing_behaviour",
+      "mean_score": 0.8281511287625418,
+      "passed": 8,
+      "failed": 0,
+      "total": 8,
+      "unscored": 0
+    }
+  ]
+}
