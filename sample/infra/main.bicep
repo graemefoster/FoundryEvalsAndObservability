@@ -108,6 +108,9 @@ param dnsZonesSubscription string = ''
 @minLength(3)
 param githubRepository string
 
+@description('Exact OIDC subject GitHub sends for the demo environment (set by the preprovision hook from the GitHub API). Empty uses the classic repo:owner/name:environment:demo form.')
+param githubOidcSubject string = ''
+
 // Resources
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -156,6 +159,7 @@ module monitoring 'modules/monitoring.bicep' = {
     evaluatorPrincipalId: principalId
     evaluatorPrincipalType: principalType == 'ServicePrincipal' ? 'ServicePrincipal' : 'User'
     githubRepository: githubRepository
+    githubOidcSubject: githubOidcSubject
   }
 }
 

@@ -16,7 +16,10 @@ param githubRepository string = ''
 param projectTraceReaderExists bool = false
 
 var enableGitHub = !empty(githubRepository)
-var githubSubject = 'repo:${githubRepository}:environment:demo'
+@description('Exact OIDC subject GitHub sends, e.g. repo:owner@123/name@456:environment:demo (GitHub now includes owner and repository IDs). Empty uses the classic repo:owner/name form.')
+param githubOidcSubject string = ''
+
+var githubSubject = empty(githubOidcSubject) ? 'repo:${githubRepository}:environment:demo' : githubOidcSubject
 
 resource githubIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = if (enableGitHub) {
   name: 'id-${environmentName}-github'

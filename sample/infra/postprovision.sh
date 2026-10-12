@@ -28,3 +28,13 @@ for key in AZURE_SUBSCRIPTION_ID AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_
   set_var "$key" "$(v "$key")"
 done
 echo "GitHub environment 'demo' in $REPO has all seven variables (identity $CLIENT_ID)."
+
+# `production`: the release workflow's approval step. It never signs in to Azure; it only
+# waits for a required reviewer, here whoever is signed in to `gh`.
+ME="$(gh api user --jq .id 2>/dev/null || true)"
+if [ -n "$ME" ] && printf '{"reviewers":[{"type":"User","id":%s}]}' "$ME" \
+  | gh api -X PUT "repos/$REPO/environments/production" --input - --silent; then
+  echo "GitHub environment 'production' in $REPO requires your approval for releases."
+else
+  echo "WARNING: couldn't create 'production' with you as reviewer (required reviewers need a public repo or a paid plan). Create it in the repo's Settings > Environments." >&2
+fi

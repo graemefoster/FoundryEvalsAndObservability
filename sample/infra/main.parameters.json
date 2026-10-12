@@ -83,6 +83,9 @@
     },
     "githubRepository": {
       "value": "${GITHUB_REPOSITORY}"
+    },
+    "githubOidcSubject": {
+      "value": "${GITHUB_OIDC_SUBJECT}"
     }
   }
 }
