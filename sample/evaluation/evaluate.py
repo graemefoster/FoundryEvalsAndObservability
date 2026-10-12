@@ -40,29 +40,24 @@ def main() -> None:
         action="store_true",
         help="Register the local evaluator JSON as a new version before running.",
     )
-    mode.add_argument(
-        "--demo-replay",
-        type=Path,
-        metavar="TRANSCRIPT",
-        help="Replay historical output; no cloud calls.",
-    )
     parser.add_argument(
         "--wait", action="store_true", help="Wait for results; fail on execution errors."
     )
     parser.add_argument(
         "--report", type=Path, help="Write a score summary JSON file; requires --wait."
     )
+    parser.add_argument(
+        "--max-unscored",
+        type=int,
+        default=1,
+        help="Questions each judge may fail to score (e.g. a rate-limit error) before the run "
+        "fails; they're left out of that judge's averages. Use 0 where every score matters.",
+    )
     args = parser.parse_args()
-    if args.wait and (args.dry_run or args.register_only or args.demo_replay):
+    if args.wait and (args.dry_run or args.register_only):
         parser.error("--wait requires an evaluation run")
     if args.report and not args.wait:
         parser.error("--report requires --wait")
-    if args.demo_replay:
-        from demo_replay import replay
-
-        replay(args.demo_replay)
-        return
-
     with ExitStack() as stack:
         # 1. Ensure both evaluators exist, except during the offline dry run.
         if not args.dry_run:
@@ -188,6 +183,7 @@ def main() -> None:
                         criterion["name"] for criterion in evaluation["testing_criteria"]
                     },
                     report_path=args.report,
+                    max_unscored=args.max_unscored,
                 )
 
 
@@ -218,6 +214,21 @@ def ensure_evaluator(
     print(f"Registered evaluator: {name}:{evaluator.version}", flush=True)
 
 
+def judge_problems(client: OpenAI, run_id: str, eval_id: str, name: str) -> list[str]:
+    """Which questions an evaluator errored on or skipped, and what it said."""
+    lines = [f"Questions where {name} did not score:"]
+    for item in client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100):
+        data = item.model_dump(warnings=False)
+        question = (data.get("datasource_item") or {}).get("name", item.id)
+        for result in data.get("results") or []:
+            if result.get("name") != name:
+                continue
+            if result.get("status") not in (None, "completed") or result.get("error"):
+                detail = result.get("error") or result.get("reason") or result.get("status")
+                lines.append(f"  {question}: {str(detail)[:300]}")
+    return lines
+
+
 def wait_for_evaluation(
     client: OpenAI,
     eval_id: str,
@@ -226,6 +237,7 @@ def wait_for_evaluation(
     expected_rows: int,
     expected_criteria: set[str],
     report_path: Path | None,
+    max_unscored: int = 0,
 ) -> None:
     deadline = time.monotonic() + 3600
     run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
@@ -258,41 +270,23 @@ def wait_for_evaluation(
         report_path.write_text(json.dumps(report, indent=2) + "\n")
     if run.status != "completed":
         raise RuntimeError(f"Evaluation {run_id} ended with status {run.status}: {run.error}")
-    counts = run.result_counts
-    if (
-        run.error is not None
-        or counts.passed is None
-        or counts.failed is None
-        or counts.errored != 0
-        or counts.total != expected_rows
-        or counts.passed + counts.failed != expected_rows
-        or counts.model_dump().get("skipped") not in (None, 0)
-    ):
-        raise RuntimeError(
-            f"Evaluation {run_id} has errors, skipped rows or incomplete results: {counts}"
-        )
-    for criterion in run.per_testing_criteria_results:
-        result = criterion.model_dump()
-        if result.get("errored") not in (None, 0) or result.get("skipped") not in (None, 0):
-            raise RuntimeError(f"Evaluator {criterion.testing_criteria} has errors or skipped rows")
+    # The agent must have answered every question; a judge may miss a few (see --max-unscored).
+    if run.error is not None or run.result_counts.total != expected_rows:
+        raise RuntimeError(f"Evaluation {run_id} is incomplete: {run.result_counts}")
 
     scores: dict[str, list[float]] = {name: [] for name in expected_criteria}
     passes = dict.fromkeys(expected_criteria, 0)
+    unscored = dict.fromkeys(expected_criteria, 0)
     items = list(client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100))
     if len(items) != expected_rows:
         raise RuntimeError(f"Expected {expected_rows} evaluation rows, received {len(items)}")
     for item in items:
-        if item.status != "completed" or item.sample.error is not None:
-            raise RuntimeError(f"Evaluation row {item.id} is not complete or has a sample error")
-        results = item.model_dump(warnings=False)["results"]
-        if (
-            len(results) != len(expected_criteria)
-            or {r.get("name") for r in results} != expected_criteria
-        ):
-            raise RuntimeError(f"Evaluation row {item.id} is missing evaluator results")
-        for result in results:
-            score = result.get("score")
-            passed = result.get("passed")
+        if item.sample.error is not None:
+            raise RuntimeError(f"The agent failed on evaluation row {item.id}: {item.sample.error}")
+        results = {r.get("name"): r for r in item.model_dump(warnings=False)["results"] or []}
+        for name in expected_criteria:
+            result = results.get(name, {})
+            score, passed = result.get("score"), result.get("passed")
             if (
                 result.get("status") not in (None, "completed")
                 or result.get("error") is not None
@@ -301,17 +295,36 @@ def wait_for_evaluation(
                 or not isfinite(score)
                 or not isinstance(passed, bool)
             ):
-                raise RuntimeError(f"Evaluation row {item.id} has an invalid score or pass result")
-            scores[result["name"]].append(score)
-            passes[result["name"]] += int(passed)
+                unscored[name] += 1
+                continue
+            scores[name].append(score)
+            passes[name] += int(passed)
+
+    for name, missed in unscored.items():
+        if missed == 0:
+            continue
+        for line in judge_problems(client, run_id, eval_id, name):
+            print(line, flush=True)
+        if missed > max_unscored:
+            raise RuntimeError(
+                f"{name} did not score {missed} question(s), more than --max-unscored "
+                f"{max_unscored}; see above. One-off errors are usually the judge model's rate "
+                "limit: re-run."
+            )
+        print(
+            f"WARNING: {name} did not score {missed} question(s); its averages use the other "
+            f"{expected_rows - missed}.",
+            flush=True,
+        )
 
     report["criteria"] = [
         {
             "name": name,
             "mean_score": fmean(scores[name]),
             "passed": passes[name],
-            "failed": expected_rows - passes[name],
-            "total": expected_rows,
+            "failed": len(scores[name]) - passes[name],
+            "total": len(scores[name]),
+            "unscored": unscored[name],
         }
         for name in sorted(expected_criteria)
     ]

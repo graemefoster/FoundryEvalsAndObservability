@@ -31,6 +31,7 @@ jobs:
       dataset: approvers-drift
       tolerance: 0.03
       must_pass: next_action_success
+      max_unscored: 0  # every drift question must be scored, as well as passed
       blocking: true
       detail: counts
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}
@@ -38,8 +39,10 @@ jobs:
   approve:
     name: Release approval
     needs: drift
+    # The first release sets the drift bar and still had to pass every must-pass question.
+    # A run with write_baseline ticked only records a new bar: no release.
     if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.write_baseline) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to 26 from 19 Oct 2026
     # Add required reviewers to the "production" environment in the repo settings.
     environment: production
     steps:

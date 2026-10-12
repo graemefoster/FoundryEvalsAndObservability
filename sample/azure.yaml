@@ -40,7 +40,7 @@ services:
           version: "2026-04-24"
         sku:
           name: GlobalStandard
-          capacity: 100
+          capacity: 300  # judges send long tool traces; 100 hit rate limits in CI
       - name: text-embedding-3-small
         model:
           format: OpenAI
