@@ -80,6 +80,7 @@ services:
       - protocol: responses
         version: 2.0.0
     env:
+      AGENT_NAME: purchasing-advice-demo
       OPTIMIZATION_LOCAL_DIR: .agent_configs
     container:
       resources:
