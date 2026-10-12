@@ -1,30 +1,64 @@
 {
-  "eval_id": "eval_a6f5eaeb84704c10badf413a40e886e6",
-  "run_id": "evalrun_f33d76296dbe4566bfde8a4026878134",
+  "eval_id": "eval_5e6a0e34f54342c68360bd9edfb64bd6",
+  "run_id": "evalrun_b401a2b1c9484b33b73ca633950c698e",
   "status": "completed",
   "results_complete": true,
-  "report_url": "https://ai.azure.com/nextgen/r/2GWNiIh2Q0SncAVts-jFyA,rg-ai-genius-clean,,cog-fwaptdktcxxy6,ai-genius-clean/build/evaluations/eval_a6f5eaeb84704c10badf413a40e886e6/run/evalrun_f33d76296dbe4566bfde8a4026878134",
+  "provenance": {
+    "dataset_sha256": "01aa7827e58cd1e053fa66f8cb761437307708b88989dccb6528b01a3841c044",
+    "judges": {
+      "next_action_success": {
+        "evaluator_name": "purchasing-next-action",
+        "definition_sha256": "4e517e035e979244c170044dce4f89c5b6e464c278bfe466dfc2aa9d0050ad8a",
+        "initialization_parameters": {
+          "deployment_name": "gpt-5.5",
+          "threshold": 1
+        },
+        "data_mapping": {
+          "query": "{{item.query}}",
+          "ground_truth": "{{item.ground_truth}}",
+          "response": "{{sample.output_text}}",
+          "tool_calls": "{{sample.tool_calls}}"
+        }
+      },
+      "purchasing_behaviour": {
+        "evaluator_name": "purchasing-demo-rubric",
+        "definition_sha256": "0648ae9c85566834c55d81085e17ae6918e78a4ae5dad2e079a789adee8f4f5a",
+        "initialization_parameters": {
+          "model": "gpt-5.5"
+        },
+        "data_mapping": {
+          "query": "{{item.query}}",
+          "response": "{{sample.output_text}}"
+        }
+      }
+    }
+  },
+  "evaluator_versions": {
+    "next_action_success": "1",
+    "purchasing_behaviour": "1"
+  },
+  "report_url": "https://ai.azure.com/nextgen/r/2GWNiIh2Q0SncAVts-jFyA,rg-ai-genius-clean,,cog-fwaptdktcxxy6,ai-genius-clean/build/evaluations/eval_5e6a0e34f54342c68360bd9edfb64bd6/run/evalrun_b401a2b1c9484b33b73ca633950c698e",
   "result_counts": {
     "errored": 0,
-    "failed": 2,
-    "passed": 32,
+    "failed": 4,
+    "passed": 30,
     "total": 34,
     "skipped": 0
   },
   "criteria": [
     {
       "name": "next_action_success",
-      "mean_score": 0.9411764705882353,
-      "passed": 32,
-      "failed": 2,
+      "mean_score": 0.8823529411764706,
+      "passed": 30,
+      "failed": 4,
       "total": 34,
       "unscored": 0
     },
     {
       "name": "purchasing_behaviour",
-      "mean_score": 0.8349883024446606,
-      "passed": 33,
-      "failed": 1,
+      "mean_score": 0.8334623293862424,
+      "passed": 34,
+      "failed": 0,
       "total": 34,
       "unscored": 0
     }
