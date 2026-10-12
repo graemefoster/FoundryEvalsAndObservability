@@ -7,12 +7,18 @@ requiredVersions:
     azure.ai.projects: ">=1.0.0-beta.8"
 infra:
   provider: microsoft.foundry
+# infra/main.bicep is the generated Foundry template plus modules/monitoring.bicep
+# (Application Insights, evaluator access, the GitHub Actions identity).
 hooks:
-  # After every provision: monitoring, evaluator access, and the GitHub Actions identity
-  # (asks once for the GitHub repository). Re-run on its own: azd hooks run postprovision
-  postprovision:
+  # Asks once for the GitHub repository (main.bicep requires it); saved as GITHUB_REPOSITORY.
+  preprovision:
     shell: sh
     interactive: true
+    run: sh infra/preprovision.sh
+  # Creates the GitHub `demo` environment and its variables if `gh` is signed in.
+  # Re-run on its own: azd hooks run postprovision
+  postprovision:
+    shell: sh
     run: sh infra/postprovision.sh
 services:
   ai-project:
@@ -42,6 +48,20 @@ services:
         sku:
           name: GlobalStandard
           capacity: 50
+  # Project connection to the Application Insights that infra/main.bicep creates; hosting uses
+  # it for traces. Applied by azd after provisioning (outputs appInsightsId, appInsightsConnectionString).
+  app-insights:
+    host: azure.ai.connection
+    uses:
+      - ai-project
+    category: AppInsights
+    target: ${appInsightsId}
+    authType: ApiKey
+    credentials:
+      key: ${appInsightsConnectionString}
+    metadata:
+      ApiType: Azure
+      ResourceId: ${appInsightsId}
   purchasing-advice-demo:
     host: azure.ai.agent
     project: ./agent

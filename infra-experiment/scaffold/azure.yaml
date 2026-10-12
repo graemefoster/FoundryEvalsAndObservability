@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: ai-genius-purchasing
+requiredVersions:
+  azd: ">=1.34.0"
+  extensions:
+    azure.ai.agents: ">=1.0.0-beta.13"
+    azure.ai.projects: ">=1.0.0-beta.8"
+infra:
+  provider: microsoft.foundry
+hooks:
+  # After every provision: monitoring, evaluator access, and the GitHub Actions identity
+  # (asks once for the GitHub repository). Re-run on its own: azd hooks run postprovision
+  postprovision:
+    shell: sh
+    interactive: true
+    run: sh infra/postprovision.sh
+services:
+  ai-project:
+    host: azure.ai.project
+    deployments:
+      - name: gpt-5.4-mini
+        model:
+          format: OpenAI
+          name: gpt-5.4-mini
+          version: "2026-03-17"
+        sku:
+          name: GlobalStandard
+          capacity: 400
+      - name: gpt-5.5
+        model:
+          format: OpenAI
+          name: gpt-5.5
+          version: "2026-04-24"
+        sku:
+          name: GlobalStandard
+          capacity: 100
+      - name: text-embedding-3-small
+        model:
+          format: OpenAI
+          name: text-embedding-3-small
+          version: "1"
+        sku:
+          name: GlobalStandard
+          capacity: 50
+  purchasing-advice-demo:
+    host: azure.ai.agent
+    project: ./agent
+    language: python
+    kind: hosted
+    name: purchasing-advice-demo
+    description: MAF purchasing advice agent with local policy search and optimizer configuration.
+    uses:
+      - ai-project
+    codeConfiguration:
+      runtime: python_3_13
+      entryPoint: main.py
+      dependencyResolution: remote_build
+    protocols:
+      - protocol: responses
+        version: 2.0.0
+    env:
+      OPTIMIZATION_LOCAL_DIR: .agent_configs
+    container:
+      resources:
+        cpu: "1"
+        memory: 2Gi
+    hooks:
+      # The agent's own identity exists only after deploy; grant it embedding access then.
+      # Inline, so azd never passes our folder path (which has spaces) to sh unquoted.
+      postdeploy:
+        shell: sh
+        run: sh ../infra/grant-agent-embeddings.sh

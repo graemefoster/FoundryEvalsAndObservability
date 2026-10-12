@@ -13,7 +13,9 @@ warn() {
   exit 0
 }
 
-PROJECT_ID="${AZURE_AI_PROJECT_ID:-$(azd env get-value AZURE_AI_PROJECT_ID 2>/dev/null)}"
+# azd prints "key not found" on stdout, so only use its output when it succeeds.
+PROJECT_ID="${AZURE_AI_PROJECT_ID:-$(azd env get-value AZURE_AI_PROJECT_ID 2>/dev/null || true)}"
+case "$PROJECT_ID" in /subscriptions/*) ;; *) PROJECT_ID="" ;; esac
 [ -n "$PROJECT_ID" ] || warn "AZURE_AI_PROJECT_ID is not set."
 
 PRINCIPAL="$(azd ai agent show "$AGENT" --output json 2>/dev/null | python3 -c \
