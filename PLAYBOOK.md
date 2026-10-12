@@ -108,7 +108,8 @@ its own saved result, called a **baseline**: the bar that later runs must not fa
 Setting a bar is explicit: use **write_baseline** in the PR workflow, or **baseline-holdout**
 or **baseline-drift** in the promotion workflow. It saves the scores and dataset/judge
 fingerprints instead of comparing. Baseline modes never release. Download and commit the artifact.
-Normal runs fail if the baseline is missing or incompatible; they never create their own bar.
+Normal runs fail if the baseline is missing or incompatible, except for the first-release drift
+bootstrap described below; that bar requires separate acceptance before release.
 From `sample/`, for the two you need first (these evaluations are billable):
 
 ```bash
@@ -130,7 +131,13 @@ then replace the committed file; do not discard the accepted scores before a new
 
 From then on, every run of those workflows **compares** with the committed baseline. The
 pipeline never moves its own bar: to accept new scores on purpose, use the appropriate baseline
-mode, then download and commit as above. Before the first promotion, establish the drift bar:
+mode, then download and commit as above. The first promotion can create the drift bar after
+passing holdout and dev review. Every drift next-action case must pass, with no unscored rows.
+Review the scores and artifact, then **Accept drift baseline and approve release** in GitHub.
+Download and commit the accepted artifact before promoting again: once a release agent exists,
+a missing bar is an error, not permission to bootstrap again.
+
+To establish the drift bar separately without releasing:
 
 ```bash
 gh workflow run agent-main.yml --ref main -f mode=baseline-drift
@@ -366,10 +373,12 @@ on any single failed row.
 
 **Main is a production candidate:** every relevant push to `main` starts promotion:
 deploy `-dev`, pass the holdout gate, then pause at the `production` environment so a reviewer
-can inspect the dev agent. Approval authorises the drift test on that same deployment and,
-if it passes, release. Every drift next-action case must pass. A failure stops promotion, not
-the already merged commit. Only after review and a successful drift gate does a separate job
-deploy the same checked-out commit to `-release`; it does not resolve a newer `main`.
+can inspect the dev agent. That approval authorises the drift test on the same deployment,
+not the release. Every drift next-action case must pass, with no unscored rows. After drift,
+**Approve release** is a second protected job. On a first release with no committed drift
+baseline, it instead says **Accept drift baseline and approve release**. A failure stops
+promotion, not the already merged commit. Only after both reviews and a successful drift gate
+does a separate job deploy the same checked-out commit to `-release`; it does not resolve a newer `main`.
 Configure required reviewers on the `production` environment. Release tags are not triggers.
 
 **Manual runs:** `agent-main.yml` offers four modes. `holdout` checks without releasing;
@@ -404,9 +413,10 @@ Changes to questions, references, judge definitions or scoring configuration req
 baseline refresh. A different judge version with an identical definition remains comparable.
 
 **Environments and concurrency:** there's one Foundry project. In GitHub, `demo` holds Azure
-sign-in and variables; `production` is the approval gate. The approved deployment job still
+sign-in and variables; two sequential jobs use `production` for dev review and final release
+approval. The approved deployment job still
 authenticates through `demo`, matching the existing OIDC trust; no new federation is needed.
-Promotion runs on the same branch queue, holding `-dev` stable through both gates and approval.
+Promotion runs on the same branch queue, holding `-dev` stable through both evaluations and reviews.
 Evaluations targeting the same agent also queue, so a PR gate and manual holdout cannot overwrite
 each other mid-evaluation. Different PRs can run independently but share model quota.
 Runner jobs use `ubuntu-latest`. PR and check agents are not automatically deleted; stop or

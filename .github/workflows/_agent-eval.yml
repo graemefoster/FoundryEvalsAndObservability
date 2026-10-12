@@ -42,6 +42,10 @@ on:
         description: Save this run as the baseline artifact instead of comparing.
         type: boolean
         default: false
+      bootstrap_baseline:
+        description: First-release drift baseline, subject to separate acceptance before release
+        type: boolean
+        default: false
     outputs:
       saved_baseline:
         description: "'true' when this run saved a baseline instead of comparing (nothing was gated)."
@@ -87,14 +91,29 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           WRITE_BASELINE: ${{ inputs.write_baseline }}
+          BOOTSTRAP_BASELINE: ${{ inputs.bootstrap_baseline }}
         run: |
+          if [ "$BOOTSTRAP_BASELINE" = "true" ] && [ "$WRITE_BASELINE" != "true" ]; then
+            echo "::error::First-release bootstrap must save a baseline."
+            exit 1
+          fi
           if [ "$WRITE_BASELINE" = "true" ]; then
-            if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+            if [ "$BOOTSTRAP_BASELINE" = "true" ]; then
+              if [ "$GITHUB_REF" != "refs/heads/main" ] || [ "$DATASET_STEM" != "approvers-drift" ] \
+                || [ -e "evaluation/baselines/${DATASET_STEM}.json" ] \
+                || { [ "$GITHUB_EVENT_NAME" != "push" ] && [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; }; then
+                echo "::error::First-release bootstrap requires main and a missing drift baseline."
+                exit 1
+              fi
+              reason="first-release drift baseline; acceptance required before release"
+            elif [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
               echo "::error::Only a manual run may write a baseline."
               exit 1
+            else
+              reason="explicit baseline mode was requested"
             fi
             echo "save=true" >> "$GITHUB_OUTPUT"
-            echo "reason=explicit baseline mode was requested" >> "$GITHUB_OUTPUT"
+            echo "reason=$reason" >> "$GITHUB_OUTPUT"
           else
             path="evaluation/baselines/${DATASET_STEM}.json"
             if [ -n "$BASE_SHA" ]; then
@@ -165,6 +184,29 @@ jobs:
           azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
           azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
           azd env set AGENT_NAME "$AGENT_NAME"
+      - name: Check this is the first release
+        if: inputs.bootstrap_baseline
+        run: |
+          .venv/bin/python - <<'PY'
+          import os
+          from azure.ai.projects import AIProjectClient
+          from azure.core.exceptions import ResourceNotFoundError
+          from azure.identity import DefaultAzureCredential
+
+          with AIProjectClient(
+              endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+              credential=DefaultAzureCredential(),
+          ) as project:
+              try:
+                  project.agents.get("purchasing-advice-demo-release")
+              except ResourceNotFoundError:
+                  print("No release agent exists; first-release bootstrap is allowed.")
+              else:
+                  raise SystemExit(
+                      "A release agent already exists but its drift baseline is missing. "
+                      "Commit the previously accepted baseline artifact before promoting again."
+                  )
+          PY
       - name: Deploy agent
         if: inputs.deploy_agent
         run: |

@@ -31,12 +31,17 @@ concurrency:
 
 jobs:
   target:
-    name: Select candidate
+    name: ${{ github.ref == 'refs/heads/main' && 'Prepare dev run' || 'Prepare check run' }}
     runs-on: ubuntu-latest
     outputs:
       agent_name: ${{ steps.target.outputs.agent_name }}
       mode: ${{ steps.target.outputs.mode }}
+      bootstrap_drift: ${{ steps.target.outputs.bootstrap_drift }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - name: Resolve isolated target
         id: target
         env:
@@ -64,7 +69,15 @@ jobs:
           fi
           echo "agent_name=$agent" >> "$GITHUB_OUTPUT"
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          bootstrap=false
+          if [ "$MODE" = "release" ] && [ ! -e sample/evaluation/baselines/approvers-drift.json ]; then
+            bootstrap=true
+          fi
+          echo "bootstrap_drift=$bootstrap" >> "$GITHUB_OUTPUT"
           echo "Mode: $MODE; agent: $agent; revision: $GITHUB_SHA"
+          if [ "$bootstrap" = "true" ]; then
+            echo "First release: create a drift baseline, then require acceptance before deployment."
+          fi
 
   holdout:
     name: Holdout gate
@@ -101,25 +114,47 @@ jobs:
       max_unscored: 0
       blocking: true
       detail: counts
-      write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' }}
+      write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' || needs.target.outputs.bootstrap_drift == 'true' }}
+      bootstrap_baseline: ${{ needs.target.outputs.bootstrap_drift == 'true' }}
 
   approval:
-    name: Review dev before release testing
+    name: Review dev before drift
     needs: [target, holdout]
     if: needs.target.outputs.mode == 'release'
     runs-on: ubuntu-latest
     environment: production
     steps:
       - name: Record approval
-        run: echo "Approved dev revision $GITHUB_SHA for drift testing and release."
+        run: echo "Approved dev revision $GITHUB_SHA for drift testing."
 
-  release:
-    name: Deploy approved release
+  release_approval:
+    name: ${{ needs.target.outputs.bootstrap_drift == 'true' && 'Accept drift baseline and approve release' || 'Approve release' }}
     needs: [target, drift]
     if: needs.target.outputs.mode == 'release'
     runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Record release approval
+        env:
+          BOOTSTRAP_DRIFT: ${{ needs.target.outputs.bootstrap_drift }}
+        run: |
+          {
+            echo "## Release approved"
+            echo "Revision: \`${GITHUB_SHA}\`"
+            if [ "$BOOTSTRAP_DRIFT" = "true" ]; then
+              echo "Accepted the **baseline-approvers-drift** artifact from this run."
+              echo "Download it and commit \`sample/evaluation/baselines/approvers-drift.json\`"
+              echo "before another promotion. An existing release cannot bootstrap a new bar."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: Deploy approved release
+    needs: [target, release_approval]
+    if: needs.target.outputs.mode == 'release'
+    runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Existing Azure federation trusts demo; production review precedes the drift gate.
+    # Existing Azure federation trusts demo; both production reviews precede deployment.
     environment: demo
     permissions:
       contents: read
@@ -192,5 +227,5 @@ jobs:
             echo "## Released"
             echo "Revision: \`${GITHUB_SHA}\`"
             echo "Agent: \`${AGENT_NAME}\`"
-            echo "Passed holdout, received production approval, then passed the drift gate."
+            echo "Passed holdout, received dev review, passed drift and received release approval."
           } >> "$GITHUB_STEP_SUMMARY"
