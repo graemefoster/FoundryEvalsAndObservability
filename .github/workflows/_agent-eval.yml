@@ -84,6 +84,7 @@ jobs:
         run: |
           azd extension install azure.ai.agents --version 1.0.0-beta.13
           azd extension install azure.ai.projects --version 1.0.0-beta.8
+          azd extension install azure.ai.connections --version 1.0.0-beta.9  # app-insights connection service
       - name: Sign in with OIDC
         uses: Azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
         with:
