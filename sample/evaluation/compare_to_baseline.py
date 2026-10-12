@@ -30,6 +30,25 @@ def by_name(report: dict) -> dict[str, dict]:
     return {criterion["name"]: criterion for criterion in report["criteria"]}
 
 
+def provenance_errors(report: dict, baseline: dict) -> list[str]:
+    for label, data in (("Report", report), ("Baseline", baseline)):
+        provenance = data.get("provenance") or {}
+        if not provenance.get("dataset_sha256") or not provenance.get("judges"):
+            return [
+                f"{label} has no dataset/judge provenance. Run a known-good version with "
+                "write_baseline=true and commit the new baseline artifact."
+            ]
+    errors = []
+    if report["provenance"]["dataset_sha256"] != baseline["provenance"]["dataset_sha256"]:
+        errors.append("Dataset differs from the baseline; explicitly refresh the baseline.")
+    if report["provenance"]["judges"] != baseline["provenance"]["judges"]:
+        errors.append(
+            "Judge definitions or scoring configuration differ from the baseline; "
+            "explicitly refresh the baseline."
+        )
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -59,6 +78,10 @@ def main() -> int:
     current = by_name(report)
 
     if args.write_baseline:
+        errors = provenance_errors(report, report)
+        if errors:
+            print("FAIL: " + "\n".join(errors))
+            return 1
         args.baseline.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(args.report, args.baseline)
         print(f"Baseline written to {args.baseline}")
@@ -70,9 +93,15 @@ def main() -> int:
             "Run a known-good version once with --write-baseline."
         )
         return 1
-    baseline = by_name(json.loads(args.baseline.read_text()))
+    baseline_report = json.loads(args.baseline.read_text())
+    baseline = by_name(baseline_report)
 
-    failures = []
+    failures = provenance_errors(report, baseline_report)
+    if set(current) != set(baseline):
+        failures.append("Evaluator names differ from the baseline.")
+    for name in args.must_pass:
+        if name not in current:
+            failures.append(f"{name}: must-pass evaluator is missing")
     print(f"{'Evaluator':<28}{'Baseline':>10}{'This run':>10}{'Change':>10}  Failed rows")
     for name, base in sorted(baseline.items()):
         if name not in current:
@@ -88,8 +117,11 @@ def main() -> int:
             failures.append(
                 f"{name}: mean dropped {-change:.3f}, more than the {args.tolerance} noise band"
             )
-        if name in args.must_pass and now["failed"] > 0:
-            failures.append(f"{name}: {now['failed']} must-pass row(s) failed")
+        if name in args.must_pass and (now["failed"] > 0 or now.get("unscored", 0) > 0):
+            failures.append(
+                f"{name}: {now['failed']} must-pass row(s) failed and "
+                f"{now.get('unscored', 0)} were not scored"
+            )
 
     if failures:
         print("\nFAIL:")

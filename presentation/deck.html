@@ -3450,7 +3450,7 @@
               <div class="concept-detail">Does quality improve, or hold at lower cost?</div>
             </div>
           </div>
-          <p class="slide-takeaway story-reveal reveal-4">Fix the tools first. <em>The optimizer edits prompts, not tool code.</em></p>
+          <p class="slide-takeaway story-reveal reveal-4">Grounding first. <em>Optimise how the agent uses tools and evidence.</em></p>
           <div class="footer"><span>Optimisation is controlled search</span><span>AI Genius / S6 E2 / 12</span></div>
         </article>
 
@@ -3727,7 +3727,7 @@
         key: "Compare candidate scores and configuration changes with the baseline.",
         definition: "A baseline is the starting configuration; candidates are alternatives generated and evaluated by Agent Optimizer.",
         transition: "Let's open the Optimizer run and compare the candidates.",
-        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the holdout it never trains on. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. The optimizer can also use per-question criteria, specific checks such as 'asks for the total cost first'; our evaluation runs don't use them, so mention them here, not on the Evaluate slide. Land the takeaway: fix the tools first. The optimizer can change the prompt, the tool descriptions and the model, but not the code behind a tool. Our first runs started from a broken search tool: the score still went up, but by copying facts into the prompt, not by fixing the search.",
+        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the validation set, which influences candidate selection. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. The optimizer can also use per-question criteria, specific checks such as 'asks for the total cost first'; our evaluation runs don't use them, so mention them here, not on the Evaluate slide. Land the takeaway: grounding first. Work IQ and the other IQ tools expose fixed interfaces; optimise how the agent queries them and applies the returned evidence. Use traces to distinguish missing evidence from incorrect reasoning. Our early mock search needed repair: the score went up by copying facts into the prompt, but that did not fix retrieval.",
         source: "Microsoft Learn: Agent optimizer overview (score interpretation); Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents."
       },
       {

@@ -19,6 +19,7 @@ permissions:
 concurrency:
   group: purchasing-demo-deployment
   cancel-in-progress: false
+  queue: max
 
 jobs:
   drift:
@@ -39,10 +40,9 @@ jobs:
   approve:
     name: Release approval
     needs: drift
-    # The first release sets the drift bar and still had to pass every must-pass question.
     # A run with write_baseline ticked only records a new bar: no release.
     if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.write_baseline) }}
-    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to 26 from 19 Oct 2026
+    runs-on: ubuntu-latest
     # Add required reviewers to the "production" environment in the repo settings.
     environment: production
     steps:

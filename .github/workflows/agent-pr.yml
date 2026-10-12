@@ -2,7 +2,7 @@ name: Agent PR gate
 
 # Every pull request: cheapest checks first.
 #   1. Offline: lint, the evaluation request, and the prompt fact check (seconds, no Azure).
-#   2. Development set (the 8-question storyline) against its baseline.
+#   2. Development set against the baseline from the PR's base revision.
 # The drift set never runs here; it is kept for releases so it stays a surprise exam.
 on:
   pull_request:
@@ -23,11 +23,12 @@ permissions:
 concurrency:
   group: purchasing-demo-deployment
   cancel-in-progress: false
+  queue: max
 
 jobs:
   offline:
     name: 1. Offline checks
-    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to 26 from 19 Oct 2026
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
       run:
@@ -76,8 +77,7 @@ jobs:
       id-token: write
     with:
       dataset: approvers-development
-      # 8 rows: one binary row flipping moves a mean by 0.125, so the noise band
-      # here is one row, not Foundry's 0.03 (which is for large optimizer runs).
+      # With 34 rows, the noise band allows two binary outcomes to change.
       tolerance: 0.07
       blocking: true
       detail: full

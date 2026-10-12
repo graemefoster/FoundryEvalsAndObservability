@@ -2,6 +2,7 @@
 # This script submits the experiment. Foundry calls the agent and judges its answers.
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -12,10 +13,11 @@ from statistics import fmean
 
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
+from compare_to_baseline import provenance_errors
 from openai import OpenAI
 
 # The agent answers the questions; a separate model acts as the judge.
-# Agent and evaluator versions default to latest.
+# The agent defaults to latest; judge versions are resolved, checked and pinned per run.
 AGENT_NAME = "purchasing-advice-demo"
 EVALUATOR_NAME = "purchasing-next-action"
 RUBRIC_NAME = "purchasing-demo-rubric"
@@ -33,7 +35,7 @@ def main() -> None:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="Print requests; no cloud calls.")
     mode.add_argument(
-        "--register-only", action="store_true", help="Ensure evaluators exist; no scoring run."
+        "--register-only", action="store_true", help="Register missing evaluators; no scoring run."
     )
     parser.add_argument(
         "--update-evaluators",
@@ -47,6 +49,9 @@ def main() -> None:
         "--report", type=Path, help="Write a score summary JSON file; requires --wait."
     )
     parser.add_argument(
+        "--baseline", type=Path, help="Check dataset and judge compatibility before cloud calls."
+    )
+    parser.add_argument(
         "--max-unscored",
         type=int,
         default=1,
@@ -58,20 +63,10 @@ def main() -> None:
         parser.error("--wait requires an evaluation run")
     if args.report and not args.wait:
         parser.error("--report requires --wait")
+    if args.max_unscored < 0:
+        parser.error("--max-unscored must be nonnegative")
     with ExitStack() as stack:
-        # 1. Ensure both evaluators exist, except during the offline dry run.
-        if not args.dry_run:
-            credential = stack.enter_context(DefaultAzureCredential())
-            project = stack.enter_context(
-                AIProjectClient(endpoint=project_endpoint(), credential=credential)
-            )
-            update = args.update_evaluators
-            ensure_evaluator(project, "purchasing-next-action.json", EVALUATOR_NAME, update)
-            ensure_evaluator(project, "purchasing-demo-rubric.json", RUBRIC_NAME, update)
-            if args.register_only:
-                return
-
-        # 2. Load the questions and references; the agent answers are generated during the run.
+        # 1. Load the questions and references; the agent answers are generated during the run.
         # Keep only the fields the item schema allows; optimizer-only fields such as
         # "criteria" would otherwise fail validation.
         rows = [
@@ -79,7 +74,7 @@ def main() -> None:
             for row in map(json.loads, filter(str.strip, DATASET.read_text().splitlines()))
         ]
 
-        # 3. Define the evaluation and map its inputs.
+        # 2. Define the evaluation and map its inputs.
         evaluation = {
             "name": f"purchasing-next-action-evaluation-{DATASET.stem}",
             "data_source_config": {
@@ -130,7 +125,32 @@ def main() -> None:
                 },
             ],
         }
-        # 4. Target the deployed agent, including its tools, with only the question.
+        provenance = {
+            "dataset_sha256": fingerprint(rows),
+            "judges": {
+                criterion["name"]: {
+                    "evaluator_name": criterion["evaluator_name"],
+                    "definition_sha256": fingerprint(
+                        json.loads(
+                            (
+                                Path(__file__).parent / f"{criterion['evaluator_name']}.json"
+                            ).read_text()
+                        )["definition"]
+                    ),
+                    "initialization_parameters": criterion["initialization_parameters"],
+                    "data_mapping": criterion["data_mapping"],
+                }
+                for criterion in evaluation["testing_criteria"]
+            },
+        }
+        if args.baseline:
+            errors = provenance_errors(
+                {"provenance": provenance}, json.loads(args.baseline.read_text())
+            )
+            if errors:
+                raise SystemExit("FAIL: " + "\n".join(errors))
+
+        # 3. Target the deployed agent, including its tools, with only the question.
         data_source = {
             "type": "azure_ai_target_completions",
             "source": {
@@ -155,6 +175,29 @@ def main() -> None:
         if args.dry_run:
             print(json.dumps({"evaluation": evaluation, "data_source": data_source}, indent=2))
             return
+
+        # 4. Resolve existing judge versions and reject stale cloud definitions.
+        credential = stack.enter_context(DefaultAzureCredential())
+        project = stack.enter_context(
+            AIProjectClient(endpoint=project_endpoint(), credential=credential)
+        )
+        versions = {
+            name: ensure_evaluator(
+                project,
+                f"{name}.json",
+                name,
+                update=args.update_evaluators,
+                register=args.register_only,
+            )
+            for name in (EVALUATOR_NAME, RUBRIC_NAME)
+        }
+        if args.register_only:
+            return
+        evaluator_versions = {}
+        for criterion in evaluation["testing_criteria"]:
+            version = versions[criterion["evaluator_name"]]
+            criterion["evaluator_version"] = version
+            evaluator_versions[criterion["name"]] = version
 
         with project.get_openai_client() as client:
             # Save the evaluation definition without generating agent answers.
@@ -184,7 +227,15 @@ def main() -> None:
                     },
                     report_path=args.report,
                     max_unscored=args.max_unscored,
+                    provenance=provenance,
+                    evaluator_versions=evaluator_versions,
                 )
+
+
+def fingerprint(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def project_endpoint() -> str:
@@ -199,19 +250,35 @@ def project_endpoint() -> str:
 
 
 def ensure_evaluator(
-    project: AIProjectClient, filename: str, name: str, update: bool = False
-) -> None:
-    if not update:
-        for evaluator in project.beta.evaluators.list(type="custom"):
-            if evaluator.name == name:
-                print(f"Using evaluator: {name}:{evaluator.version}", flush=True)
-                return
-
+    project: AIProjectClient,
+    filename: str,
+    name: str,
+    update: bool = False,
+    register: bool = False,
+) -> str:
     definition = json.loads((Path(__file__).parent / filename).read_text())
     if definition.pop("name") != name:
         raise ValueError(f"Evaluator name in {filename} does not match {name!r}")
+    if not update:
+        for evaluator in project.beta.evaluators.list(type="custom"):
+            if evaluator.name == name:
+                registered = project.beta.evaluators.get_version(name, evaluator.version)
+                if registered.definition.as_dict() != definition["definition"]:
+                    raise ValueError(
+                        f"Registered evaluator {name}:{evaluator.version} differs from {filename}. "
+                        "Explicitly register the change with --update-evaluators --register-only, "
+                        "then refresh the affected baselines."
+                    )
+                print(f"Using evaluator: {name}:{evaluator.version}", flush=True)
+                return evaluator.version
+        if not register:
+            raise ValueError(
+                f"No registered evaluator named {name}. Run --register-only before evaluating."
+            )
+
     evaluator = project.beta.evaluators.create_version(name, evaluator_version=definition)
     print(f"Registered evaluator: {name}:{evaluator.version}", flush=True)
+    return evaluator.version
 
 
 def judge_problems(client: OpenAI, run_id: str, eval_id: str, name: str) -> list[str]:
@@ -237,6 +304,8 @@ def wait_for_evaluation(
     expected_rows: int,
     expected_criteria: set[str],
     report_path: Path | None,
+    provenance: dict,
+    evaluator_versions: dict[str, str],
     max_unscored: int = 0,
 ) -> None:
     deadline = time.monotonic() + 3600
@@ -247,6 +316,8 @@ def wait_for_evaluation(
             "run_id": run_id,
             "status": run.status,
             "results_complete": False,
+            "provenance": provenance,
+            "evaluator_versions": evaluator_versions,
         }
         if report_path:
             report_path.write_text(json.dumps(report, indent=2) + "\n")
@@ -263,6 +334,8 @@ def wait_for_evaluation(
         "run_id": run_id,
         "status": run.status,
         "results_complete": False,
+        "provenance": provenance,
+        "evaluator_versions": evaluator_versions,
         "report_url": run.report_url,
         "result_counts": run.result_counts.model_dump(),
     }

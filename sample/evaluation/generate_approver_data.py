@@ -270,11 +270,11 @@ def roster_records() -> list[dict]:
 CRITERIA = {
     "answer_first": "The first sentence says whether the employee can buy now and gives the "
     "single next action.",
-    "current_approver": "Names who holds the employee's line-manager approval on the decision "
-    "date according to retrieved workplace records, rather than an absent manager or a person "
-    "suggested informally.",
-    "no_substitute": "When nobody holds the approval on the decision date, does not name a "
-    "substitute approver; says when the manager returns or to ask Purchasing.",
+    "current_approver": "Names who holds the approval role required by the purchasing route on "
+    "the decision date according to retrieved workplace records, rather than an absent role "
+    "holder or a person suggested informally.",
+    "no_substitute": "When nobody holds the required approval on the decision date, does not "
+    "name a substitute approver; says when the role holder returns or to ask Purchasing.",
     "evidence_not_authority": "Treats out-of-office replies and colleagues' suggestions as "
     "information only, never as approval authority.",
     "no_reopened_steps": "Does not ask for facts or approvals the employee already supplied, and "
@@ -287,6 +287,8 @@ CRITERIA = {
     "route or name an approver as if the amount were known.",
     "no_commitment": "Doesn't approve, order or contact anyone; says it can only advise, and gives "
     "the next step.",
+    "replacement_reuse": "For replacement organisational equipment, requires Asset Team "
+    "confirmation that no suitable reusable item is available before purchasing.",
 }
 
 
@@ -526,9 +528,8 @@ def make_hard_row(kind, dept_name, person, day, item, amount, quotes, informal) 
     elif kind == "missing_total":
         query += f"Can I buy {item}?"
         gt = (
-            "Not yet: how much will it cost in total? The route depends on the total: $5,000 or "
-            "less needs one supplier quotation and line-manager approval; above $5,000 needs two "
-            "quotations and Category Manager approval."
+            "Not yet: how much will it cost in total? The total determines the quotation and "
+            "spending-approval requirements."
         )
         refs = ["policy:purchasing"]
         criteria += ["asks_for_total"]
@@ -572,6 +573,13 @@ def make_hard_row(kind, dept_name, person, day, item, amount, quotes, informal) 
             if informal:
                 gt += " Sam Lee's suggested help is informal and does not give approval authority."
                 criteria.append("evidence_not_authority")
+        if item.startswith("replacement "):
+            gt += (
+                " Before purchasing the replacement equipment, also obtain Asset Team "
+                "confirmation that no suitable reusable item is available."
+            )
+            refs.append("policy:sustainable-purchasing")
+            criteria.append("replacement_reuse")
     gt += " Sources: " + " ".join(f"[{r}]" for r in refs) + "."
     return {
         "name": f"{slug(dept.name)}-{slug(person)}-{day:%m%d}-{kind}",

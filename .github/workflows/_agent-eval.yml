@@ -45,7 +45,7 @@ permissions:
 
 jobs:
   evaluate:
-    runs-on: ubuntu-24.04  # pinned: ubuntu-latest moves to 26 from 19 Oct 2026
+    runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: demo
     outputs:
@@ -67,6 +67,38 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Select comparison baseline
+        id: base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          WRITE_BASELINE: ${{ inputs.write_baseline }}
+        run: |
+          if [ "$WRITE_BASELINE" = "true" ]; then
+            if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+              echo "::error::Only a manual run may write a baseline."
+              exit 1
+            fi
+            echo "save=true" >> "$GITHUB_OUTPUT"
+            echo "reason=write_baseline was ticked" >> "$GITHUB_OUTPUT"
+          else
+            path="evaluation/baselines/${DATASET_STEM}.json"
+            if [ -n "$BASE_SHA" ]; then
+              baseline="$RUNNER_TEMP/comparison-baseline.json"
+              if ! git show "${BASE_SHA}:sample/${path}" > "$baseline"; then
+                echo "::error::No baseline at sample/${path} in the PR's base revision. Run the workflow manually on main with write_baseline=true, then commit the artifact."
+                exit 1
+              fi
+            else
+              baseline="$GITHUB_WORKSPACE/sample/${path}"
+              if [ ! -f "$baseline" ]; then
+                echo "::error::No baseline at sample/${path}. Run the workflow manually with write_baseline=true, then commit the artifact."
+                exit 1
+              fi
+            fi
+            echo "BASELINE_PATH=$baseline" >> "$GITHUB_ENV"
+            echo "save=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Check configuration
         run: |
           for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
@@ -87,6 +119,11 @@ jobs:
         run: |
           uv venv
           uv pip install --require-hashes -r requirements-dev.txt
+      - name: Check baseline inputs without Azure
+        if: steps.base.outputs.save != 'true'
+        env:
+          EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
+        run: .venv/bin/python evaluation/evaluate.py --dry-run --baseline "$BASELINE_PATH" > /dev/null
       - uses: Azure/setup-azd@0b7e3a35ab00f2eee7080c845eb39c3f0ebfa553 # v2.4.0
         with:
           version: "1.35.0"
@@ -116,23 +153,17 @@ jobs:
       - name: Run ${{ inputs.dataset }}
         env:
           EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
+          SAVE_BASELINE: ${{ steps.base.outputs.save }}
         run: |
+          args=(--wait --report report.json --max-unscored "${{ inputs.max_unscored }}")
+          if [ "$SAVE_BASELINE" != "true" ]; then
+            args+=(--baseline "$BASELINE_PATH")
+          fi
           if [ "${{ inputs.detail }}" = "counts" ]; then
             # Keep per-question detail and the report link out of the logs for the drift set.
-            .venv/bin/python evaluation/evaluate.py --wait --report report.json --max-unscored ${{ inputs.max_unscored }} > eval.log
+            .venv/bin/python evaluation/evaluate.py "${args[@]}" > eval.log
           else
-            .venv/bin/python evaluation/evaluate.py --wait --report report.json --max-unscored ${{ inputs.max_unscored }}
-          fi
-      # First run for a dataset (no committed baseline yet) saves a baseline instead of failing.
-      - name: Compare or save?
-        id: base
-        run: |
-          if [ "${{ inputs.write_baseline }}" = "true" ]; then
-            echo "save=true" >> "$GITHUB_OUTPUT"; echo "reason=write_baseline was ticked" >> "$GITHUB_OUTPUT"
-          elif [ ! -f "evaluation/baselines/${DATASET_STEM}.json" ]; then
-            echo "save=true" >> "$GITHUB_OUTPUT"; echo "reason=no baseline committed yet" >> "$GITHUB_OUTPUT"
-          else
-            echo "save=false" >> "$GITHUB_OUTPUT"
+            .venv/bin/python evaluation/evaluate.py "${args[@]}"
           fi
       - name: Save as baseline
         if: steps.base.outputs.save == 'true'
@@ -177,7 +208,7 @@ jobs:
           set +e
           .venv/bin/python evaluation/compare_to_baseline.py \
             --report report.json \
-            --baseline "evaluation/baselines/${DATASET_STEM}.json" \
+            --baseline "$BASELINE_PATH" \
             --tolerance "${{ inputs.tolerance }}" \
             --must-pass ${{ inputs.must_pass }} > gate.txt
           status=$?

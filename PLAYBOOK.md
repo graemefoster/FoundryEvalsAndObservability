@@ -69,6 +69,8 @@ uv pip install --require-hashes -r agent/requirements.txt -r requirements-dev.tx
 
 azd env new my-demo --location australiaeast
 azd up
+export FOUNDRY_PROJECT_ENDPOINT="$(azd env get-value FOUNDRY_PROJECT_ENDPOINT)"
+python evaluation/evaluate.py --register-only  # register judges; no scoring run
 ```
 
 `azd up` asks one question: the GitHub repository. Press Enter to accept your clone's `origin`.
@@ -103,12 +105,15 @@ its own saved result, called a **baseline**: the bar that later runs must not fa
 | Agent main | Holdout (22) | `approvers-holdout.json` | Merges to main (warns) |
 | Agent release | Drift (8) | `approvers-drift.json` | Releases (blocks) |
 
-Setting a bar is a one-off for each workflow: run it once on `main`. With no baseline committed
-yet, the run saves one instead of comparing, and shows its scores in the run summary. Then
-download it and commit it. From `sample/`, for the two you need first:
+Setting a bar is explicit: run the workflow on `main` with **write_baseline** ticked. It saves
+the scores and dataset/judge fingerprints instead of comparing. Download and commit the artifact.
+Normal runs fail if the baseline is missing or incompatible; they never create their own bar.
+From `sample/`, for the two you need first (these evaluations are billable):
 
 ```bash
-for wf in agent-pr agent-main; do gh workflow run $wf.yml --ref main; done
+for wf in agent-pr agent-main; do
+  gh workflow run $wf.yml --ref main -f write_baseline=true
+done
 # about 10 minutes each; they queue, one after the other. Watch with: gh run list --limit 4
 
 for pair in agent-pr:development agent-main:holdout; do
@@ -119,13 +124,17 @@ ls evaluation/baselines        # approvers-development.json  approvers-holdout.j
 git add evaluation/baselines && git commit -m "CI baselines" && git push
 ```
 
-If a download says "no artifact matches", that run didn't save a baseline (it failed, or it
-compared because a baseline already existed): check `gh run list` and run that workflow again.
+If a download says "no artifact matches", check that the run succeeded and had
+**write_baseline** ticked. For a replacement, download to a temporary folder first, review it,
+then replace the committed file; do not discard the accepted scores before a new run succeeds.
 
 From then on, every run of those workflows **compares** with the committed baseline. The
 pipeline never moves its own bar: to accept new scores on purpose, run the workflow with
 **write_baseline** ticked, then download and commit as above. Do the release workflow's
 baseline the same way when you first need it.
+
+The older committed development/holdout reports predate provenance and the corrected references.
+Refresh both explicitly before using the gates; do not retrofit fingerprints onto old scores.
 
 ## Before the talk
 
@@ -337,15 +346,18 @@ evaluate, and compare.
 
 **How the comparison works:** the baseline is a committed file,
 `sample/evaluation/baselines/<test set>.json`, holding each judge's average from an accepted
-run. `compare_to_baseline.py` fails if any judge's average drops by more than the tolerance
+run. PRs read it from their exact base revision, not from the proposed change. Before any cloud
+calls, the dataset and local judge fingerprints must match the baseline. Registered judge
+definitions must also match the local JSON; evaluation requests pin the resolved judge versions,
+and reports record those versions. `compare_to_baseline.py` fails if any judge's average drops by more than the tolerance
 (0.07 on the PR gate: about two questions, our measured noise). The release gate also fails
 on any single failed row.
 
 **Releases:** push a `v*` tag (or **Run workflow**). The drift set runs first: every question
 must be answered correctly, and the average must not drop. Then GitHub pauses for a required
-reviewer on the `production` environment to approve. The very first release also sets the drift
-baseline, but it still has to answer every drift question correctly. A run with
-**write_baseline** ticked only records a new bar and never releases.
+reviewer on the `production` environment to approve. Set and commit the drift baseline with a
+manual **write_baseline** run before the first release; that run must still answer every drift
+question correctly and never releases.
 
 **Blocking merges:** a failed check marks a PR red; it blocks merging only if a ruleset on
 `main` requires the checks "1. Offline checks" and "2. Development set vs baseline" (Settings →
@@ -362,10 +374,13 @@ them is covered in *First-time setup*. A single run is noisy (the same agent can
 or two differently tomorrow), which is why the gate allows a tolerance and why a person, not the
 pipeline, decides when the bar moves. When you set one, run it twice if you can: if the two runs
 differ by more than the tolerance, widen it for that test set.
+Changes to questions, references, judge definitions or scoring configuration require an explicit
+baseline refresh. A different judge version with an identical definition remains comparable.
 
 **Environments:** there's one Azure environment. In GitHub, `demo` holds the Azure sign-in and
 variables (every stage uses it); `production` only holds the approval step at the end of a
-release. Each run redeploys the shared agent, so workflows queue rather than run together.
+release. Each run redeploys the shared agent, so all three workflows use `queue: max` on the same
+concurrency group: waiting runs are retained rather than replaced. Runner jobs use `ubuntu-latest`.
 
 ## Run it yourself
 
@@ -375,8 +390,9 @@ All from `sample/`, with the venv active and `FOUNDRY_PROJECT_ENDPOINT` exported
 # Evaluate a test set (BILLABLE). Defaults to development.
 EVAL_DATASET=evaluation/datasets/approvers-holdout.jsonl python evaluation/evaluate.py --wait
 
-# Re-register the judges after editing their JSON.
-python evaluation/evaluate.py --update-evaluators --wait
+# Explicitly register changed judges without submitting an evaluation.
+python evaluation/evaluate.py --update-evaluators --register-only
+# Then refresh and commit the affected baselines using write_baseline.
 
 # Optimise (BILLABLE, about an hour).
 azd ai agent optimize --config evaluation/optimize.yaml --no-prompt
@@ -421,9 +437,10 @@ What we found building this. Results vary between runs; these are what we saw.
 - **Tell the optimiser why, not just whether.** It learns from the judge's reason. Once the
   reason described tool behaviour ("didn't check the manager's leave"), candidates proposed
   more general rules, though our best one still copied some facts.
-- **Fix obvious defects by hand.** The optimiser edits prompts and tool descriptions, not tool
-  code. With our broken search tool the score still rose, but by copying facts into the prompt
-  (see Microsoft's lesson 6).
+- **Diagnose grounding before optimising behaviour.** Work IQ and the other IQ tools expose
+  fixed interfaces: optimise how the agent queries them and uses their evidence. With our early
+  broken mock search the score rose by copying facts into the prompt, not by repairing retrieval.
+  A better score is not proof that the grounding problem is solved (see Microsoft's lesson 6).
 
 Further reading: Microsoft's [Six lessons for reliable agent optimizer gains](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357)
 and [Do Agent Optimizers Compound?](https://arxiv.org/abs/2607.14004).
@@ -438,6 +455,8 @@ and [Do Agent Optimizers Compound?](https://arxiv.org/abs/2607.14004).
 | GitHub variables missing after `azd up` | `gh` wasn't signed in. `gh auth login`, then `azd hooks run postprovision` |
 | CI: "Extension required … Foundry Connections" | The workflow installs it; if you change versions, keep `_agent-eval.yml` and `azure.yaml` in step |
 | A new workflow run waits | Another run holds the shared agent. Cancel it, or wait |
+| Gate says baseline has no provenance or inputs differ | Run the workflow manually on a known-good revision with **write_baseline** ticked, then download and commit the artifact. Never add today's fingerprints to old scores |
+| Registered evaluator differs from local JSON | Deliberately register the change with `--update-evaluators --register-only`, then refresh the affected baselines |
 | Evaluation fails: "did not score N question(s)" | The judge model was rate-limited; the log names the questions and the error. Re-run, and if it recurs raise GPT-5.5's capacity under `ai-project` in `azure.yaml`, then `azd provision` |
 | Model deployment fails on quota | Lower the capacities under `ai-project` in `azure.yaml`, or free quota elsewhere |
 
@@ -453,8 +472,6 @@ calls models directly only through the account's `cognitiveservices.azure.com` h
   new account, so only in a new environment).
 - Consider Foundry's own evaluation action, which compares two agent versions with significance
   tests, if it supports custom judges and can fail a build.
-- Read the PR gate's baseline from `main`, so a pull request can't edit the bar it's measured
-  against.
 - Have `azd provision` create the `main` ruleset too, so the gate blocks merges out of the box.
 - Teach the fact check lone first names from the roster (it missed "Grace").
 - Baselines inherited by a fork only fit the same test set: after changing the demo (other

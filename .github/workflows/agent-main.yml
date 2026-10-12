@@ -20,6 +20,7 @@ permissions:
 concurrency:
   group: purchasing-demo-deployment
   cancel-in-progress: false
+  queue: max
 
 jobs:
   holdout:
