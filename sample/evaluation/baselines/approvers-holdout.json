@@ -1,0 +1,30 @@
+{
+  "eval_id": "eval_7dbf6f09275f40dba4a680ebfec21f21",
+  "run_id": "evalrun_fc87f7fca2c347f6832d3400124ab90f",
+  "status": "completed",
+  "results_complete": true,
+  "report_url": "https://ai.azure.com/nextgen/r/2GWNiIh2Q0SncAVts-jFyA,rg-ai-genius-clean,,cog-fwaptdktcxxy6,ai-genius-clean/build/evaluations/eval_7dbf6f09275f40dba4a680ebfec21f21/run/evalrun_fc87f7fca2c347f6832d3400124ab90f",
+  "result_counts": {
+    "errored": 0,
+    "failed": 2,
+    "passed": 20,
+    "total": 22,
+    "skipped": 0
+  },
+  "criteria": [
+    {
+      "name": "next_action_success",
+      "mean_score": 0.9090909090909091,
+      "passed": 20,
+      "failed": 2,
+      "total": 22
+    },
+    {
+      "name": "purchasing_behaviour",
+      "mean_score": 0.8262207580015972,
+      "passed": 22,
+      "failed": 0,
+      "total": 22
+    }
+  ]
+}

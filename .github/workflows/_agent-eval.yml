@@ -128,11 +128,21 @@ jobs:
         if: steps.base.outputs.save == 'true'
         env:
           REASON: ${{ steps.base.outputs.reason }}
+          DETAIL: ${{ inputs.detail }}
         run: |
           mkdir -p baseline-out
           cp report.json "baseline-out/${DATASET_STEM}.json"
           {
             echo "## New baseline: ${DATASET_STEM} (${REASON})"
+            python3 - <<'PY'
+          import json, os
+          r = json.load(open("report.json"))
+          print("| Judge | Passed | Average score |\n| --- | --- | --- |")
+          for c in r["criteria"]:
+              print(f"| {c['name']} | {c['passed']} / {c['total']} | {c['mean_score']:.3f} |")
+          if os.environ.get("DETAIL") == "full" and r.get("report_url"):
+              print(f"\n[Foundry report]({r['report_url']})")
+          PY
             echo "Download the **baseline-${DATASET_STEM}** artifact and commit it as"
             echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\`."
           } >> "$GITHUB_STEP_SUMMARY"
