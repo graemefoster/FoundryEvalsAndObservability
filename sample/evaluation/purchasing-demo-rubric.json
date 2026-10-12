@@ -2,8 +2,14 @@
   "name": "purchasing-demo-rubric",
   "display_name": "Purchasing demo rubric",
   "description": "Native weighted rubric for purchasing advice and clarification.",
-  "categories": ["quality", "agents"],
-  "supported_evaluation_levels": ["turn", "conversation"],
+  "categories": [
+    "quality",
+    "agents"
+  ],
+  "supported_evaluation_levels": [
+    "turn",
+    "conversation"
+  ],
   "evaluator_type": "custom",
   "definition": {
     "type": "rubric",
@@ -11,6 +17,12 @@
       {
         "id": "spending_route_determination",
         "description": "Does it tell the employee how many quotes they need and who must approve the spending? Use the full purchase cost and the date in the question; do not guess if the cost is missing. Giving conflicting answers scores at most 2, even if later corrected; 4 or 5 requires a consistently correct answer. Clearly rejected or hypothetical alternatives are not conflicts. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "weight": 9,
+        "always_applicable": false
+      },
+      {
+        "id": "current_approver",
+        "description": "When an approval is outstanding, does it name the specific person who can give it on the date in the question, supported by a cited workplace record such as a directory entry, a leave record or an Approvals Register delegation? 5 for a named, cited current approver, or for clearly saying that nobody can approve today and when the manager returns or to ask Purchasing. At most 2 for a generic 'your line manager' or 'the approver' with no name. 1 for treating an out-of-office note or a colleague's suggestion as approval authority. Not applicable when no approval is outstanding. Feedback only: explain behaviour in at most 25 words; omit case facts, names, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
         "weight": 9,
         "always_applicable": false
       },
@@ -53,7 +65,9 @@
     ],
     "pass_threshold": 0.5,
     "init_parameters": {
-      "required": ["model"],
+      "required": [
+        "model"
+      ],
       "type": "object",
       "properties": {
         "model": {
@@ -75,10 +89,22 @@
       "required": [],
       "type": "object",
       "properties": {
-        "query": {"type": "string", "description": "User query (turn mode)"},
-        "response": {"type": "string", "description": "Agent response (turn mode)"},
-        "messages": {"type": "array", "description": "Conversation messages (conversation mode)"},
-        "tool_definitions": {"type": "array", "description": "Tool definitions available to the agent"}
+        "query": {
+          "type": "string",
+          "description": "User query (turn mode)"
+        },
+        "response": {
+          "type": "string",
+          "description": "Agent response (turn mode)"
+        },
+        "messages": {
+          "type": "array",
+          "description": "Conversation messages (conversation mode)"
+        },
+        "tool_definitions": {
+          "type": "array",
+          "description": "Tool definitions available to the agent"
+        }
       }
     },
     "prompt_text": ""

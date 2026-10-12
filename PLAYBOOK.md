@@ -55,10 +55,13 @@ and show saved results on stage.
    mkdir -p "$DEMO_REPLAY_DIR"
    ```
 2. **Deploy:** `azd deploy purchasing-advice-demo`
-3. **Run the baseline evaluation**, capturing the output for the replay:
+3. **Run the baseline evaluation**, capturing the output for the replay. Add
+   `--update-evaluators` the first time after editing either evaluator JSON, so Foundry gets
+   the new version.
    ```bash
    EVAL_DATASET=evaluation/datasets/approvers-holdout.jsonl \
      python evaluation/evaluate.py --wait 2>&1 | tee "$DEMO_REPLAY_DIR/evaluation.txt"
+   EVAL_DATASET=evaluation/datasets/approvers-drift.jsonl python evaluation/evaluate.py --wait
    ```
 4. **Run the optimiser** (about an hour):
    ```bash
@@ -70,7 +73,7 @@ and show saved results on stage.
    which makes memorising tempting. Allow another hour. Results vary between runs, so
    review both before deciding what to show.
 5. **Prepare the red PR for Demo 6:** a branch whose `.agent_configs/baseline/instructions.md`
-   is a fact-stuffed candidate, for example candidate_1 from the overfitting run. Open the PR
+   is an optimiser candidate that fails `check_prompt_facts.py` (copied names, dates or amounts). Open the PR
    and let the gate fail once, so the failed check is ready to show.
 6. **Check the replays:** `python evaluation/demo_replay.py check` should say OK for both.
 7. **Open the browser tabs:** the agent in Foundry, a trace, the evaluation run, both
@@ -98,8 +101,9 @@ rather than a script:
   alcohol… otherwise…").
 - **Second answer:** the right approver is Priya. Wine needs Hospitality Lead approval, the
   Hospitality Lead (Tim) is on leave, and the Approvals Register records Priya as his delegate.
-  If the agent stops at "get Hospitality Lead approval", it didn't call `ask`. That's a
-  useful failure to point at, and it's what the rest of the talk fixes.
+  The trace in Demo 3 shows the Work IQ lookup that found her. If the agent stops at "get
+  Hospitality Lead approval" without a name, it didn't call `ask`: show that honestly and use
+  the trace to explain it.
 
 **Point:** the policy says who must approve; Work IQ says who that is today.
 
@@ -112,15 +116,18 @@ Open the trace for that run: the model calls, the tool calls and their results, 
 
 Replay the evaluation output (`python evaluation/evaluate.py --demo-replay "$DEMO_REPLAY_DIR/evaluation.txt"`),
 then open the real run in Foundry. Show one question, its reference answer, the agent's answer,
-and the judges' verdicts. Pick a failed question and open its tool calls: did the agent call
-`ask` to find the employee's manager? A wrong or missing name almost always means it didn't
-look anyone up.
+and the judges' verdicts. If any question failed, open it: the judge's reason describes the
+tool behaviour behind the failure (for example, it never checked recorded delegations), and the
+tool calls show it. If everything passed, show a pass and its tool calls instead: names only
+exist in Work IQ, so a correct name proves the lookup happened.
 **Point:** one question isn't evidence; the holdout is 18 versions of the same skill.
 
 ### Demo 5: Optimise
 
-Replay `python evaluation/demo_replay.py optimize`, then open your completed run in Foundry
-(the agent's **Optimize** tab). Results differ every run, so walk through how to *read* it:
+The optimiser refines a working agent; it isn't for fixing obvious defects (see *Lessons
+learned*). Replay `python evaluation/demo_replay.py optimize`, then open your completed run in
+Foundry (the agent's **Optimize** tab). Results differ every run, so walk through how to *read*
+it:
 
 1. **Baseline vs candidates, on the holdout.** The table's scores come from the holdout
    (`approvers-holdout`), questions the optimiser never trained on. An improvement under
@@ -156,6 +163,42 @@ check runs first.
 Optionally, show continuous evaluation setup in Foundry (**Monitor → Settings → recurring
 evaluations**): sampling real conversations and choosing evaluators. **Stop before enabling
 it.** Live traffic has no reference answers, so use the rubric there, not the pass/fail judge.
+
+## Lessons learned
+
+Cautionary tales from building this demo. Results vary between runs; these are what we saw.
+
+- **Fix obvious defects by hand, not with the optimiser.** Our first prompt never told the agent
+  to look anyone up. Evaluations showed it within minutes: every passing answer had called
+  `ask`, and no question was answered correctly without it. The optimiser "fixed" the same
+  defect by memorising answers instead. Microsoft's guidance agrees: optimisation refines a
+  working system; it doesn't rescue a broken one.
+- **A narrow training set invites memorising.** Trained on 8 near-identical dinner questions,
+  the optimiser's candidate got better on its training questions and worse on the holdout.
+  `evaluation/overfitting-demo/` reproduces it.
+- **The optimiser will write itself permission.** One candidate changed "read rules from
+  retrieved documents" to add "unless the fact is included in these instructions as embedded
+  task context", then added a section of memorised answers. Another added example responses
+  citing source IDs that don't exist. Read every candidate in full.
+- **A holdout can say "ship it" while copied facts ride along.** When general rules carry the
+  improvement, memorised lines don't hurt the holdout score, so the holdout can't see them.
+  The prompt fact check and the drift set can.
+- **Tell the optimiser why, not just whether.** It learns from what the evaluator returns.
+  A reason like "wrong answer" leaves copying the right answer as the easiest fix; a reason
+  that describes the tool behaviour ("never checked recorded delegations") points at the real
+  fix. We haven't yet confirmed the optimiser passes tool calls to a custom judge; check the
+  judge's reasons in a `minibatch_*` run.
+- **Read failures, not averages.** Before it had a dimension for "names today's approver",
+  the rubric scored answers naming the wrong person above 0.9.
+- **Check your references.** One hand-written reference answer contradicted its question, and
+  the judge flagged it (`REFERENCE_REVIEW`). Generate references from the data where you can,
+  as `generate_approver_data.py` does.
+- **Small holdouts are noisy.** One question in 18 is worth about 0.06. Compare how many
+  questions changed, and re-run the same agent once to see how much the score wobbles.
+
+Further reading: Microsoft's [Six lessons for reliable agent optimizer gains](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357)
+and [Do Agent Optimizers Compound?](https://arxiv.org/abs/2607.14004), where a prompt-only
+optimiser also grew its prompt with task-specific "lessons" and transferred below baseline.
 
 ## Run it yourself
 
@@ -210,25 +253,10 @@ All three call `_agent-eval.yml`. **First run:** trigger each workflow manually 
   `AZURE_SUBSCRIPTION_ID`, `AZURE_ENV_NAME`, `AZURE_LOCATION`, `AZURE_AI_PROJECT_ID`,
   `FOUNDRY_PROJECT_ENDPOINT`.
 
-Set azd's `GITHUB_REPOSITORY` to the intended `owner/repo`, including your fork, and
-run the companion deployment below. Its `githubClientId` and `githubTenantId` outputs
-provide the first two variables. Configure GitHub after that deployment, from `sample/`:
-
-```bash
-GITHUB_REPOSITORY="$(azd env get-value GITHUB_REPOSITORY -e "$ENVIRONMENT")"
-RESOURCE_GROUP="$(azd env get-value AZURE_RESOURCE_GROUP -e "$ENVIRONMENT")"
-gh variable set AZURE_CLIENT_ID --env demo --repo "$GITHUB_REPOSITORY" \
-  --body "$(az deployment group show --name demo-monitoring --resource-group "$RESOURCE_GROUP" \
-    --query properties.outputs.githubClientId.value -o tsv)"
-gh variable set AZURE_TENANT_ID --env demo --repo "$GITHUB_REPOSITORY" \
-  --body "$(az deployment group show --name demo-monitoring --resource-group "$RESOURCE_GROUP" \
-    --query properties.outputs.githubTenantId.value -o tsv)"
-gh variable set AZURE_ENV_NAME --env demo --repo "$GITHUB_REPOSITORY" --body "$ENVIRONMENT"
-for key in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
-  gh variable set "$key" --env demo --repo "$GITHUB_REPOSITORY" \
-    --body "$(azd env get-value "$key" -e "$ENVIRONMENT")"
-done
-```
+`azd provision` sets this up through a `postprovision` hook (`infra/postprovision.sh`): it asks
+once for the GitHub repository, deploys the identity, and, if `gh` is signed in, creates the
+`demo` environment with all seven variables. To run it on its own for an existing project
+(for example after `gh auth login`): `azd hooks run postprovision`.
 
 Only the exact repository and `demo` environment are trusted; fork pull requests do
 not run the Azure job. A fork owner must provision their own identity and GitHub
@@ -255,31 +283,15 @@ uv pip install --require-hashes -r agent/requirements.txt -r requirements-dev.tx
 
 ENVIRONMENT="agent-evaluation-demo-<unique>"
 azd env new "$ENVIRONMENT" --subscription "<subscription-id>" --location australiaeast
-azd provision -e "$ENVIRONMENT" --no-prompt
+azd provision -e "$ENVIRONMENT"
 ```
 
-Then deploy `infra/monitoring.bicep` for Application Insights and evaluator access. Pass
-your own object ID as `evaluatorPrincipalId`, so the cloud judges can call GPT-5.5.
-To also provision GitHub OIDC, set the fork-aware azd repository variable and pass it
-as `githubRepository`. This requires permission to create managed identities and
-role assignments, but no Microsoft Graph directory permissions:
-
-```bash
-azd env set GITHUB_REPOSITORY "<owner>/<repo>" -e "$ENVIRONMENT"
-PROJECT_ID="$(azd env get-value AZURE_AI_PROJECT_ID -e "$ENVIRONMENT")"
-ACCOUNT_ID="${PROJECT_ID%/projects/*}"
-az deployment group create --name demo-monitoring \
-  --resource-group "$(azd env get-value AZURE_RESOURCE_GROUP -e "$ENVIRONMENT")" \
-  --template-file infra/monitoring.bicep \
-  --parameters environmentName="$ENVIRONMENT" accountName="${ACCOUNT_ID##*/}" \
-    projectName="${PROJECT_ID##*/}" \
-    evaluatorPrincipalId="$(az ad signed-in-user show --query id -o tsv)" \
-    githubRepository="$(azd env get-value GITHUB_REPOSITORY -e "$ENVIRONMENT")"
-```
-
-For monitoring-only setup, omit the `GITHUB_REPOSITORY` command and `githubRepository`
-parameter. For an already provisioned project, use the same companion deployment;
-do not rerun `azd provision` just to add GitHub authentication.
+Run `azd provision` without `--no-prompt` the first time: its `postprovision` hook asks for
+the GitHub repository the workflows run in (it suggests this clone's `origin`), then deploys
+`infra/monitoring.bicep` (Application Insights, evaluator access for you, and the GitHub
+Actions identity) and, if `gh` is signed in, the `demo` environment and its variables. It needs
+permission to create managed identities and role assignments. For an already provisioned
+project, run just the hook: `azd hooks run postprovision`.
 
 Allow a few minutes for role assignments to take effect, then deploy the agent and check it:
 

@@ -7,6 +7,13 @@ requiredVersions:
     azure.ai.projects: ">=1.0.0-beta.8"
 infra:
   provider: microsoft.foundry
+hooks:
+  # After every provision: monitoring, evaluator access, and the GitHub Actions identity
+  # (asks once for the GitHub repository). Re-run on its own: azd hooks run postprovision
+  postprovision:
+    shell: sh
+    interactive: true
+    run: sh infra/postprovision.sh
 services:
   ai-project:
     host: azure.ai.project
@@ -27,6 +34,14 @@ services:
         sku:
           name: GlobalStandard
           capacity: 100
+      - name: text-embedding-3-small
+        model:
+          format: OpenAI
+          name: text-embedding-3-small
+          version: "1"
+        sku:
+          name: GlobalStandard
+          capacity: 50
   purchasing-advice-demo:
     host: azure.ai.agent
     project: ./agent
@@ -49,3 +64,9 @@ services:
       resources:
         cpu: "1"
         memory: 2Gi
+    hooks:
+      # The agent's own identity exists only after deploy; grant it embedding access then.
+      # Inline, so azd never passes our folder path (which has spaces) to sh unquoted.
+      postdeploy:
+        shell: sh
+        run: sh ../infra/grant-agent-embeddings.sh

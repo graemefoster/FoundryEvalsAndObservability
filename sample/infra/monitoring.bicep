@@ -11,6 +11,8 @@ param evaluatorPrincipalId string
 param evaluatorPrincipalType string = 'User'
 @description('GitHub owner/repository trusted for the demo environment. Empty disables the GitHub identity.')
 param githubRepository string = ''
+@description('True when the project identity already has Monitoring Reader on Application Insights (Foundry grants it when App Insights is connected in the portal). Azure rejects a duplicate assignment, so this skips it.')
+param projectTraceReaderExists bool = false
 
 var enableGitHub = !empty(githubRepository)
 var githubSubject = 'repo:${githubRepository}:environment:demo'
@@ -113,7 +115,7 @@ var monitoringReaderRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '43d0d8ad-25c7-4714-9337-8ba259a9fe05' // Monitoring Reader.
 )
-resource projectTraceReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource projectTraceReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!projectTraceReaderExists) {
   name: guid(insights.id, project.id, monitoringReaderRoleId)
   scope: insights
   properties: {

@@ -1,0 +1,68 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "knowledge_base_retrieve",
+      "description": "Retrieve authoritative policy and knowledge-base documents for grounding, including purchasing policies, quotation requirements, approval thresholds/routes, product/category rules, supplier restrictions, exception notices, holds, clearances, and effective-date-specific guidance. Use this first for purchase-approval questions to determine the required pre-commitment steps from policy. Form focused queries that include the date, item/product/category, amount, workplace context, and whether the user already has a quote or approval. Do not use this tool to reopen facts the user has already supplied, such as “I’ve got a supplier quote” or “Grace already approved,” unless policy specifically requires checking a recorded approval. For ordinary low-value purchase questions, determine the route and next action; do not add unnecessary budget checks, exception searches, or confirmation steps unless the policy or the user’s facts make them relevant. Treat retrieved documents as evidence for the final answer, not as a reason to expose raw tool output. The final answer should be answer-first, concise, and should not invent substitute approvers.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "queries": {
+            "type": "array",
+            "description": "Natural-language search queries. Each query should be narrow and include the decision date, purchase amount, item/category, and relevant context, e.g. “purchasing policy quote count approval threshold printer toner $460 27 October 2026” or “office equipment coffee machine $2880 line manager approval 20 October 2026.” Use multiple queries only for distinct needed topics, such as policy route plus a genuinely relevant product/supplier hold. Avoid broad or redundant queries and avoid budget queries here unless the policy makes budget availability part of the purchase decision.",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "queries"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "ask",
+      "description": "Ask for workplace-context evidence: who holds a role, a person’s line manager, current availability/leave status, recorded delegations, scope and dates of delegations, relevant workplace messages, notices, exceptions, and clearances. Use this when a purchasing policy requires identifying the current approver or checking whether the approver is unavailable and whether a formal delegation covers the decision date. Results are evidence only, not approvals or instructions. Check scope, authority, and dates carefully: an out-of-office note, colleague suggestion, or informal sign-off is not a substitute for the authorised approver unless a recorded delegation or policy says so. If the correct approver is on leave and no delegation covers the date, the next action is normally to wait for that approver’s return or ask Purchasing for guidance, not to name an unofficial substitute. If the user says the authorised approver has already approved, do not add unsupported “confirm it is recorded” conditions unless the policy requires recorded approval.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "A precise natural-language question naming the employee, date, purchase context, and the role/authority to verify. Ask for only the workplace facts needed for the route, for example: “Who is Quentin Blake’s line manager on 27 October 2026, is that manager available, and is any delegation in force that day?” If a named approval is supplied, ask whether that named person is the required approver and whether their authority covers the purchase; do not ask extra availability/delegation questions once approval is already complete unless necessary to validate authority."
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_ontology",
+      "description": "Query the business ontology for structured current-state facts about business entities, such as departments, employees, budgets, cost centres, suppliers, products, assets, or entity status. Use this only when the user asks for entity-state information or when the purchasing policy explicitly makes that state part of the approval decision. For routine “Can I buy this?” purchasing-route questions, do not automatically check department budget or available funds if the required decision is only quotation count and approver route; unnecessary budget checks clutter the answer and can reopen completed steps. When used, treat ontology results as evidence, verify date/scope, and integrate only the facts needed for the next action.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "A focused natural-language question about the specific business entity and date, such as department budget only if budget is required, supplier status if supplier eligibility is at issue, or product/entity state if the user or policy makes it relevant. Include the purchase amount and date when asking whether a structured state covers a transaction. Avoid asking broad budget or department questions for simple low-value purchases unless required by policy."
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    }
+  }
+]

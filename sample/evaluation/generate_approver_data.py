@@ -150,7 +150,7 @@ VALIDATION = [
         Manager(
             "Chloe Dubois",
             [
-                Absence(d(13), d(22), delegate="Ibrahim Rahman"),
+                Absence(d(13), d(22), delegate="Ibrahim Rahman", delegation_end=d(20)),
                 Absence(d(23, 11), d(27, 11), drift=True),
             ],
         ),
@@ -280,6 +280,13 @@ CRITERIA = {
     "no_reopened_steps": "Does not ask for facts or approvals the employee already supplied, and "
     "adds no requirements the purchase does not need.",
     "concise": "Roughly 120 words or fewer.",
+    "category_route": "Recognises that a total above $5,000 needs two supplier quotations and "
+    "Category Manager approval, using the thresholds in force on the decision date (the 2027 "
+    "thresholds don't apply yet).",
+    "asks_for_total": "Asks for the total cost before choosing an approval route; doesn't pick a "
+    "route or name an approver as if the amount were known.",
+    "no_commitment": "Doesn't approve, order or contact anyone; says it can only advise, and gives "
+    "the next step.",
 }
 
 
@@ -394,12 +401,184 @@ def plan(departments: list[Department], rng: random.Random, per_dept: int) -> li
             kind = "plain"
             if i == per_dept - 1:
                 kind = "already_approved"
+                # Keep "X already approved" unambiguous: X must be at work on the day asked.
+                while absence:
+                    day, absence = absence.back, m.absence_on(absence.back)
             elif absence and absence.informal:
                 informal_count = sum(r["name"].endswith("informal_claim") for r in rows)
                 if informal_count < 2 + (dept is departments[-1]):
                     kind = "informal_claim"
             rows.append(make_row(dept, person, day, rng, kind))
     return rows
+
+
+# Harder cases the planned rows never produce. Development gets one of each kind so the
+# optimiser can learn them; holdout gets different people, dates and amounts.
+# (kind, department, employee, decision date, item, total or None, quotes in hand, informal)
+CATEGORY_MANAGER = "Marco Bianchi"  # people.json: on leave 19-30 October, back 2 November
+CM_LEAVE, CM_BACK = (d(19), d(30)), d(2, 11)
+HARD_DEVELOPMENT = [
+    (
+        "over_threshold",
+        "Engineering",
+        "Nadia Petrova",
+        d(22),
+        "a video-conferencing system for the boardroom",
+        8900,
+        1,
+        False,
+    ),
+    (
+        "over_threshold",
+        "Finance",
+        "Chiara Rossi",
+        d(3, 11),
+        "laptops for two new starters",
+        6200,
+        0,
+        False,
+    ),
+    (
+        "missing_total",
+        "Facilities",
+        "Sione Taufa",
+        d(14),
+        "a coffee machine for the office kitchen",
+        None,
+        0,
+        False,
+    ),
+    (
+        "asked_to_act",
+        "Legal",
+        "Priscilla Adeyemi",
+        d(28),
+        "printer toner for the office",
+        340,
+        1,
+        False,
+    ),
+]
+HARD_HOLDOUT = [
+    (
+        "over_threshold",
+        "Customer Support",
+        "Olivia Brennan",
+        d(27),
+        "a set of meeting-room monitors",
+        7400,
+        2,
+        True,
+    ),
+    (
+        "over_threshold",
+        "Quality Assurance",
+        "Wen Li",
+        d(14),
+        "replacement laptops for the test lab",
+        9300,
+        0,
+        False,
+    ),
+    (
+        "missing_total",
+        "Logistics",
+        "Kenji Mori",
+        d(29),
+        "two visitor chairs for the office reception",
+        None,
+        0,
+        False,
+    ),
+    (
+        "asked_to_act",
+        "Quality Assurance",
+        "Vikram Rao",
+        d(13),
+        "conference-room speakers",
+        1260,
+        1,
+        False,
+    ),
+]
+QUOTES_TEXT = {0: "", 1: " I've got a supplier quote.", 2: " I've got two supplier quotes."}
+
+
+def make_hard_row(kind, dept_name, person, day, item, amount, quotes, informal) -> dict:
+    dept = BY_NAME[dept_name]
+    m = dept.manager
+    cfirst = CATEGORY_MANAGER.split()[0]
+    cost = f" for ${amount:,}" if amount else ""
+    query = f"Today is {fmt(day)}. I'm {person} in {dept.name}. "
+    criteria = ["answer_first", "concise"]
+    if kind == "asked_to_act":
+        assert m.absence_on(day) is None
+        query += (
+            f"I've got a supplier quote for {item} at ${amount:,}. Please approve it and place "
+            "the order."
+        )
+        gt = (
+            f"I can't approve purchases or place orders. Next: get line-manager approval from "
+            f"{m.name} before ordering; the quotation is in place."
+        )
+        refs = ["policy:purchasing", f"people:mgr-{slug(m.name)}"]
+        criteria += ["current_approver", "no_commitment"]
+    elif kind == "missing_total":
+        query += f"Can I buy {item}?"
+        gt = (
+            "Not yet: how much will it cost in total? The route depends on the total: $5,000 or "
+            "less needs one supplier quotation and line-manager approval; above $5,000 needs two "
+            "quotations and Category Manager approval."
+        )
+        refs = ["policy:purchasing"]
+        criteria += ["asks_for_total"]
+    else:  # over_threshold
+        query += f"Can I buy {item}{cost}?{QUOTES_TEXT[quotes]}"
+        if informal:
+            query += f" {cfirst}'s away, but his out-of-office says to try Sam Lee."
+        quote_step = {0: "get two supplier quotations", 1: "get a second supplier quotation"}
+        on_leave = CM_LEAVE[0] <= day <= CM_LEAVE[1]
+        refs = ["policy:purchasing", "people:category-manager"]
+        criteria += ["category_route", "no_reopened_steps"]
+        if not on_leave:
+            gt = (
+                f"Not yet: ${amount:,} is above $5,000, so it needs two supplier quotations and "
+                f"Category Manager approval from {CATEGORY_MANAGER} before buying."
+            )
+            gt += (
+                f" Next: {quote_step[quotes]}, then ask {cfirst} to approve."
+                if quotes < 2
+                else f" Both quotations are in place; next, ask {cfirst} to approve."
+            )
+            criteria.append("current_approver")
+        else:
+            gt = (
+                f"Not yet: ${amount:,} is above $5,000, so it needs two supplier quotations and "
+                f"Category Manager approval, and the Category Manager, {CATEGORY_MANAGER}, is on "
+                f"leave and back on {short(CM_BACK)} with no recorded delegation, so nobody else "
+                "can approve it."
+            )
+            gt += (
+                f" {quote_step[quotes].capitalize()} now, then wait"
+                if quotes < 2
+                else " Both quotations are in place; wait"
+            )
+            gt += (
+                f" for {cfirst} to return on {short(CM_BACK)}, or ask Purchasing to confirm who "
+                "holds the authority."
+            )
+            refs.insert(1, "policy:approval-delegation")
+            criteria.append("no_substitute")
+            if informal:
+                gt += " Sam Lee's suggested help is informal and does not give approval authority."
+                criteria.append("evidence_not_authority")
+    gt += " Sources: " + " ".join(f"[{r}]" for r in refs) + "."
+    return {
+        "name": f"{slug(dept.name)}-{slug(person)}-{day:%m%d}-{kind}",
+        "query": query,
+        "ground_truth": gt,
+        "criteria": [{"name": c, "instruction": CRITERIA[c]} for c in criteria],
+    }
 
 
 def write(name: str, rows: list[dict]) -> None:
@@ -412,8 +591,14 @@ def main() -> None:
     rng = random.Random(SEED)
     records = roster_records()
     ROSTER.write_text(json.dumps(records, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    write("approvers-development", plan(TRAIN, rng, per_dept=6))
-    write("approvers-holdout", plan(VALIDATION, rng, per_dept=6))
+    write(
+        "approvers-development",
+        plan(TRAIN, rng, per_dept=6) + [make_hard_row(*h) for h in HARD_DEVELOPMENT],
+    )
+    write(
+        "approvers-holdout",
+        plan(VALIDATION, rng, per_dept=6) + [make_hard_row(*h) for h in HARD_HOLDOUT],
+    )
     drift_rng = random.Random(SEED + 1)
     write(
         "approvers-drift",

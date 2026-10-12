@@ -59,7 +59,10 @@ def read_config_text(directory: Path) -> str:
 def corpus_names(paths: list[Path]) -> set[str]:
     names = set()
     for path in paths:
-        for document in json.loads(path.read_text(encoding="utf-8")):
+        documents = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(documents, list):  # e.g. policy_embeddings.json: vectors, no text
+            continue
+        for document in documents:
             text = f"{document.get('title', '')}. {document.get('content', '')}"
             for match in NAME_PHRASE.findall(text):
                 if match not in STOP_PHRASES and not match.startswith(

@@ -3359,7 +3359,7 @@
           <div class="demo-bumper">
             <span class="demo-number">Demo 2</span>
             <h2>Run the Starting Agent</h2>
-            <p class="lead">Ask the purchasing question, explore its sources and save the baseline run.</p>
+            <p class="lead">Ask two questions: one it gets right, and one that looks right but isn’t.</p>
           </div>
           <div class="footer"><span>Starting agent / Microsoft Foundry</span><span>AI Genius / S6 E2 / 07</span></div>
         </article>
@@ -3404,22 +3404,22 @@
           <h2>Evaluate</h2>
           <div class="concept-grid">
             <div class="concept-card green story-reveal reveal-1">
-              <span class="concept-icon">G</span>
-              <h3>Groundedness</h3>
-              <p>Is the answer supported by the supplied context?</p>
-              <div class="concept-detail">Checks claims against the evidence.<small>Built-in evaluator</small></div>
+              <span class="concept-icon">J</span>
+              <h3>Next-action judge</h3>
+              <p>Right next step? Right approver?</p>
+              <div class="concept-detail">Pass/fail against a reference answer. Its reason says what the tools did.<small>Custom prompt evaluator</small></div>
             </div>
             <div class="concept-card blue story-reveal reveal-2">
-              <span class="concept-icon">UX</span>
-              <h3>Customer Satisfaction</h3>
-              <p>How satisfied would the user be with the conversation?</p>
-              <div class="concept-detail">Assesses helpfulness, clarity and resolution.<small>Built-in evaluator / preview</small></div>
-            </div>
-            <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">R</span>
               <h3>Rubric</h3>
-              <p>Does the answer meet the requirements of this task?</p>
-              <div class="concept-detail">Your criteria: approval route, expiry, citations and next action.<small>Custom criteria / preview</small></div>
+              <p>How well does the answer meet each requirement?</p>
+              <div class="concept-detail">Weighted: approval route, current approver, citations, clarity.<small>Rubric evaluator / preview</small></div>
+            </div>
+            <div class="concept-card orange story-reveal reveal-3">
+              <span class="concept-icon">C</span>
+              <h3>Per-question criteria</h3>
+              <p>What must this answer get right?</p>
+              <div class="concept-detail">Specific checks, such as “asks for the total cost first”.<small>Used by Agent Optimizer</small></div>
             </div>
           </div>
           <div class="footer"><span>Quality becomes evidence, not opinion</span><span>AI Genius / S6 E2 / 10</span></div>
@@ -3457,6 +3457,7 @@
               <div class="concept-detail">Does quality improve, or hold at lower cost?</div>
             </div>
           </div>
+          <p class="slide-takeaway story-reveal reveal-4">Fix the tools first. <em>The optimizer refines a working agent; it doesn’t rescue a broken one.</em></p>
           <div class="footer"><span>Optimisation is controlled search</span><span>AI Genius / S6 E2 / 12</span></div>
         </article>
 
@@ -3464,7 +3465,7 @@
           <div class="demo-bumper">
             <span class="demo-number">Demo 5</span>
             <h2>Agent Optimizer</h2>
-            <p class="lead">Compare answer consistency, speed and cost, then inspect the configuration changes.</p>
+            <p class="lead">The score went up. Now read the change: which parts are rules, and which are copied facts?</p>
           </div>
           <div class="footer"><span>Compare candidates with the baseline</span><span>AI Genius / S6 E2 / 13</span></div>
         </article>
@@ -3528,11 +3529,11 @@
           <div class="footer"><span>Cheapest check first</span><span>AI Genius / S6 E2 / 15</span></div>
         </article>
 
-        <article class="slide template-demo section-delivery" data-title="Demo 6 - The PR that goes red" data-minutes="5">
+        <article class="slide template-demo section-delivery" data-title="Demo 6 - The check that goes red" data-minutes="5">
           <div class="demo-bumper">
             <span class="demo-number">Demo 6</span>
-            <h2>The PR that goes red</h2>
-            <p class="lead">Open a pull request with the optimizer’s fact-stuffed candidate and watch the gate stop it.</p>
+            <h2>The check that goes red</h2>
+            <p class="lead">Run the fact check on the optimizer’s candidate, then find the same check in the pipeline.</p>
           </div>
           <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 16</span></div>
         </article>
@@ -3695,8 +3696,8 @@
         key: "Establish the working baseline and preserve its evidence.",
         definition: "Instructions define the task and boundaries; tool descriptions explain when a source is useful and what it returns.",
         transition: "Open the trace to inspect how the answer was produced.",
-        talk: "Run the opening question with Foundry IQ and the sample Work IQ adapter available. Read the actual answer: it should ask whether alcohol is included. Answer 'yes, there is wine' and show it find the current approver: Hospitality Lead approval is needed, Tim is on leave, Priya holds the recorded delegation. Save the configuration, source versions, question, answer and run ID. A correct first answer is the starting point for measuring consistency across cases.",
-        checkpoint: "02-grounding: save a working baseline, source fixtures and the run ID. Use the saved run if the live service is unavailable, identifying it as a prepared run.",
+        talk: "Ask the dinner question first (playbook command). It should ask about alcohol; reply 'Yes, there will be wine.' Hospitality Lead approval is needed, Tim is on leave, and the Approvals Register records Priya as his delegate: Work IQ doing its job. Then ask the second question: Marcus Webb in Engineering, 21 October, a $6,800 video-conferencing system with two quotes. Expect a confident answer: Samuel is on leave and Leah Fischer holds his delegation, so ask Leah. It used Work IQ, checked leave, found the delegation and cited everything, and it is wrong: above $5,000 the policy needs Category Manager approval, and Marco is away until 2 November with no delegate. It asked Work IQ the wrong question. One question can't tell you how often this happens; that's what evaluation is for.",
+        checkpoint: "Rehearse the Marcus question three times. If it ever answers correctly, say so and move on: Demo 4 shows the same failure in a recorded run (Wen Li, $9,300). Screenshot both answers as a backup.",
         source: "Demo implementation to be rehearsed."
       },
       {
@@ -3715,33 +3716,33 @@
         source: "Microsoft Foundry tracing demonstration."
       },
       {
-        key: "Start with built-in evaluators, then add the criteria that matter for your task.",
-        definition: "Groundedness checks support from supplied context. Customer Satisfaction predicts satisfaction across the conversation. Rubric scores custom, weighted criteria using an LLM judge.",
+        key: "Judge the next step first, then the quality of the answer, then task-specific checks.",
+        definition: "A judge is an LLM evaluator. Its reason matters as much as its score.",
         transition: "Let's measure the starting agent against these criteria across purchasing cases.",
-        talk: "Introduce Groundedness and Customer Satisfaction, then the custom purchasing rubric. Explain how approval route, expiry, citations and an actionable next step are checked across different purchases, dates and missing information. Customer Satisfaction assesses helpfulness, completeness, clarity, tone, resolution and adaptability. Keep criteria fixed across versions. Customer Satisfaction and Rubric are in preview.",
-        source: "Microsoft Learn, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rag-evaluators ; https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/agent-evaluators ; https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators"
+        talk: "These are the evaluators we actually run. The next-action judge is a custom prompt evaluator: pass/fail against a reference answer, and its reason starts with what the tools did, for example 'used the line-manager lookup instead of the required higher-level route'. That reason is what the optimizer learns from: Microsoft's own lesson is that the reflector only sees what the evaluator returns. The rubric scores weighted dimensions such as approval route, current approver and citations. Per-question criteria are specific checks, such as 'asks for the total cost first', which the optimizer also uses. Built-in evaluators such as Groundedness exist; we chose task-specific ones because the failure we care about is a wrong approver, not an unsupported claim. The rubric evaluator is in preview.",
+        source: "Microsoft Learn: rubric evaluators https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators ; Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357"
       },
       {
         key: "Measure consistency across cases, not just the opening answer.",
         definition: "Tokens are units of model input and output; response time is the user's end-to-end wait.",
         transition: "Use these results to set the optimisation goal, then keep the tests fixed.",
-        talk: "Open the baseline evaluation across valid and expired exceptions, different purchase types and missing information. Inspect per-case Groundedness, Customer Satisfaction and Rubric results alongside response time, tokens, tool calls and estimated cost. Repeat representative cases to assess variation. Identify measured opportunities: more consistent task completion, clearer responses or lower cost while preserving quality. Save the baseline before opening any Optimizer candidates.",
-        checkpoint: "04-evaluate: freeze the baseline configuration, dataset, rubric and report. Record per-case results and operational metrics; choose the optimisation objective from this evidence.",
+        talk: "Open the holdout evaluation run in Foundry: 22 questions, with different departments, people and dates from the ones the optimizer trains on. Baseline: 18 of 22. Click Wen Li, $9,300 of laptops: sent to her line manager instead of the Category Manager, the same failure as Marcus. Read the judge's reason. Tell the earlier story briefly: with our first mock search tool the baseline scored 12 of 18; fixing two tools, not the prompt, took it to 18 of 18, so we added harder questions. Two runs of the same agent differ by about one question, so only trust changes of two or more.",
+        checkpoint: "Prepared run: the 18/22 holdout evaluation, open in a tab, with Wen Li's row ready. Screenshot it as a backup.",
         source: "Microsoft Foundry model comparison and evaluation demonstration."
       },
       {
         key: "Compare candidate scores and configuration changes with the baseline.",
         definition: "A baseline is the starting configuration; candidates are alternatives generated and evaluated by Agent Optimizer.",
         transition: "Let's open the Optimizer run and compare the candidates.",
-        talk: "The primary experiment is more consistent answers across purchasing cases. Compare candidate instructions, tool descriptions and model choices against fixed criteria. Alongside quality, inspect response time and estimated cost. If the baseline already meets the quality requirement, investigate whether another configuration preserves it at lower cost.",
-        source: "Microsoft Foundry Agent Optimizer concepts."
+        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the holdout it never trains on. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. Land the takeaway: fix the tools first. The optimizer refines a working agent; it doesn't rescue a broken one. Our first runs started from a broken search tool, and the optimizer learned to memorise its way around it.",
+        source: "Microsoft Learn: Agent optimizer overview (score interpretation); Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents."
       },
       {
         key: "Inspect the evidence behind the recommended candidate.",
         definition: "The optional validation dataset supplies separate evaluation cases within the optimisation run.",
         transition: "Carry the same evidence into the release process.",
-        talk: "Show the stage playbook command azd ai agent optimize --config eval.yaml, then open its completed run. Compare per-case rubric results, built-in scores, response time and estimated cost with the frozen baseline. Inspect the actual configuration diff and optional validation dataset. Revisit the opening question and a changed date or purchase type. Apply a candidate only if the evidence supports the trade-off; otherwise keep the baseline.",
-        checkpoint: "05-optimise: preserve the operation ID, candidate IDs, reports and configuration diff. Record azd ai agent optimize status OPERATION_ID --watch and azd ai agent optimize apply --candidate CANDIDATE_ID in the playbook. Applying selects configuration; release checks precede deployment.",
+        talk: "Open the agent's Optimize tab and the completed run. Best candidate: 0.691 on the holdout, +0.078, a moderate gain. Click View changes and sort what you see into two piles. Rules: answer-first wording, no extra 'confirm the approval is recorded' step, budget kept to one sentence. Copied facts: training names and amounts, some hidden in the tool descriptions where reviewers rarely look: Quentin Blake, 'Grace already approved', $460 printer toner on 27 October. And the rule that mattered, find the role the policy requires before looking up who holds it, isn't there. The score went up; that doesn't mean you ship it.",
+        checkpoint: "Prepared run: Optimize tab open on the completed run, with View changes ready on the instructions and on the ask tool description. Screenshot both. The candidate is saved in sample/evaluation/candidates/optimiser-0.691/.",
         source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models; Agent optimizer cost and token usage overview. Checked 24 September 2026."
       },
       {
@@ -3754,16 +3755,16 @@
       {
         key: "Cheapest check first.",
         definition: "A release gate is an automated check that can stop a change from being promoted.",
-        transition: "Let's open a pull request that should fail.",
+        transition: "Let's run that first check on the optimizer's candidate.",
         talk: "One: a script scans the candidate prompt and tool descriptions for amounts, dates, durations and names that the baseline didn't have. Seconds, no LLM. Two: compare against the stored baseline, not a fixed threshold. LLM-judged scores move between runs; Foundry's own optimizer guidance treats changes under 0.03 as noise, so fail on a bigger drop. Three: some failures block regardless of the average, such as sending someone to the wrong approver or following an instruction in an email. Four: pin prompt, tool descriptions, model and dataset version together, or scores aren't comparable.",
         source: "Microsoft Learn: Agent optimizer overview (score interpretation)."
       },
       {
-        key: "The workflow must show why a change stopped.",
+        key: "The cheapest check catches the copied facts in a second.",
         definition: "Release gates check evaluation results; approvals record the release decision.",
         transition: "And after release, production keeps feeding the tests.",
-        talk: "Open a pull request containing the optimizer's fact-stuffed candidate. The fact check goes red first, showing the copied names and amounts. Then show the drift-set result: on 27 October, Tim is back, and the stuffed prompt still sends the employee to Priya. The baseline, which looks it up, gets it right. Merge blocked.",
-        checkpoint: "06-automate: keep the stuffed candidate as a separate, resettable branch with its exact diff and the failing workflow run ID.",
+        talk: "In the terminal, run check_prompt_facts.py with the baseline and the optimizer's candidate (playbook command). One second, no model: it lists the seven copied facts. Then switch to GitHub: the same script is the first step of the pull-request workflow, before any evaluation spends money. Show the workflow file and one completed run. Close the loop: a person keeps the good rules, removes the copied facts and adds the missing role rule. That reviewed version is in candidates/reviewed, and it goes through the same gate.",
+        checkpoint: "Live: the fact-check command. Prepared: the GitHub Actions tab with one completed workflow run. If CI isn't working on the day, use slides 14 and 15 with the live command.",
         source: "GitHub Actions release-check demonstration."
       },
       {
