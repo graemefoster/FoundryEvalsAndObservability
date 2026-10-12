@@ -113,25 +113,38 @@ jobs:
           else
             .venv/bin/python evaluation/evaluate.py --wait --report report.json
           fi
+      # First run for a dataset (no committed baseline yet) saves a baseline instead of failing.
+      - name: Compare or save?
+        id: base
+        run: |
+          if [ "${{ inputs.write_baseline }}" = "true" ]; then
+            echo "save=true" >> "$GITHUB_OUTPUT"; echo "reason=write_baseline was ticked" >> "$GITHUB_OUTPUT"
+          elif [ ! -f "evaluation/baselines/${DATASET_STEM}.json" ]; then
+            echo "save=true" >> "$GITHUB_OUTPUT"; echo "reason=no baseline committed yet" >> "$GITHUB_OUTPUT"
+          else
+            echo "save=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Save as baseline
-        if: inputs.write_baseline
+        if: steps.base.outputs.save == 'true'
+        env:
+          REASON: ${{ steps.base.outputs.reason }}
         run: |
           mkdir -p baseline-out
           cp report.json "baseline-out/${DATASET_STEM}.json"
           {
-            echo "## New baseline: ${DATASET_STEM}"
+            echo "## New baseline: ${DATASET_STEM} (${REASON})"
             echo "Download the **baseline-${DATASET_STEM}** artifact and commit it as"
             echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\`."
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload baseline
-        if: inputs.write_baseline
+        if: steps.base.outputs.save == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: baseline-${{ inputs.dataset }}
           path: sample/baseline-out/${{ inputs.dataset }}.json
           if-no-files-found: error
       - name: Compare with baseline
-        if: ${{ !inputs.write_baseline }}
+        if: steps.base.outputs.save != 'true'
         run: |
           set +e
           .venv/bin/python evaluation/compare_to_baseline.py \
