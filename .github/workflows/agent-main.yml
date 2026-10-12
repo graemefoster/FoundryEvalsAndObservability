@@ -1,37 +1,193 @@
-name: Agent holdout on main
+name: Agent promotion
 
-# Every merge to main: run the holdout set and report. It doesn't block, because the
-# change is already merged; a drop is a signal to investigate before the next release.
 on:
   push:
     branches: [main]
     paths:
       - "sample/**"
+      - ".github/workflows/agent-main.yml"
+      - ".github/workflows/_agent-eval.yml"
   workflow_dispatch:
     inputs:
-      write_baseline:
-        description: Save this run as the holdout baseline
-        type: boolean
-        default: false
+      mode:
+        description: Evaluate only, promote main, or explicitly create a baseline
+        type: choice
+        options:
+          - holdout
+          - release
+          - baseline-holdout
+          - baseline-drift
+        default: holdout
 
 permissions:
   contents: read
+  pull-requests: read
 
+# Hold dev stable across both evaluations and approval; newer main candidates wait.
 concurrency:
-  group: purchasing-demo-deployment
+  group: purchasing-promotion-${{ github.ref }}
   cancel-in-progress: false
   queue: max
 
 jobs:
+  target:
+    name: Select candidate
+    runs-on: ubuntu-latest
+    outputs:
+      agent_name: ${{ steps.target.outputs.agent_name }}
+      mode: ${{ steps.target.outputs.mode }}
+    steps:
+      - name: Resolve isolated target
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ github.event_name == 'push' && 'release' || inputs.mode }}
+        run: |
+          case "$MODE" in
+            holdout|release|baseline-holdout|baseline-drift) ;;
+            *) echo "::error::Unknown promotion mode: $MODE"; exit 1 ;;
+          esac
+          if [ "$MODE" = "release" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Only main can be promoted. Use holdout for a PR branch."
+            exit 1
+          fi
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            agent="purchasing-advice-demo-dev"
+          else
+            pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$GITHUB_REF_NAME" \
+              --state open --json number --jq '.[0].number // empty')
+            if [ -n "$pr" ]; then
+              agent="purchasing-advice-demo-pr-$pr"
+            else
+              agent="purchasing-advice-demo-check-$GITHUB_RUN_ID"
+            fi
+          fi
+          echo "agent_name=$agent" >> "$GITHUB_OUTPUT"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Mode: $MODE; agent: $agent; revision: $GITHUB_SHA"
+
   holdout:
-    name: Holdout vs baseline (report only)
+    name: Holdout gate
+    needs: target
+    if: needs.target.outputs.mode != 'baseline-drift'
     uses: ./.github/workflows/_agent-eval.yml
     permissions:
       contents: read
       id-token: write
     with:
+      agent_name: ${{ needs.target.outputs.agent_name }}
       dataset: approvers-holdout
       tolerance: 0.12
-      blocking: false
+      blocking: true
       detail: full
-      write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}
+      write_baseline: ${{ needs.target.outputs.mode == 'baseline-holdout' }}
+
+  drift:
+    name: Drift gate
+    needs: [target, holdout, approval]
+    if: >-
+      ${{ !cancelled() && (needs.target.outputs.mode == 'baseline-drift' ||
+      (needs.target.outputs.mode == 'release' && needs.approval.result == 'success')) }}
+    uses: ./.github/workflows/_agent-eval.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      agent_name: ${{ needs.target.outputs.agent_name }}
+      deploy_agent: ${{ needs.target.outputs.mode == 'baseline-drift' }}
+      dataset: approvers-drift
+      tolerance: 0.03
+      must_pass: next_action_success
+      max_unscored: 0
+      blocking: true
+      detail: counts
+      write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' }}
+
+  approval:
+    name: Review dev before release testing
+    needs: [target, holdout]
+    if: needs.target.outputs.mode == 'release'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Record approval
+        run: echo "Approved dev revision $GITHUB_SHA for drift testing and release."
+
+  release:
+    name: Deploy approved release
+    needs: [target, drift]
+    if: needs.target.outputs.mode == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Existing Azure federation trusts demo; production review precedes the drift gate.
+    environment: demo
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: sample
+    env:
+      AGENT_NAME: purchasing-advice-demo-release
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_AI_PROJECT_ID: ${{ vars.AZURE_AI_PROJECT_ID }}
+      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: Azure/setup-azd@0b7e3a35ab00f2eee7080c845eb39c3f0ebfa553 # v2.4.0
+        with:
+          version: "1.35.0"
+      - name: Install pinned Foundry extensions
+        run: |
+          azd extension install azure.ai.agents --version 1.0.0-beta.13
+          azd extension install azure.ai.projects --version 1.0.0-beta.8
+          azd extension install azure.ai.connections --version 1.0.0-beta.9
+      - name: Check configuration
+        run: |
+          for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
+            AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
+            if [ -z "$(printenv "$key")" ]; then
+              echo "::error::Missing GitHub variable: $key"
+              exit 1
+            fi
+          done
+      - name: Sign in with OIDC
+        uses: Azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Configure existing project
+        run: |
+          azd config set auth.useAzCliAuth true
+          azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --location "$AZURE_LOCATION" --no-prompt
+          azd env set AZURE_TENANT_ID "$AZURE_TENANT_ID"
+          azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
+          azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
+          azd env set AGENT_NAME "$AGENT_NAME"
+      - name: Deploy approved revision
+        run: |
+          azd deploy purchasing-advice-demo --no-prompt
+          azd ai agent show purchasing-advice-demo --output json | python3 -c '
+          import json, os, sys
+          actual = json.load(sys.stdin)["name"]
+          expected = os.environ["AGENT_NAME"]
+          if actual != expected:
+              raise SystemExit(f"Agent name mismatch: deployed {actual}, expected {expected}")
+          print(f"Verified release target: {actual}")
+          '
+          {
+            echo "## Released"
+            echo "Revision: \`${GITHUB_SHA}\`"
+            echo "Agent: \`${AGENT_NAME}\`"
+            echo "Passed holdout, received production approval, then passed the drift gate."
+          } >> "$GITHUB_STEP_SUMMARY"

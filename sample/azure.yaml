@@ -68,7 +68,7 @@ services:
     project: ./agent
     language: python
     kind: hosted
-    name: purchasing-advice-demo
+    name: ${AGENT_NAME:-purchasing-advice-demo}
     description: MAF purchasing advice agent with local policy search and optimizer configuration.
     uses:
       - ai-project
@@ -80,6 +80,7 @@ services:
       - protocol: responses
         version: 2.0.0
     env:
+      AGENT_NAME: ${AGENT_NAME:-purchasing-advice-demo}
       OPTIMIZATION_LOCAL_DIR: .agent_configs
     container:
       resources:

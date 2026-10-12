@@ -5,7 +5,7 @@
 # inference only). Safe to re-run. Never fails the deploy: without the role, policy search
 # falls back to keywords and the trace's fallback_reason says why.
 set -u
-AGENT="purchasing-advice-demo"
+SERVICE="purchasing-advice-demo"
 ROLE="5e0bd9bd-7b93-4f28-af87-19fc36ad61bd" # Cognitive Services OpenAI User
 
 warn() {
@@ -18,7 +18,7 @@ PROJECT_ID="${AZURE_AI_PROJECT_ID:-$(azd env get-value AZURE_AI_PROJECT_ID 2>/de
 case "$PROJECT_ID" in /subscriptions/*) ;; *) PROJECT_ID="" ;; esac
 [ -n "$PROJECT_ID" ] || warn "AZURE_AI_PROJECT_ID is not set."
 
-PRINCIPAL="$(azd ai agent show "$AGENT" --output json 2>/dev/null | python3 -c \
+PRINCIPAL="$(azd ai agent show "$SERVICE" --output json 2>/dev/null | python3 -c \
   'import json, sys; print(json.load(sys.stdin)["instance_identity"]["principal_id"])' \
   2>/dev/null)"
 [ -n "$PRINCIPAL" ] || warn "could not read the agent identity from 'azd ai agent show'."

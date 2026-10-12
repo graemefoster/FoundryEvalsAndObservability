@@ -18,7 +18,7 @@ from openai import OpenAI
 
 # The agent answers the questions; a separate model acts as the judge.
 # The agent defaults to latest; judge versions are resolved, checked and pinned per run.
-AGENT_NAME = "purchasing-advice-demo"
+AGENT_NAME = os.environ.get("AGENT_NAME", "purchasing-advice-demo")
 EVALUATOR_NAME = "purchasing-next-action"
 RUBRIC_NAME = "purchasing-demo-rubric"
 JUDGE_MODEL = "gpt-5.5"
@@ -59,6 +59,8 @@ def main() -> None:
         "fails; they're left out of that judge's averages. Use 0 where every score matters.",
     )
     args = parser.parse_args()
+    if not AGENT_NAME.strip():
+        parser.error("AGENT_NAME must not be empty")
     if args.wait and (args.dry_run or args.register_only):
         parser.error("--wait requires an evaluation run")
     if args.report and not args.wait:
@@ -312,6 +314,7 @@ def wait_for_evaluation(
     run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
     while run.status in ("queued", "in_progress"):
         report = {
+            "agent_name": AGENT_NAME,
             "eval_id": eval_id,
             "run_id": run_id,
             "status": run.status,
@@ -330,6 +333,7 @@ def wait_for_evaluation(
         run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
 
     report = {
+        "agent_name": AGENT_NAME,
         "eval_id": eval_id,
         "run_id": run_id,
         "status": run.status,

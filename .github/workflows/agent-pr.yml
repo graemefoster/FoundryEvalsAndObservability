@@ -20,11 +20,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: purchasing-demo-deployment
-  cancel-in-progress: false
-  queue: max
-
 jobs:
   offline:
     name: 1. Offline checks
@@ -76,6 +71,7 @@ jobs:
       contents: read
       id-token: write
     with:
+      agent_name: ${{ format('purchasing-advice-demo-pr-{0}', github.event.pull_request.number || github.run_id) }}
       dataset: approvers-development
       # With 34 rows, the noise band allows two binary outcomes to change.
       tolerance: 0.07

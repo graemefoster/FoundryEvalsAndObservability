@@ -1,11 +1,19 @@
 name: Evaluate agent (reusable)
 
-# Shared by agent-pr.yml, agent-main.yml and agent-release.yml.
+# Shared by the PR gate and main promotion workflow.
 # Deploys the checked-out agent, runs one dataset through the judges, then either
 # compares with a stored baseline or saves this run as the new baseline.
 on:
   workflow_call:
     inputs:
+      agent_name:
+        description: Foundry agent to deploy and evaluate
+        type: string
+        required: true
+      deploy_agent:
+        description: Deploy before evaluating (false reuses the tested dev deployment)
+        type: boolean
+        default: true
       dataset:
         description: JSONL file under sample/evaluation/datasets/
         type: string
@@ -45,6 +53,10 @@ permissions:
 
 jobs:
   evaluate:
+    concurrency:
+      group: purchasing-agent-${{ inputs.agent_name }}
+      cancel-in-progress: false
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: demo
@@ -55,6 +67,7 @@ jobs:
         shell: bash
         working-directory: sample
     env:
+      AGENT_NAME: ${{ inputs.agent_name }}
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
@@ -66,6 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 0
       - name: Select comparison baseline
@@ -80,19 +94,19 @@ jobs:
               exit 1
             fi
             echo "save=true" >> "$GITHUB_OUTPUT"
-            echo "reason=write_baseline was ticked" >> "$GITHUB_OUTPUT"
+            echo "reason=explicit baseline mode was requested" >> "$GITHUB_OUTPUT"
           else
             path="evaluation/baselines/${DATASET_STEM}.json"
             if [ -n "$BASE_SHA" ]; then
               baseline="$RUNNER_TEMP/comparison-baseline.json"
               if ! git show "${BASE_SHA}:sample/${path}" > "$baseline"; then
-                echo "::error::No baseline at sample/${path} in the PR's base revision. Run the workflow manually on main with write_baseline=true, then commit the artifact."
+                echo "::error::No baseline at sample/${path} in the PR's base revision. Run the appropriate workflow in its explicit baseline mode, then review and commit the artifact."
                 exit 1
               fi
             else
               baseline="$GITHUB_WORKSPACE/sample/${path}"
               if [ ! -f "$baseline" ]; then
-                echo "::error::No baseline at sample/${path}. Run the workflow manually with write_baseline=true, then commit the artifact."
+                echo "::error::No baseline at sample/${path}. Run the appropriate workflow in its explicit baseline mode, then review and commit the artifact."
                 exit 1
               fi
             fi
@@ -101,6 +115,10 @@ jobs:
           fi
       - name: Check configuration
         run: |
+          if [[ ! "$AGENT_NAME" =~ ^purchasing-advice-demo-(dev|pr-[0-9]+|check-[0-9]+)$ ]]; then
+            echo "::error::Invalid evaluation agent name: $AGENT_NAME"
+            exit 1
+          fi
           for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
             AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
             if [ -z "$(printenv "$key")" ]; then
@@ -146,10 +164,21 @@ jobs:
           azd env set AZURE_TENANT_ID "$AZURE_TENANT_ID"
           azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
           azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
-      # Demo simplification: one Foundry project, so this deploys over the shared demo agent.
-      # With separate projects, point this at a staging agent instead.
+          azd env set AGENT_NAME "$AGENT_NAME"
       - name: Deploy agent
+        if: inputs.deploy_agent
         run: azd deploy purchasing-advice-demo --no-prompt
+      - name: Verify evaluation target
+        if: inputs.deploy_agent
+        run: |
+          azd ai agent show purchasing-advice-demo --output json | python3 -c '
+          import json, os, sys
+          actual = json.load(sys.stdin)["name"]
+          expected = os.environ["AGENT_NAME"]
+          if actual != expected:
+              raise SystemExit(f"Agent name mismatch: deployed {actual}, expected {expected}")
+          print(f"Verified evaluation target: {actual}")
+          '
       - name: Run ${{ inputs.dataset }}
         env:
           EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
@@ -215,6 +244,7 @@ jobs:
           cat gate.txt
           {
             echo "## ${DATASET_STEM}: $([ $status -eq 0 ] && echo passed || echo regression)"
+            echo "Agent: \`${AGENT_NAME}\`"
             echo "Revision: \`${GITHUB_SHA}\`"
             echo '```'
             cat gate.txt

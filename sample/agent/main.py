@@ -18,7 +18,7 @@ def main() -> None:
         )
         agent = Agent(
             client=client,
-            name="purchasing-advice-demo",
+            name=os.environ.get("AGENT_NAME", "purchasing-advice-demo"),
             instructions=config.instructions,
             tools=config.apply_tool_descriptions(
                 [
