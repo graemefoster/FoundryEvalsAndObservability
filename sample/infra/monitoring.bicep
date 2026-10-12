@@ -9,6 +9,28 @@ param evaluatorPrincipalId string
   'ServicePrincipal'
 ])
 param evaluatorPrincipalType string = 'User'
+@description('GitHub owner/repository trusted for the demo environment. Empty disables the GitHub identity.')
+param githubRepository string = ''
+
+var enableGitHub = !empty(githubRepository)
+var githubSubject = 'repo:${githubRepository}:environment:demo'
+
+resource githubIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = if (enableGitHub) {
+  name: 'id-${environmentName}-github'
+  location: location
+}
+
+resource githubFederation 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = if (enableGitHub) {
+  parent: githubIdentity
+  name: 'github-demo'
+  properties: {
+    issuer: 'https://token.actions.githubusercontent.com'
+    audiences: [
+      'api://AzureADTokenExchange'
+    ]
+    subject: githubSubject
+  }
+}
 
 resource account 'Microsoft.CognitiveServices/accounts@2025-06-01' existing = {
   name: accountName
@@ -31,6 +53,30 @@ resource evaluatorInference 'Microsoft.Authorization/roleAssignments@2022-04-01'
     roleDefinitionId: inferenceRoleId
     principalId: evaluatorPrincipalId
     principalType: evaluatorPrincipalType
+  }
+}
+
+resource githubInference 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableGitHub) {
+  name: guid(account.id, githubIdentity!.id, inferenceRoleId)
+  scope: account
+  properties: {
+    roleDefinitionId: inferenceRoleId
+    principalId: githubIdentity!.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+var contributorRoleId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  'b24988ac-6180-42a0-ab88-20f7382dd24c'
+)
+resource githubDeployment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableGitHub) {
+  name: guid(project.id, githubIdentity!.id, contributorRoleId)
+  scope: project
+  properties: {
+    roleDefinitionId: contributorRoleId
+    principalId: githubIdentity!.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -97,3 +143,7 @@ resource connection 'Microsoft.CognitiveServices/accounts/projects/connections@2
 
 output applicationInsightsId string = insights.id
 output applicationInsightsAppId string = insights.properties.AppId
+output githubIdentityId string = enableGitHub ? githubIdentity!.id : ''
+output githubClientId string = enableGitHub ? githubIdentity!.properties.clientId : ''
+output githubTenantId string = enableGitHub ? githubIdentity!.properties.tenantId : ''
+output githubFederatedSubject string = enableGitHub ? githubSubject : ''

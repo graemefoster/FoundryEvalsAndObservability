@@ -199,13 +199,40 @@ All three call `_agent-eval.yml`. **First run:** trigger each workflow manually 
 
 **GitHub setup:**
 
-- Create two environments: `demo` (used for deploying and evaluating) and `production` (add
-  yourself as a required reviewer).
-- Use an Azure OIDC identity with subject `repo:<owner>/<repo>:environment:demo`. It needs
-  **Contributor** and **Foundry User** on the project, plus account-level **Foundry User**.
+- Create two environments: `demo` (used for deploying and evaluating; require a reviewer
+  before allowing checked-out code to use Azure) and `production` (add yourself as a required reviewer).
+- The companion Bicep can create a user-assigned managed identity with OIDC subject
+  `repo:<owner>/<repo>:environment:demo`. It grants project-level **Contributor** and
+  account-level **Foundry User** (also inherited by the project), not subscription-wide access.
+  This identity deploys and evaluates the existing agent; it cannot provision infrastructure
+  or grant roles. The `production` approval job does not sign in to Azure.
 - Set these variables on the `demo` environment: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
   `AZURE_SUBSCRIPTION_ID`, `AZURE_ENV_NAME`, `AZURE_LOCATION`, `AZURE_AI_PROJECT_ID`,
   `FOUNDRY_PROJECT_ENDPOINT`.
+
+Set azd's `GITHUB_REPOSITORY` to the intended `owner/repo`, including your fork, and
+run the companion deployment below. Its `githubClientId` and `githubTenantId` outputs
+provide the first two variables. Configure GitHub after that deployment, from `sample/`:
+
+```bash
+GITHUB_REPOSITORY="$(azd env get-value GITHUB_REPOSITORY -e "$ENVIRONMENT")"
+RESOURCE_GROUP="$(azd env get-value AZURE_RESOURCE_GROUP -e "$ENVIRONMENT")"
+gh variable set AZURE_CLIENT_ID --env demo --repo "$GITHUB_REPOSITORY" \
+  --body "$(az deployment group show --name demo-monitoring --resource-group "$RESOURCE_GROUP" \
+    --query properties.outputs.githubClientId.value -o tsv)"
+gh variable set AZURE_TENANT_ID --env demo --repo "$GITHUB_REPOSITORY" \
+  --body "$(az deployment group show --name demo-monitoring --resource-group "$RESOURCE_GROUP" \
+    --query properties.outputs.githubTenantId.value -o tsv)"
+gh variable set AZURE_ENV_NAME --env demo --repo "$GITHUB_REPOSITORY" --body "$ENVIRONMENT"
+for key in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
+  gh variable set "$key" --env demo --repo "$GITHUB_REPOSITORY" \
+    --body "$(azd env get-value "$key" -e "$ENVIRONMENT")"
+done
+```
+
+Only the exact repository and `demo` environment are trusted; fork pull requests do
+not run the Azure job. A fork owner must provision their own identity and GitHub
+environment variables. Do not approve Azure access for unreviewed PR code.
 
 Every evaluation deploys over the one demo agent, so don't run two workflows at once (they
 share a concurrency group).
@@ -232,9 +259,13 @@ azd provision -e "$ENVIRONMENT" --no-prompt
 ```
 
 Then deploy `infra/monitoring.bicep` for Application Insights and evaluator access. Pass
-your own object ID as `evaluatorPrincipalId`, so the cloud judges can call GPT-5.5:
+your own object ID as `evaluatorPrincipalId`, so the cloud judges can call GPT-5.5.
+To also provision GitHub OIDC, set the fork-aware azd repository variable and pass it
+as `githubRepository`. This requires permission to create managed identities and
+role assignments, but no Microsoft Graph directory permissions:
 
 ```bash
+azd env set GITHUB_REPOSITORY "<owner>/<repo>" -e "$ENVIRONMENT"
 PROJECT_ID="$(azd env get-value AZURE_AI_PROJECT_ID -e "$ENVIRONMENT")"
 ACCOUNT_ID="${PROJECT_ID%/projects/*}"
 az deployment group create --name demo-monitoring \
@@ -242,8 +273,13 @@ az deployment group create --name demo-monitoring \
   --template-file infra/monitoring.bicep \
   --parameters environmentName="$ENVIRONMENT" accountName="${ACCOUNT_ID##*/}" \
     projectName="${PROJECT_ID##*/}" \
-    evaluatorPrincipalId="$(az ad signed-in-user show --query id -o tsv)"
+    evaluatorPrincipalId="$(az ad signed-in-user show --query id -o tsv)" \
+    githubRepository="$(azd env get-value GITHUB_REPOSITORY -e "$ENVIRONMENT")"
 ```
+
+For monitoring-only setup, omit the `GITHUB_REPOSITORY` command and `githubRepository`
+parameter. For an already provisioned project, use the same companion deployment;
+do not rerun `azd provision` just to add GitHub authentication.
 
 Allow a few minutes for role assignments to take effect, then deploy the agent and check it:
 

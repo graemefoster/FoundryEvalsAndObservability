@@ -35,6 +35,11 @@ def main() -> None:
     mode.add_argument(
         "--register-only", action="store_true", help="Ensure evaluators exist; no scoring run."
     )
+    parser.add_argument(
+        "--update-evaluators",
+        action="store_true",
+        help="Register the local evaluator JSON as a new version before running.",
+    )
     mode.add_argument(
         "--demo-replay",
         type=Path,
@@ -63,12 +68,11 @@ def main() -> None:
         if not args.dry_run:
             credential = stack.enter_context(DefaultAzureCredential())
             project = stack.enter_context(
-                AIProjectClient(
-                    endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"], credential=credential
-                )
+                AIProjectClient(endpoint=project_endpoint(), credential=credential)
             )
-            ensure_evaluator(project, "purchasing-next-action.json", EVALUATOR_NAME)
-            ensure_evaluator(project, "purchasing-demo-rubric.json", RUBRIC_NAME)
+            update = args.update_evaluators
+            ensure_evaluator(project, "purchasing-next-action.json", EVALUATOR_NAME, update)
+            ensure_evaluator(project, "purchasing-demo-rubric.json", RUBRIC_NAME, update)
             if args.register_only:
                 return
 
@@ -108,11 +112,14 @@ def main() -> None:
                         "deployment_name": JUDGE_MODEL,
                         "threshold": 1,
                     },
-                    # The prompt judge sees the question, reference and actual answer.
+                    # The prompt judge sees the question, reference, actual answer and tool calls.
+                    # The tool calls let its reason explain *why* an answer failed, which is
+                    # what the optimiser's reflection model learns from.
                     "data_mapping": {
                         "query": "{{item.query}}",
                         "ground_truth": "{{item.ground_truth}}",
                         "response": "{{sample.output_text}}",
+                        "tool_calls": "{{sample.tool_calls}}",
                     },
                 },
                 {
@@ -184,17 +191,31 @@ def main() -> None:
                 )
 
 
-def ensure_evaluator(project: AIProjectClient, filename: str, name: str) -> None:
-    for evaluator in project.beta.evaluators.list(type="custom"):
-        if evaluator.name == name:
-            print(f"Using evaluator: {name}:{evaluator.version}", flush=True)
-            return
+def project_endpoint() -> str:
+    endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "").strip()
+    if not endpoint.startswith("https://"):
+        raise SystemExit(
+            "FOUNDRY_PROJECT_ENDPOINT is empty or not an https URL in this terminal.\n"
+            "From sample/, run:\n"
+            '  export FOUNDRY_PROJECT_ENDPOINT="$(azd env get-value FOUNDRY_PROJECT_ENDPOINT)"'
+        )
+    return endpoint
+
+
+def ensure_evaluator(
+    project: AIProjectClient, filename: str, name: str, update: bool = False
+) -> None:
+    if not update:
+        for evaluator in project.beta.evaluators.list(type="custom"):
+            if evaluator.name == name:
+                print(f"Using evaluator: {name}:{evaluator.version}", flush=True)
+                return
 
     definition = json.loads((Path(__file__).parent / filename).read_text())
     if definition.pop("name") != name:
         raise ValueError(f"Evaluator name in {filename} does not match {name!r}")
     evaluator = project.beta.evaluators.create_version(name, evaluator_version=definition)
-    print(f"Created evaluator: {name}:{evaluator.version}", flush=True)
+    print(f"Registered evaluator: {name}:{evaluator.version}", flush=True)
 
 
 def wait_for_evaluation(
