@@ -363,8 +363,9 @@ requests) the prompt fact check, all in seconds without Azure. Then sign in, dep
 evaluate, and compare. The workflow starts for every PR so required checks are always reported.
 If the only changed paths are `presentation/` or `PLAYBOOK.md`, the cloud job is explicitly
 skipped: no deployment or model evaluation. Every other path, including sample code, prompts,
-tools, data, dependencies and CI configuration, requires evaluation. Manual runs always evaluate;
-missing or unreadable comparison revisions fail rather than skipping. Renames check both paths.
+tools, data, dependencies and CI configuration, requires evaluation. Manual runs always evaluate.
+The offline job summary records why a presentation-only evaluation was skipped.
+Missing or unreadable comparison revisions fail rather than skipping. Renames check both paths.
 Forks still cannot run cloud evaluation; a fork's presentation/playbook-only PR can report the
 skipped check, while an agent-affecting fork PR needs a trusted branch in the repository.
 
