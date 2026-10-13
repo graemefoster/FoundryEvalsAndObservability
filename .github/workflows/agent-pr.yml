@@ -6,10 +6,6 @@ name: Agent PR gate
 # The drift set never runs here; it is kept for releases so it stays a surprise exam.
 on:
   pull_request:
-    paths:
-      - "sample/**"
-      - ".github/workflows/agent-*.yml"
-      - ".github/workflows/_agent-eval.yml"
   workflow_dispatch:
     inputs:
       write_baseline:
@@ -23,6 +19,8 @@ permissions:
 jobs:
   offline:
     name: 1. Offline checks
+    outputs:
+      evaluate: ${{ steps.scope.outputs.evaluate }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -34,6 +32,35 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Decide whether cloud evaluation is needed
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          evaluate=true
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            if [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ]; then
+              echo "::error::Missing PR comparison revisions; cannot safely skip evaluation."
+              exit 1
+            fi
+            git diff --no-renames --name-only -z "${BASE_SHA}...${HEAD_SHA}" -- \
+              > "$RUNNER_TEMP/pr-evaluation-paths"
+            evaluate=false
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                presentation/*|PLAYBOOK.md) ;;
+                *) evaluate=true; break ;;
+              esac
+            done < "$RUNNER_TEMP/pr-evaluation-paths"
+          fi
+          echo "evaluate=$evaluate" >> "$GITHUB_OUTPUT"
+          if [ "$evaluate" = "true" ]; then
+            echo "Cloud evaluation required: agent-affecting or unclassified changes, or manual run."
+          else
+            echo "Cloud evaluation skipped: only presentation or playbook changes." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.12.11"
@@ -65,12 +92,16 @@ jobs:
   development:
     name: 2. Development set vs baseline
     needs: offline
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository ||
+      needs.offline.outputs.evaluate == 'false'
     uses: ./.github/workflows/_agent-eval.yml
     permissions:
       contents: read
       id-token: write
     with:
+      run_evaluation: ${{ needs.offline.outputs.evaluate == 'true' }}
       agent_name: ${{ format('purchasing-advice-demo-pr-{0}', github.event.pull_request.number || github.run_id) }}
       dataset: approvers-development
       # With 34 rows, the noise band allows two binary outcomes to change.

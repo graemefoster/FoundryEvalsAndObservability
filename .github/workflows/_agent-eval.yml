@@ -6,6 +6,10 @@ name: Evaluate agent (reusable)
 on:
   workflow_call:
     inputs:
+      run_evaluation:
+        description: False skips the required evaluation job for presentation/playbook-only PRs
+        type: boolean
+        default: true
       agent_name:
         description: Foundry agent to deploy and evaluate
         type: string
@@ -57,6 +61,7 @@ permissions:
 
 jobs:
   evaluate:
+    if: inputs.run_evaluation
     concurrency:
       group: purchasing-agent-${{ inputs.agent_name }}
       cancel-in-progress: false
