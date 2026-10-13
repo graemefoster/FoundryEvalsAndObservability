@@ -25,7 +25,7 @@ stand-ins shaped like the Microsoft IQ tools:
 | `sample/agent/` | Agent code, tools, baseline config (`.agent_configs/baseline/`), data in `data/` |
 | `sample/agent/data/policy_embeddings.json` | Policy vectors for hybrid search. Rebuild with `python agent/build_embeddings.py` after editing a policy |
 | `sample/evaluation/datasets/` | The three test sets (below) |
-| `sample/evaluation/candidates/` | The optimiser's candidate (`optimiser-0.691/`) and a reviewed version (`reviewed/`) |
+| `sample/evaluation/candidates/` | Complete saved configs: manually improved `reviewed/`, deliberately bad `regressed/`, and older optimiser exhibit `optimiser-0.691/` |
 | `sample/evaluation/overfitting-demo/` | An early optimiser run, kept as an exhibit of overfitting |
 | `sample/infra/` | `main.bicep` (Microsoft's generated Foundry template) plus `modules/monitoring.bicep`, and the azd hooks |
 | `.github/workflows/` | PR gate and main-to-release promotion, sharing one evaluator workflow |
@@ -159,9 +159,10 @@ beforehand. On stage you open prepared runs in Foundry; only two things run live
 2. **Optimiser run**:
    `azd ai agent optimize --config evaluation/optimize.yaml --no-prompt`. Review the best
    candidate (see Demo 5) and run the fact check on it.
-3. **The three pull requests for Demo 6**. Each gate deploys its own `-pr-<number>` agent,
-   leaving the original agent and its optimiser run untouched. Leave them open for the demo;
-   see *Demo 6* for the commands.
+3. **The promotion and failing PR for Demo 6**. Prepare a reviewed candidate's successful
+   journey and a separate bad-prompt PR that stops at development evaluation. Each PR gets its
+   own agent; promotion uses `-dev` and `-release`, leaving the OG agent untouched.
+   Show saved runs instead of waiting for cloud jobs on stage; see *Demo 6* for the commands.
 4. **Rehearse the Demo 2 question** three times and note what it says.
 5. **Screenshot every portal page you'll show:** the trace, the holdout run with a failing
    row, the Optimize tab, **View changes** on the instructions and on the `ask` tool
@@ -171,6 +172,22 @@ beforehand. On stage you open prepared runs in Foundry; only two things run live
    `FOUNDRY_PROJECT_ENDPOINT` exported.
 
 ## On stage
+
+### The story
+
+1. **Start with the OG agent**, `purchasing-advice-demo`; CI never overwrites it.
+   Show its traces and saved development/holdout evaluations. A green development check does
+   not guarantee a green holdout gate; identify the failure and which judge caught it.
+2. **Run the optimiser, then review a better candidate.** Inspect the effective instructions
+   and tool descriptions, check grounding and measure the result. Follow a reviewed candidate
+   through PR evaluation, merge, holdout, dev review, drift, final approval and release.
+3. **Show the deliberately bad prompt.** Its cheap checks pass, but the real development
+   evaluation fails and the required check blocks ordinary merging. Leave this PR unmerged.
+
+`candidates/reviewed/` is the saved, manually improved configuration that passed promotion,
+not an optimiser-generated winner. Use it as a rehearsed fallback, clearly labelled. The
+`regressed/` snapshot gives every request the same referral without using tools. These archives
+are inactive until copied into the baseline folder on a branch; they do not change the OG agent.
 
 ### Run of show (62 minutes)
 
@@ -189,12 +206,12 @@ session. Timings changed from the deck's current ones are marked (was …).
 | 8 | Observe | 2 | Calls, inputs and outputs, timing |
 | 9 | **Demo 3** Inspect the trace | 3 (was 4) | Hybrid search and the Work IQ lookup in the trace |
 | 10 | Evaluate | 3 | The judges we actually run |
-| 11 | **Demo 4** Evaluate across cases | 7 (was 6) | Holdout run; a failing question and its judge reason; fixing tools first; noise |
-| 12 | Optimise | 3 | How the optimiser works; fix the tools first |
+| 11 | **Demo 4** Evaluate across cases | 7 (was 6) | OG development and holdout; failing next action, judge reason and noise |
+| 12 | Optimise | 3 | How the optimiser works; grounding before optimisation |
 | 13 | **Demo 5** Agent Optimizer | 6 | Read the best candidate: score change, rules vs copied facts |
 | 14 | Three test sets | 2 | Homework, practice exam, surprise exam |
 | 15 | What the gate checks | 2 | Cheapest check first; baseline, not a fixed number |
-| 16 | **Demo 6** Three pull requests | 8 (was 5) | Copied facts 🔴, the "speed-up" regression 🔴, the reviewed improvement 🟢 |
+| 16 | **Demo 6** Promotion, then a blocked PR | 8 (was 5) | Reviewed candidate through release, then the bad prompt blocked at PR |
 | 17 | Production feeds the tests | 2 | Continuous evaluation; failures become tests |
 | 18 | Worth exploring next | 1 | Signposts only |
 | 19 | Build, measure, improve, repeat | 10 | Summary and questions |
@@ -251,20 +268,22 @@ reason: it describes what the tools did, not just that the answer was wrong. Whi
 fail varies from run to run; in ours, the over-$5,000 ones did, sending the employee to their
 line manager instead of the Category Manager, the same failure as Marcus.
 
-Then the story behind the numbers, from building this: with our first mock search tool the
-baseline scored 12 of 18; fixing two tools, not the prompt, took it to 18 of 18, so we wrote
-harder questions. Then state your own noise level from the two baseline runs: only trust a
-change bigger than that.
-**Point:** fix the tools first; measure across many questions; read failures, not averages.
+Compare the OG's development and holdout runs and show where the pipeline stopped. Readiness
+for release is not the same as matching a development baseline. A response can pass the
+behaviour rubric while failing the binary next-action judge.
+Then state your noise level from repeat runs; a single regression is a measured result, not
+proof that the prompt always fails.
+**Point:** verify grounding, read failures as well as averages, and use more than one gate.
 
 ### Demo 5: Optimise
 
 Open the agent's **Optimize** tab and your prepared run. Every run differs, so read it rather
 than following a script:
 
-1. **The score change on the holdout.** By Microsoft's scale, under 0.03 is noise and 0.03-0.10
-   moderate. Also count how many questions changed, using your noise level from the two
-   baseline runs.
+1. **The reported development and validation results.** Compare only matching case coverage,
+   judges and scoring configuration. Count changed outcomes and look at tokens and latency,
+   using repeat runs to judge noise. The optimiser's holdout is its `validation_dataset`;
+   it influences selection, so it is not untouched acceptance data.
 2. **View changes** on the best candidate, in the instructions **and the tool descriptions**,
    and sort what you find:
    - **Rules worth keeping:** general behaviour, such as answer-first wording.
@@ -274,30 +293,36 @@ than following a script:
      the policy requires)? Ours didn't have one.
 3. **Run the fact check on it** (the Demo 6 command, pointed at your candidate).
 
-If your run turns up nothing worth showing, use the candidate saved from ours,
-`candidates/optimiser-0.691/`: +0.078 on the holdout, with three good rules, training names and
-amounts in its tool descriptions, and no role rule.
+If your run produces no candidate worth promoting, use `candidates/reviewed/` for the saved
+promotion walkthrough. Say explicitly that it was manually improved from evaluation evidence.
+`candidates/optimiser-0.691/` remains an older exhibit of useful rules mixed with copied facts;
+do not treat its historical scores as comparable with the current datasets and judges.
 
 **Point:** the score went up; that doesn't mean you ship it. A person reads the change.
 
-### Demo 6: Three pull requests
+### Demo 6: Promotion, then a blocked PR
 
 The gate is layered: the cheapest check runs first, and the expensive ones only run on changes
-that pass it. Three prepared pull requests, one per outcome:
+that pass it. Show the successful journey before the deliberately failing PR:
 
 | Pull request | What changed | What the gate does |
 | --- | --- | --- |
-| **Copied facts** | The optimiser's candidate (`candidates/optimiser-0.691/`) | 🔴 **1. Offline checks** fails in seconds on the fact check. No evaluation runs |
-| **"Speed up: skip the Work IQ lookup"** | Step 3 says approvals always go to the line manager; no availability check (`candidates/regressed/`) | 🔴 **2. Development set** fails: leave, delegation and Category Manager questions break. The summary shows the drop |
-| **Reviewed optimiser rules** | The candidate's good rules, no copied facts, plus the missing role rule (`candidates/reviewed/`) | 🟢 Passes: same or better than the baseline |
+| **Reviewed improvement** | A reviewed fresh candidate, or the manually improved `candidates/reviewed/` fallback | PR development comparison, then main holdout, dev review, drift, final approval and `-release` deployment |
+| **No tools, same answer every time** | `candidates/regressed/` ignores decision facts and gives a generic Purchasing referral | Cheap checks pass; **2. Development set** fails on real answers and blocks ordinary merging |
 
-**Showing the improvement live:** don't pick a question by hunch (our "sure to fail" question
-passed on the day). Run the holdout twice with each prompt and let `compare_runs.py` find the
-questions the baseline failed every time and the reviewed prompt passed every time; ask one of
-those with each prompt. If none qualifies, show the improvement as a rate across the questions
-instead: that's the honest version.
+Open the prepared successful PR and main promotion run: development passed, main evaluated
+`-dev`, the reviewer inspected it before drift, every mandatory drift case passed, then a
+separate release approval authorised deployment of the same commit. Keep the drift questions
+private and show counts only.
 
-Show them in that order, then run the fact check live to show how cheap it is:
+Then open the bad-prompt PR: show that it is not a draft, offline checks passed, evaluation
+completed, and **Compare with baseline** failed. The branch protection requires the failed
+check; do not force-merge this demonstration. The existing release is unaffected.
+
+Do not rely on a live "ta-da" answer to prove improvement. Use saved failures, measured rates
+and the gates. Re-run before the talk if possible; exact scores and failing cases can vary.
+
+Optionally show the older copied-facts candidate failing before any model evaluation:
 
 ```bash
 python evaluation/check_prompt_facts.py --baseline agent/.agent_configs/baseline \
@@ -313,25 +338,27 @@ reads the change.
 
 **Points to land:**
 - Not every check on an AI system needs an AI judge; the cheapest one runs first.
-- The regression looked like an optimisation. Only the evaluation could tell.
+- Useful-looking changes still need evaluation; the bad prompt demonstrates a clear regression.
 - The gate doesn't need you to *beat* the baseline, only not to fall below it by more than the
   normal wobble.
-- A red check blocks merging only if a ruleset on `main` requires it. Admins can still bypass,
+- A red check blocks ordinary merging only if branch protection or a ruleset requires it. Admins may override,
   and every bypass is recorded: the gate stops accidents, and puts a name on deliberate calls.
 
 **Preparing the PRs** (after the optimiser has finished), from `sample/`:
 
 ```bash
 open_pr() {  # branch, folder, title, body
-  git checkout main && git checkout -b "$1"
-  cp evaluation/candidates/$2/instructions.md agent/.agent_configs/baseline/
-  [ "$2" = optimiser-0.691 ] && cp evaluation/candidates/$2/tools.json agent/.agent_configs/baseline/
-  git commit -am "$3" && git push -u origin "$1" && gh pr create --title "$3" --body "$4"
+  git switch main && git pull --ff-only && git switch -c "$1" || return
+  cp "evaluation/candidates/$2/"{instructions.md,metadata.yaml,tools.json} \
+    agent/.agent_configs/baseline/ || return
+  git add agent/.agent_configs/baseline || return
+  git commit -m "$3" && git push -u origin "$1" && gh pr create --title "$3" --body "$4"
 }
-open_pr demo/optimiser-candidate optimiser-0.691 "Try the optimiser's candidate" "Best candidate from the Agent Optimizer run."
-open_pr demo/skip-workiq-lookup regressed "Speed up: skip the Work IQ availability lookup" "Saves a tool call per question: approvals go to the line manager."
-open_pr demo/reviewed-candidate reviewed "Reviewed optimiser rules: find the required role, answer first" "The optimiser's good rules without its copied facts, plus the rule it missed."
-git checkout main
+open_pr demo/reviewed-candidate reviewed "Review the evidence-led purchasing improvement" \
+  "Saved manually improved configuration, not an optimiser-generated winner."
+open_pr demo/no-grounding regressed "Demo: no tools, same answer to every request" \
+  "Deliberately bad negative control. Observe the evaluation failure; do not merge."
+git switch main
 ```
 
 ### Production feeds the tests (slide, 2 minutes)
