@@ -360,7 +360,13 @@ service key to read the newly deployed agent's identity.
 
 **The PR gate, step by step:** lint, a dry run of the evaluation request, and (on pull
 requests) the prompt fact check, all in seconds without Azure. Then sign in, deploy,
-evaluate, and compare.
+evaluate, and compare. The workflow starts for every PR so required checks are always reported.
+If the only changed paths are `presentation/` or `PLAYBOOK.md`, the cloud job is explicitly
+skipped: no deployment or model evaluation. Every other path, including sample code, prompts,
+tools, data, dependencies and CI configuration, requires evaluation. Manual runs always evaluate;
+missing or unreadable comparison revisions fail rather than skipping. Renames check both paths.
+Forks still cannot run cloud evaluation; a fork's presentation/playbook-only PR can report the
+skipped check, while an agent-affecting fork PR needs a trusted branch in the repository.
 
 **How the comparison works:** the baseline is a committed file,
 `sample/evaluation/baselines/<test set>.json`, holding each judge's average from an accepted
@@ -395,7 +401,7 @@ gh workflow run agent-main.yml --ref main -f mode=release
 ```
 
 **Blocking merges:** a failed check marks a PR red; it blocks merging only if a ruleset on
-`main` requires the checks "1. Offline checks" and "2. Development set vs baseline" (Settings →
+`main` requires the checks "1. Offline checks" and "2. Development set vs baseline / evaluate" (Settings →
 Rules → Rulesets). Admins on the ruleset's bypass list can still merge; GitHub records each
 bypass.
 
