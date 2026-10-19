@@ -490,6 +490,52 @@
       line-height: 1.3;
     }
 
+    .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+      margin: 28px 100px 72px 0;
+    }
+
+    .reference-grid h3 {
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--reference-accent, var(--cp-link));
+      color: var(--reference-accent, var(--cp-link));
+      font-size: 24px;
+    }
+
+    .reference-grid > div:nth-child(2) { --reference-accent: var(--cp-accent); }
+    .reference-grid > div:nth-child(3) { --reference-accent: var(--cp-warning); }
+    .reference-grid > div:nth-child(4) { --reference-accent: var(--cp-success); }
+
+    .reference-grid ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .reference-grid li {
+      margin-bottom: 16px;
+      font-size: 19px;
+      line-height: 1.3;
+    }
+
+    .reference-grid a {
+      color: var(--cp-text);
+      text-decoration: none;
+    }
+
+    .reference-grid a:hover {
+      text-decoration: underline;
+    }
+
+    .reference-source {
+      display: block;
+      color: var(--cp-text-soft);
+      font-size: 14px;
+    }
+
     .delivery-cycle {
       position: relative;
       margin-top: 24px;
@@ -609,49 +655,64 @@
     }
 
     .delivery-feedback {
+      position: relative;
       display: flex;
-      justify-content: flex-end;
-      height: 82px;
-      margin-top: 32px;
+      align-items: center;
+      gap: 16px;
+      margin: 40px 0 0 calc((100% - 72px) * 0.265625 + 36px);
+      padding: 14px 20px;
+      border: 1px dashed var(--cp-accent);
+      border-radius: 14px;
+    }
+
+    .delivery-feedback::before,
+    .delivery-feedback::after {
+      position: absolute;
+      top: -38px;
+      color: var(--cp-accent);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .delivery-feedback::before {
+      content: "\2191";
+      left: 60px;
+    }
+
+    .delivery-feedback::after {
+      content: "\2193";
+      right: 160px;
+    }
+
+    .delivery-feedback-label {
+      flex: 1;
+      color: var(--cp-accent);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .delivery-feedback-step {
-      position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 6px;
-      height: 100%;
-      width: calc((100% - 72px) * 0.265625);
-      min-width: 0;
-      padding: 12px 20px;
-      border: 1px solid var(--cp-border);
+      gap: 4px;
+      min-width: 220px;
+      padding: 10px 16px;
+      border: 1px solid var(--cp-accent);
       border-radius: 10px;
       background: var(--cp-surface);
       color: var(--cp-text);
       font-size: 20px;
     }
 
+    .delivery-feedback-step strong {
+      color: var(--cp-accent);
+    }
+
     .delivery-feedback-step small {
       color: var(--cp-text-soft);
       font-size: 16px;
-    }
-
-    .delivery-feedback-step.optimise {
-      border-color: var(--cp-accent);
-    }
-
-    .delivery-feedback-step.optimise strong {
-      color: var(--cp-accent);
-    }
-
-    .delivery-connectors {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      color: var(--cp-accent);
     }
 
     .journey {
@@ -660,6 +721,34 @@
       gap: 14px;
       margin-top: auto;
       margin-bottom: auto;
+    }
+
+    .journey-grid {
+      flex: 0 0 auto;
+      margin: 30px 110px 40px 0;
+    }
+
+    .journey-grid .concept-card {
+      min-height: 154px;
+      padding: 22px 26px;
+    }
+
+    .journey-grid .concept-icon {
+      margin-bottom: 18px;
+    }
+
+    .journey-grid h3 {
+      margin: 0;
+      color: var(--cp-text);
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .journey-slide .slide-takeaway {
+      max-width: 820px;
+      margin: 0 36px 34px 0;
+      font-size: 28px;
+      line-height: 1.3;
     }
 
     .journey-step {
@@ -3028,6 +3117,125 @@
       padding-top: 5%;
     }
 
+    /* AI Genius closing template slides (PPTX layouts 9-11); positions are layout points x 5/3. */
+    .slide.template-closing {
+      padding: 0;
+    }
+
+    .slide.template-closing-qr {
+      background-image: url("assets/ai-genius-closing-qr.jpg");
+    }
+
+    .slide.template-closing-badge {
+      background-image: url("assets/ai-genius-closing-badge.jpg");
+    }
+
+    .slide.template-closing-thanks {
+      background-image: url("assets/ai-genius-closing-thanks.jpg");
+    }
+
+    .template-closing > * {
+      position: absolute;
+      margin: 0;
+    }
+
+    .template-closing .highlight {
+      color: #ffb900;
+    }
+
+    .closing-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .closing-scan {
+      left: 61px;
+      top: 282px;
+      width: 775px;
+      font-size: 73px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .closing-qr {
+      left: 921px;
+      top: 225px;
+      width: 494px;
+      height: 494px;
+      background: #fff;
+    }
+
+    .closing-qr-missing {
+      display: grid;
+      place-items: center;
+      padding: 40px;
+      background: #e3e3e3;
+      color: #1f2a44;
+      font-size: 30px;
+      text-align: center;
+    }
+
+    .closing-badge-image {
+      left: 216px;
+      top: 218px;
+      width: 358px;
+    }
+
+    .closing-badge-social {
+      left: 119px;
+      top: 588px;
+      width: 700px;
+      font-size: 60px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .closing-badge-scan {
+      left: 754px;
+      top: 149px;
+      width: 718px;
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1.25;
+      text-align: center;
+      letter-spacing: 0;
+    }
+
+    .closing-badge-qr {
+      left: 945px;
+      top: 270px;
+      width: 365px;
+      height: 358px;
+    }
+
+    .closing-badge-steps {
+      left: 945px;
+      top: 672px;
+      width: 560px;
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .closing-badge-steps ol {
+      margin: 0;
+      padding-left: 30px;
+    }
+
+    .closing-badge-steps u {
+      text-underline-offset: 3px;
+    }
+
+    .closing-thanks {
+      left: 847px;
+      top: 384px;
+      font-size: 67px;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
     .slide::after {
       display: none;
     }
@@ -3167,7 +3375,7 @@
     <section class="stage" aria-label="Presentation">
       <div class="slide-viewport" id="slideViewport">
         <div class="slide-frame">
-        <article class="slide template-title section-context active" data-title="From Prompt to Production" data-minutes="1">
+        <article class="slide template-title section-context active" data-title="From Prompt to Production" data-minutes="1" data-rehearsal-id="opening">
           <div class="hero-grid">
             <div>
               <p class="slide-kicker">AI Genius / Season 6 / Episode 2</p>
@@ -3176,16 +3384,18 @@
               <p class="small muted">Graeme Foster</p>
             </div>
             <div class="hero-loop" aria-hidden="true">
-              <div class="mini-card"><strong>Context</strong>Microsoft IQ</div>
-              <div class="mini-card"><strong>Evaluation</strong>Evaluations + checklists</div>
-              <div class="mini-card"><strong>Optimisation</strong>Agent Optimizer</div>
-              <div class="mini-card"><strong>CI/CD</strong>GitHub Actions</div>
+              <div class="mini-card"><strong>Model</strong>Balance quality, speed and cost</div>
+              <div class="mini-card"><strong>Context</strong>Ground answers in current facts</div>
+              <div class="mini-card"><strong>Observability</strong>See every call and decision</div>
+              <div class="mini-card"><strong>Evaluation</strong>Measure quality, not one answer</div>
+              <div class="mini-card"><strong>Optimisation</strong>Improve with evidence</div>
+              <div class="mini-card"><strong>Automation</strong>Gate every release</div>
             </div>
           </div>
           <div class="footer"><span>Microsoft Foundry</span><span>AI Genius / S6 E2 / 01</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context" data-title="Agenda" data-minutes="1">
+        <article class="slide template-content-minimal section-context" data-title="Agenda" data-minutes="1" data-rehearsal-id="agenda">
           <p class="slide-kicker">Today in Microsoft Foundry</p>
           <h2>What we'll cover.</h2>
           <div class="agenda-grid">
@@ -3223,7 +3433,7 @@
           <div class="footer"><span>Session agenda</span><span>AI Genius / S6 E2 / 02</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context" data-title="Meet the agent" data-minutes="1">
+        <article class="slide template-content-minimal section-context" data-title="Meet the agent" data-minutes="1" data-rehearsal-id="agent">
           <p class="slide-kicker">Our example</p>
           <h2>Meet the agent</h2>
           <div class="agent-intro">
@@ -3250,7 +3460,7 @@
           <div class="footer"><span>Purchasing advice / Microsoft Foundry</span><span>AI Genius / S6 E2 / 03</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context presenter-steps model-choice-slide" data-title="Model Choice" data-minutes="1">
+        <article class="slide template-content-minimal section-context presenter-steps model-choice-slide" data-title="Model Choice" data-minutes="2" data-rehearsal-id="model">
           <p class="slide-kicker">Different models. Different priorities.</p>
           <h2>Model Choice</h2>
           <div class="model-choice-grid">
@@ -3314,20 +3524,20 @@
               <p class="model-downside">Trade-off: less predictable<br>Test it like any model</p>
             </div>
           </div>
-          <p class="slide-takeaway router-question story-reveal reveal-4">The first choice is a hypothesis. <em>Evaluations are how you test it.</em></p>
+          <p class="slide-takeaway router-question story-reveal reveal-4">The first choice isn't final. <em>Evaluations let you change it.</em></p>
           <div class="footer"><span>Model Choice</span><span>AI Genius / S6 E2 / 04</span></div>
         </article>
 
-        <article class="slide template-demo section-context" data-title="Demo 1 - Foundry Model Comparison" data-minutes="2">
+        <article class="slide template-demo section-context" data-title="Demo 1 - Foundry Model Comparison" data-minutes="2" data-rehearsal-id="demo-model">
           <div class="demo-bumper">
             <span class="demo-number">Demo 1</span>
             <h2>Foundry Model Comparison</h2>
-            <p class="lead">Compare fixed models and Model Router, then choose a starting configuration.</p>
+            <p class="lead">Compare fixed models and Model Router</p>
           </div>
-          <div class="footer"><span>The first choice is a hypothesis</span><span>AI Genius / S6 E2 / 05</span></div>
+          <div class="footer"><span>The first choice isn't final</span><span>AI Genius / S6 E2 / 05</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context presenter-steps iq-concept-slide" data-title="Grounding" data-minutes="3">
+        <article class="slide template-content-minimal section-context presenter-steps iq-concept-slide" data-title="Grounding" data-minutes="4" data-rehearsal-id="grounding">
           <p class="slide-kicker">Microsoft IQ</p>
           <h2>Grounding</h2>
           <div class="concept-grid">
@@ -3335,26 +3545,26 @@
               <span class="concept-icon">FIQ</span>
               <h3>Foundry IQ</h3>
               <p>Institutional knowledge and authoritative content.</p>
-              <div class="concept-detail">Policies, procedures and reference documents.<small>Simulated: knowledge_base_retrieve</small></div>
+              <div class="concept-detail">Policies, procedures and reference documents.</div>
             </div>
             <div class="concept-card blue story-reveal reveal-2">
               <span class="concept-icon">BIQ</span>
               <h3>Fabric IQ</h3>
               <p>Governed business entities and current business state.</p>
-              <div class="concept-detail">Spend so far, remaining budget and business records.<small>Simulated: search_ontology</small></div>
+              <div class="concept-detail">Spend so far, remaining budget and business records.</div>
             </div>
             <div class="concept-card green story-reveal reveal-3">
               <span class="concept-icon">WIQ</span>
               <h3>Work IQ</h3>
               <p>People, collaboration and workflow context.</p>
-              <div class="concept-detail">Who holds a role today, who’s away and who’s covering.<small>Simulated: ask</small></div>
+              <div class="concept-detail">Who holds a role today, who’s away and who’s covering.</div>
             </div>
           </div>
           <p class="slide-takeaway story-reveal reveal-4">Foundry IQ: <em>the rules</em>. Fabric IQ: <em>the budget left</em>. Work IQ: <em>who can approve today</em>.</p>
           <div class="footer"><span>Foundry IQ: the rules. Fabric IQ: the budget. Work IQ: who can approve.</span><span>AI Genius / S6 E2 / 06</span></div>
         </article>
 
-        <article class="slide template-demo section-context" data-title="Demo 2 - Run the Starting Agent" data-minutes="4">
+        <article class="slide template-demo section-context" data-title="Demo 2 - Run the Starting Agent" data-minutes="5" data-rehearsal-id="demo-agent">
           <div class="demo-bumper">
             <span class="demo-number">Demo 2</span>
             <h2>Run the Starting Agent</h2>
@@ -3363,7 +3573,7 @@
           <div class="footer"><span>Starting agent / Microsoft Foundry</span><span>AI Genius / S6 E2 / 07</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-evaluation presenter-steps" data-title="Observe" data-minutes="2">
+        <article class="slide template-content-minimal section-evaluation presenter-steps" data-title="Observe" data-minutes="1" data-rehearsal-id="observe">
           <p class="slide-kicker">Observability</p>
           <h2>Observe</h2>
           <div class="concept-grid">
@@ -3376,58 +3586,64 @@
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">2</span>
               <h3>Inputs &amp; outputs</h3>
-              <p>Inspect captured prompts, responses and evidence.</p>
+              <p>Inspect captured prompts and responses</p>
               <div class="concept-detail">What information passed between each step?</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">3</span>
-              <h3>Timing</h3>
-              <p>See the duration of each call.</p>
+              <h3>Timing and errors</h3>
+              <p>See the duration of each call and any errors.</p>
               <div class="concept-detail">Where did the agent spend its time?</div>
             </div>
           </div>
           <div class="footer"><span>Observe first; evaluate next</span><span>AI Genius / S6 E2 / 08</span></div>
         </article>
 
-        <article class="slide template-demo section-evaluation" data-title="Demo 3 - Inspect the Trace" data-minutes="3">
+        <article class="slide template-demo section-evaluation" data-title="Demo 3 - Inspect the Trace" data-minutes="3" data-rehearsal-id="demo-trace">
           <div class="demo-bumper">
             <span class="demo-number">Demo 3</span>
             <h2>Inspect the Trace</h2>
-            <p class="lead">Follow the calls, evidence and timings behind the answer.</p>
+            <p class="lead">Visualise the calls and timings behind the answer.</p>
           </div>
           <div class="footer"><span>LLM calls, tool calls, prompts and responses</span><span>AI Genius / S6 E2 / 09</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-evaluation presenter-steps evaluator-slide" data-title="Evaluate" data-minutes="3">
+        <article class="slide template-content-minimal section-evaluation presenter-steps evaluator-slide" data-title="Evaluate" data-minutes="5" data-rehearsal-id="evaluate">
           <p class="slide-kicker">Consistency across purchasing tasks</p>
           <h2>Evaluate</h2>
           <div class="concept-grid">
-            <div class="concept-card green story-reveal reveal-1">
+            <div class="concept-card orange story-reveal reveal-1">
+              <span class="concept-icon">G</span>
+              <h3>Built-in evaluators</h3>
+              <p>Grounded? On task?</p>
+              <div class="concept-detail">Catch generic failures, ready-made. Ours is a wrong approver.<small>Groundedness, task adherence</small></div>
+            </div>
+            <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">J</span>
               <h3>Next-action judge</h3>
               <p>Right next step? Right approver?</p>
-              <div class="concept-detail">Pass/fail against a reference answer. Its reason says what the tools did.<small>Custom prompt evaluator</small></div>
+              <div class="concept-detail">Pass/fail against a business-specific reference answer.<small>Custom prompt evaluator</small></div>
             </div>
-            <div class="concept-card blue story-reveal reveal-2">
+            <div class="concept-card blue story-reveal reveal-3">
               <span class="concept-icon">R</span>
               <h3>Rubric</h3>
-              <p>How well does the answer meet each requirement?</p>
+              <p>Did the agent broadly succeed in the set task?</p>
               <div class="concept-detail">Weighted: approval route, current approver, citations, clarity.<small>Rubric evaluator / preview</small></div>
             </div>
           </div>
           <div class="footer"><span>Quality becomes evidence, not opinion</span><span>AI Genius / S6 E2 / 10</span></div>
         </article>
 
-        <article class="slide template-demo section-evaluation" data-title="Demo 4 - Evaluate Across Cases" data-minutes="7">
+        <article class="slide template-demo section-evaluation" data-title="Demo 4 - Evaluate Across Cases" data-minutes="9" data-rehearsal-id="demo-eval">
           <div class="demo-bumper">
             <span class="demo-number">Demo 4</span>
             <h2>Evaluate Across Cases</h2>
-            <p class="lead">How consistently does the agent handle different purchases, dates and missing information?</p>
+            <p class="lead">Can the agent handle different purchases, dates and missing information?</p>
           </div>
           <div class="footer"><span>Task-specific evidence decides</span><span>AI Genius / S6 E2 / 11</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-optimisation presenter-steps" data-title="Optimise" data-minutes="3">
+        <article class="slide template-content-minimal section-optimisation presenter-steps" data-title="Optimise" data-minutes="3" data-rehearsal-id="optimise">
           <p class="slide-kicker">Agent Optimizer</p>
           <h2>Optimise</h2>
           <div class="concept-grid">
@@ -3447,23 +3663,23 @@
               <span class="concept-icon">3</span>
               <h3>Compare</h3>
               <p>Compare scores and configuration changes.</p>
-              <div class="concept-detail">Does quality improve, or hold at lower cost?</div>
+              <div class="concept-detail">Is the quality change worth the cost change?</div>
             </div>
           </div>
-          <p class="slide-takeaway story-reveal reveal-4">Grounding first. <em>Optimise how the agent uses tools and evidence.</em></p>
+          <p class="slide-takeaway story-reveal reveal-4">A higher score isn't permission to ship. <em>Always read the new prompt and tool descriptions.</em></p>
           <div class="footer"><span>Optimisation is controlled search</span><span>AI Genius / S6 E2 / 12</span></div>
         </article>
 
-        <article class="slide template-demo section-optimisation" data-title="Demo 5 - Agent Optimizer" data-minutes="6">
+        <article class="slide template-demo section-optimisation" data-title="Demo 5 - Agent Optimizer" data-minutes="8" data-rehearsal-id="demo-optimise">
           <div class="demo-bumper">
             <span class="demo-number">Demo 5</span>
             <h2>Agent Optimizer</h2>
-            <p class="lead">The score went up. Now read the change: which parts are rules, and which are copied facts?</p>
+            <p class="lead">Can we improve the agent?</p>
           </div>
           <div class="footer"><span>Compare candidates with the baseline</span><span>AI Genius / S6 E2 / 13</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Three test sets" data-minutes="2">
+        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Three test sets" data-minutes="4" data-rehearsal-id="test-sets">
           <p class="slide-kicker">Continuous evaluation and CI/CD</p>
           <h2>Three test sets, three jobs</h2>
           <div class="concept-grid">
@@ -3476,13 +3692,13 @@
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">H</span>
               <h3>Holdout</h3>
-              <p>The optimizer validates against it.</p>
+              <p>Our optimizer sees it too: it picks its best candidates by using it.</p>
               <div class="concept-detail">Runs on merge to main.</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">Δ</span>
               <h3>Drift</h3>
-              <p>Never shown to the optimizer. The right answers change with the date.</p>
+              <p>Neither the optimizer nor development has seen it. The final check before production.</p>
               <div class="concept-detail">Runs before a candidate is promoted.</div>
             </div>
           </div>
@@ -3490,7 +3706,7 @@
           <div class="footer"><span>Homework, practice exam, surprise exam</span><span>AI Genius / S6 E2 / 14</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps gate-slide" data-title="What the gate checks" data-minutes="2">
+        <article class="slide template-content-minimal section-delivery presenter-steps gate-slide" data-title="What the gate checks" data-minutes="2" data-rehearsal-id="gates">
           <p class="slide-kicker">Release gates for agents</p>
           <h2>What the gate checks</h2>
           <div class="concept-grid">
@@ -3514,50 +3730,78 @@
             </div>
             <div class="concept-card purple story-reveal reveal-4">
               <span class="concept-icon">4</span>
-              <h3>Pinned together</h3>
-              <p>Prompt, tool descriptions, model and dataset version.</p>
-              <div class="concept-detail">A score is only comparable if all four are recorded.</div>
+              <h3>Like for like</h3>
+              <p>Same questions, same judge version as the baseline.</p>
+              <div class="concept-detail">CI refuses to compare scores made differently.</div>
             </div>
           </div>
           <div class="footer"><span>Cheapest check first</span><span>AI Genius / S6 E2 / 15</span></div>
         </article>
 
-        <article class="slide template-demo section-delivery" data-title="Demo 6 - Three pull requests" data-minutes="8">
+        <article class="slide template-demo section-delivery" data-title="Demo 6 - Sample CI/CD Pipelines" data-minutes="5" data-rehearsal-id="demo-gates">
           <div class="demo-bumper">
             <span class="demo-number">Demo 6</span>
-            <h2>Three pull requests</h2>
-            <p class="lead">Copied facts, a regression that looks like a speed-up, and a reviewed improvement. What does the gate do with each?</p>
+            <h2>Sample CI/CD Pipelines</h2>
+            <p class="lead">PR checks, release gates</p>
           </div>
           <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 16</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Production feeds the tests" data-minutes="2">
-          <p class="slide-kicker">After release</p>
-          <h2>Production feeds the tests</h2>
-          <div class="concept-grid">
-            <div class="concept-card blue story-reveal reveal-1">
-              <span class="concept-icon">1</span>
-              <h3>Sample traces</h3>
-              <p>Continuous evaluation scores a sample of real conversations.</p>
-              <div class="concept-detail">Alert on quality, latency and cost.</div>
-            </div>
-            <div class="concept-card orange story-reveal reveal-2">
-              <span class="concept-icon">2</span>
-              <h3>Keep the failures</h3>
-              <p>Turn interesting failures into new, reviewed test rows.</p>
-              <div class="concept-detail">Redact personal data first.</div>
-            </div>
-            <div class="concept-card green story-reveal reveal-3">
-              <span class="concept-icon">3</span>
-              <h3>Same gate</h3>
-              <p>The next change, human or optimizer, runs against them.</p>
-              <div class="concept-detail">Every production failure becomes a test.</div>
-            </div>
+        <article class="slide template-content-minimal section-delivery" data-title="From test cases to production" data-minutes="2" data-rehearsal-id="production">
+          <p class="slide-kicker">The complete delivery process</p>
+          <h2>From test cases to production</h2>
+          <div class="delivery-cycle">
+          <div class="delivery-flow">
+            <section class="delivery-panel">
+              <span class="delivery-phase">Build / pre-launch</span>
+              <h3>Simulation</h3>
+              <p>Explore behaviour before real users arrive.</p>
+              <div class="delivery-node">
+                <strong>Holdout and drift datasets</strong>
+                <p>Help prevent overfitting.</p>
+              </div>
+            </section>
+            <section class="delivery-panel">
+              <span class="delivery-phase">Path to production</span>
+              <ol class="delivery-pipeline">
+                <li><span class="step-number">1</span><strong>Pull request + dev evals</strong></li>
+                <li><span class="step-number">2</span><strong>Merge to main</strong></li>
+                <li><span class="step-number">3</span><strong>Holdout evals</strong></li>
+                <li><span class="step-number">4</span><strong>Drift evals</strong></li>
+                <li><span class="step-number">5</span><strong>Deploy</strong></li>
+              </ol>
+            </section>
+            <section class="delivery-panel">
+              <span class="delivery-phase">In production</span>
+              <h3>Agent traces</h3>
+              <p>Sample behaviour on real requests.</p>
+            </section>
+          </div>
+          <div class="delivery-feedback" role="group" aria-label="Improvement loops returning to a new pull request">
+            <span class="delivery-feedback-label">Back to a pull request</span>
+            <div class="delivery-feedback-step"><strong>Optimise</strong><small>Compare candidates</small></div>
+            <div class="delivery-feedback-step"><strong>New evals</strong><small>Improve evals</small></div>
+          </div>
           </div>
           <div class="footer"><span>Microsoft Foundry + GitHub Actions</span><span>AI Genius / S6 E2 / 17</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery" data-title="Worth exploring next" data-minutes="1">
+        <article class="slide template-content-minimal section-delivery journey-slide" data-title="One agent, one question" data-minutes="1" data-rehearsal-id="journey">
+          <p class="slide-kicker">One agent, one question</p>
+          <h2>Can I book dinner?</h2>
+          <div class="concept-grid journey-grid">
+            <div class="concept-card blue"><span class="concept-icon">1</span><h3>We chose a model</h3></div>
+            <div class="concept-card orange"><span class="concept-icon">2</span><h3>Gave it organisational context</h3></div>
+            <div class="concept-card green"><span class="concept-icon">3</span><h3>Saw what it did</h3></div>
+            <div class="concept-card blue"><span class="concept-icon">4</span><h3>Measured whether it was right</h3></div>
+            <div class="concept-card orange"><span class="concept-icon">5</span><h3>Optimised from evidence</h3></div>
+            <div class="concept-card green"><span class="concept-icon">6</span><h3>Gated every change</h3></div>
+          </div>
+          <p class="slide-takeaway">Production isn't the end of building an agent. <em>Build the measurement system that lets you keep changing it safely.</em></p>
+          <div class="footer"><span>One agent, one question</span><span>AI Genius / S6 E2 / 18</span></div>
+        </article>
+
+        <article class="slide template-content-minimal section-delivery" data-title="Worth exploring next" data-minutes="1" data-rehearsal-id="next">
           <p class="slide-kicker">More in Microsoft Foundry</p>
           <h2>Worth exploring next</h2>
           <div class="agenda-grid">
@@ -3592,16 +3836,88 @@
               <p>Keep people in control of actions</p>
             </div>
           </div>
-          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 18</span></div>
+          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 19</span></div>
         </article>
 
-        <article class="slide template-qa section-delivery" data-title="Build measure improve repeat" data-minutes="10">
+        <article class="slide template-qa section-delivery" data-title="Build measure improve repeat" data-minutes="1" data-rehearsal-id="close">
           <div class="demo-bumper">
             <span class="demo-number">Q&amp;A</span>
             <h2>Build → Measure → Improve → Repeat</h2>
             <p class="lead">One working agent. Consistent answers. Measured trade-offs. Repeatable release checks.</p>
           </div>
-          <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 19</span></div>
+          <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 20</span></div>
+        </article>
+        <article class="slide template-content-minimal section-delivery" data-title="References" data-minutes="1">
+          <p class="slide-kicker">Further reading</p>
+          <h2>References</h2>
+          <div class="reference-grid">
+            <div>
+              <h3>Build</h3>
+              <ul>
+                <li><a href="https://learn.microsoft.com/en-us/agent-framework/" target="_blank" rel="noopener">Microsoft Agent Framework</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/benchmark-model-in-catalog" target="_blank" rel="noopener">Compare models with the model leaderboard</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router" target="_blank" rel="noopener">Model router</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq" target="_blank" rel="noopener">What is Foundry IQ?</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/work-iq" target="_blank" rel="noopener">Work IQ overview</a><span class="reference-source">Microsoft Learn</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Observe &amp; evaluate</h3>
+              <ul>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/concepts/trace-agent-concept" target="_blank" rel="noopener">Agent tracing overview</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators" target="_blank" rel="noopener">Rubric evaluators</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/develop/cloud-evaluation" target="_blank" rel="noopener">Cloud evaluation</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset" target="_blank" rel="noopener">Turn traces into datasets</a><span class="reference-source">Microsoft Learn</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Optimise</h3>
+              <ul>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-optimizer-overview" target="_blank" rel="noopener">Agent optimizer overview</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/optimize-agent-targets" target="_blank" rel="noopener">Optimize instructions, skills, tools and models</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357" target="_blank" rel="noopener">Six lessons for reliable Agent Optimizer gains</a><span class="reference-source">Microsoft Tech Community</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Ship</h3>
+              <ul>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/how-to-monitor-agents-dashboard#set-up-continuous-evaluation" target="_blank" rel="noopener">Continuous evaluation</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action" target="_blank" rel="noopener">Run evaluations in GitHub Actions</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/set-up-ci-cd-cli" target="_blank" rel="noopener">CI/CD for hosted agents with azd</a><span class="reference-source">Microsoft Learn</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer"><span>Further reading</span><span>AI Genius / S6 E2 / 21</span></div>
+        </article>
+        <article class="slide template-closing template-closing-qr" data-title="Feedback" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
+          <h2 class="closing-scan">Scan to share your <span class="highlight">feedback</span> of today's session:</h2>
+          <img class="closing-qr" src="assets/qr-feedback.png" alt="QR code for session feedback">
+        </article>
+        <article class="slide template-closing template-closing-qr" data-title="Series page" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
+          <h2 class="closing-scan">Scan to share your <span class="highlight">feedback</span> of today's session:</h2>
+          <div class="closing-qr closing-qr-missing" role="img" aria-label="Series page QR code still to be added">Please input the new<br>series page QR code</div>
+        </article>
+        <article class="slide template-closing template-closing-badge" data-title="AI Genius badge" data-minutes="1">
+          <img class="closing-badge-image" src="assets/ai-genius-builder-badge.png" alt="Microsoft AI Genius Builder Certified badge">
+          <h2 class="closing-badge-social">An <span class="highlight">exclusive</span> badge to display on your <span class="highlight">social</span>.</h2>
+          <p class="closing-badge-scan">Scan to download the AI Genius 'Certified' badge</p>
+          <img class="closing-badge-qr" src="assets/qr-badge.png" alt="QR code to download the AI Genius Certified badge">
+          <div class="closing-badge-steps">
+            <span class="highlight">Instructions:</span>
+            <ol>
+              <li>Scan the QR code</li>
+              <li>Download/save the badge</li>
+              <li>Add to your LinkedIn profile as a '<u class="highlight">Post</u>' with your own caption</li>
+              <li>Don't forget to add the <span class="highlight">#MSAIGenius</span> hashtag</li>
+            </ol>
+          </div>
+          <p class="closing-label" style="left: 52px; top: 839px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
+        </article>
+        <article class="slide template-closing template-closing-thanks" data-title="Thank you" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 25px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
+          <h2 class="closing-thanks">Thank You</h2>
         </article>
         </div>
       </div>
@@ -3615,12 +3931,13 @@
       </div>
       <div class="progress-wrap">
         <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
-        <span class="slide-count" id="slideCount">1 / 19</span>
+        <span class="slide-count" id="slideCount">1 / 25</span>
       </div>
       <div class="control-group">
         <span class="timer" id="timer">00:00</span>
         <button class="control-button" id="timerButton">Start</button>
         <button class="control-button" id="notesButton">Notes</button>
+        <button class="control-button" id="rehearsalButton" aria-expanded="false">Rehearse</button>
         <button class="control-button" id="fullscreenButton">Full</button>
       </div>
     </nav>
@@ -3667,12 +3984,12 @@
         key: "The first choice is normally which model to use.",
         definition: "Speed is how long the user waits; cost is what you pay. Smaller models usually win on both, so they share a card.",
         transition: "Open the Foundry portal to compare real models and see where Model Router fits.",
-        talk: "Keep this short. Model 1 handles complex reasoning, at higher cost and with slower responses. Model 2 is fast and cheap but less capable on complex tasks; speed and cost usually go together, though not always (batch jobs are cheap but slow). Model Router picks a model per request, sending simple questions to small models and hard ones to strong models; it saves money but is less predictable, so test it like any other model. Land the line at the bottom: the first choice is a hypothesis, and evaluations are how you test it.",
+        talk: "Keep this short. Model 1 handles complex reasoning, at higher cost and with slower responses. Model 2 is fast and cheap but less capable on complex tasks; speed and cost usually go together, though not always (batch jobs are cheap but slow). Model Router picks a model per request, sending simple questions to small models and hard ones to strong models; it saves money but is less predictable, so test it like any other model. Land the line at the bottom: the first choice isn't a lock-in; built the right way you can change model later, and evaluations tell you when to.",
         source: "Session framing."
       },
       {
-        key: "The first model choice is a hypothesis.",
-        definition: "A starting configuration is an engineering choice that must later be tested against the real business task.",
+        key: "The first model choice isn't a lock-in.",
+        definition: "Built the right way, an agent can change model later; evaluations on the real task tell you whether a change is better.",
         transition: "Now give the starting agent the organisational context it needs.",
         talk: "Compare a small fixed-model shortlist and Model Router in Foundry. Record the starting model or routing configuration and explain the choice. Keep later baseline comparisons tied to that exact configuration.",
         checkpoint: "01-model-choice: save the starting model/configuration and portal comparison evidence. The stage playbook records prerequisites, commands, portal steps and the reset procedure.",
@@ -3709,10 +4026,10 @@
         source: "Microsoft Foundry tracing demonstration."
       },
       {
-        key: "Judge the next step first, then the quality of the answer, then task-specific checks.",
+        key: "Built-in evaluators catch generic failures; a wrong approver needs judges of our own.",
         definition: "A judge is an LLM evaluator. Its reason matters as much as its score.",
-        transition: "Let's measure the starting agent with these two judges across purchasing cases.",
-        talk: "These are the evaluators we actually run. The next-action judge is a custom prompt evaluator: pass/fail against a reference answer, and its reason starts with what the tools did, for example 'used the line-manager lookup instead of the required higher-level route'. That reason is what the optimizer learns from: Microsoft's own lesson is that the reflector only sees what the evaluator returns. The rubric scores weighted dimensions such as approval route, current approver and citations. Built-in evaluators such as Groundedness exist; we chose task-specific ones because the failure we care about is a wrong approver, not an unsupported claim. The rubric evaluator is in preview.",
+        transition: "Let's measure the starting agent with our two judges across purchasing cases.",
+        talk: "Start with what's built in: Groundedness checks the answer uses only the evidence it was given; task adherence checks it stays on task. Useful, but our failure is a wrong approver, and a generic evaluator can't know who the right approver is. So we run two of our own. The next-action judge is a custom prompt evaluator: pass/fail against a reference answer, and its reason starts with what the tools did, for example 'used the line-manager lookup instead of the required higher-level route'. That reason is what the optimizer learns from: Microsoft's own lesson is that the reflector only sees what the evaluator returns. The rubric scores weighted dimensions such as approval route, current approver and citations. The rubric evaluator is in preview.",
         source: "Microsoft Learn: rubric evaluators https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators ; Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357"
       },
       {
@@ -3727,45 +4044,52 @@
         key: "Compare candidate scores and configuration changes with the baseline.",
         definition: "A baseline is the starting configuration; candidates are alternatives generated and evaluated by Agent Optimizer.",
         transition: "Let's open the Optimizer run and compare the candidates.",
-        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the validation set, which influences candidate selection. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. The optimizer can also use per-question criteria, specific checks such as 'asks for the total cost first'; our evaluation runs don't use them, so mention them here, not on the Evaluate slide. Land the takeaway: grounding first. Work IQ and the other IQ tools expose fixed interfaces; optimise how the agent queries them and applies the returned evidence. Use traces to distinguish missing evidence from incorrect reasoning. Our early mock search needed repair: the score went up by copying facts into the prompt, but that did not fix retrieval.",
+        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the validation set, which influences candidate selection. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. The optimizer can also use per-question criteria, specific checks such as 'asks for the total cost first'; our evaluation runs don't use them, so mention them here, not on the Evaluate slide. Land the takeaway: a higher score isn't permission to ship. First check the gain is bigger than your noise; then always read the new prompt and tool descriptions. Our early mock search needed repair: the score went up by copying facts into the prompt, but that did not fix retrieval.",
         source: "Microsoft Learn: Agent optimizer overview (score interpretation); Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents."
       },
       {
         key: "Inspect the evidence behind the recommended candidate.",
         definition: "The optional validation dataset supplies separate evaluation cases within the optimisation run.",
         transition: "Carry the same evidence into the release process.",
-        talk: "Open the agent's Optimize tab and your prepared run. Every run differs, so read it rather than following a script. First, the score change on the holdout: by Microsoft's scale, under 0.03 is noise and 0.03 to 0.10 is moderate; also count how many questions changed, against your noise level. Then View changes on the best candidate, in the instructions and the tool descriptions, and sort what you find: rules worth keeping, such as answer-first wording; copied facts, such as training names and amounts, which in ours were hidden in the tool descriptions; and what's missing, such as a rule for the Demo 4 failure. The score went up; that doesn't mean you ship it.",
+        talk: "Open the agent's Optimize tab and your prepared run. Every run differs, so read it rather than following a script. First, the score change on the holdout: by Microsoft's scale, under 0.03 is noise and 0.03 to 0.10 is moderate; also count how many questions changed, against your noise level. If the gain is under 0.03, say so: it's noise, and that's a useful result to show. Then View changes on the best candidate, in the instructions and the tool descriptions, and sort what you find: rules worth keeping, such as answer-first wording; copied facts, such as training names and amounts, which in ours were hidden in the tool descriptions; and what's missing, such as a rule for the Demo 4 failure. The score went up; that doesn't mean you ship it.",
         checkpoint: "Prepared: the Optimize tab on your completed run, with View changes ready on the instructions and the ask tool description. If your run has nothing worth showing, use the candidate saved from ours in sample/evaluation/candidates/optimiser-0.691/: +0.078 on the holdout, three good rules, training names and amounts in its tool descriptions, and no role rule.",
         source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models; Agent optimizer cost and token usage overview. Checked 24 September 2026."
       },
       {
-        key: "Three test sets, three jobs.",
-        definition: "Development data trains the optimizer, holdout data validates it, and a drift set is never shown to it.",
+        key: "Drift is the one set neither the optimizer nor development has seen: the final check before production.",
+        definition: "Development data trains the optimizer, holdout data helps it choose candidates, and a drift set is seen by neither the optimizer nor development.",
         transition: "So what does the gate actually check?",
-        talk: "Homework, practice exam, surprise exam. The optimizer trains on development and validates on holdout, and we look at both often, so both wear down over time. Our holdout was the same kind of question about the same policies, so a candidate that memorised the policies passed both. The drift set is never shown to the optimizer and its answers change with the date: Tim comes back, Priya's delegation ends, 2027 thresholds start. An agent that looks things up passes; an agent with facts in its prompt confidently gives the old answer.",
+        talk: "Homework, practice exam, surprise exam. The optimizer trains on development and picks its best candidate using holdout, so it has seen both, and we look at both often. Drift is the one set neither the optimizer nor development has seen: the final check that the agent handles the variation it will meet in production. Ours asks about the training teams on later dates, when the roster records different leave and cover. Holdout uses different teams, so it can't catch a copied fact like 'Finance: ask Grace'; drift can. An agent that looks things up passes; one that copied training facts into its prompt gives the old answer.",
         source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models (validation_dataset)."
       },
       {
         key: "Cheapest check first.",
         definition: "A release gate is an automated check that can stop a change from being promoted.",
-        transition: "Let's see the gate handle three real pull requests.",
-        talk: "One: a script scans the candidate prompt and tool descriptions for amounts, dates, durations and names that the baseline didn't have. Seconds, no LLM. Two: compare against the stored baseline, not a fixed threshold. LLM-judged scores move between runs; Foundry's own optimizer guidance treats changes under 0.03 as noise, so fail on a bigger drop. Three: some failures block regardless of the average, such as sending someone to the wrong approver or following an instruction in an email. Four: pin prompt, tool descriptions, model and dataset version together, or scores aren't comparable.",
+        transition: "Let's see the gate handle two real pull requests.",
+        talk: "One: a script scans the candidate prompt and tool descriptions for amounts, dates, durations and names that the baseline didn't have. Seconds, no LLM. Two: compare against the stored baseline, not a fixed threshold. LLM-judged scores move between runs; Foundry's own optimizer guidance treats changes under 0.03 as noise, so fail on a bigger drop. Three: some failures block regardless of the average, such as sending someone to the wrong approver or following an instruction in an email. Four: like for like. A score only compares with the baseline if it used the same questions and the same judge; CI checks fingerprints of the dataset and judge definitions and refuses to compare otherwise.",
         source: "Microsoft Learn: Agent optimizer overview (score interpretation)."
       },
       {
         key: "The cheapest check runs first; the evaluation catches what it can't.",
         definition: "A pull request check runs on every proposed change; it blocks merging only if the branch's ruleset requires it.",
         transition: "And after release, production keeps feeding the tests.",
-        talk: "Three prepared pull requests, one per outcome. First, the optimizer's saved candidate: the offline fact check goes red in seconds, listing the seven names, amounts and dates it copied in, and no evaluation runs. Run the same check live in the terminal to show it's one second and no model. Second, a change titled 'Speed up: skip the Work IQ lookup': it passes the fact check, but the development set catches it, because questions about leave, delegation and the Category Manager start failing. It looked like an optimisation; only the evaluation could tell. Third, the reviewed version: the optimizer's good rules, no copied facts, plus the rule it missed. It passes. The gate only asks that a change not fall below the baseline by more than the normal wobble. And it blocks merging only if a ruleset on main requires it; admins can still bypass, and every bypass is recorded.",
-        checkpoint: "Prepared: the three pull requests, opened after the optimizer finished and left open. Live: the fact-check command from the playbook. If CI isn't working on the day, use slides 14 and 15 with the live command.",
+        talk: "Two prepared pull requests. First, the reviewed improvement: the development set passed on the PR; after merge, main evaluated -dev on the holdout, a reviewer inspected it, every drift case passed, then a separate release approval deployed the same commit. Second, the bad prompt: no tools, the same answer every time. The cheap offline checks pass, but the development set fails against the baseline, and because branch protection requires that check, it can't be merged normally. Optionally run the fact check live on the old copied-facts candidate: one second, no model. The gate only asks that a change not fall below the baseline by more than the normal wobble. Admins can still bypass, and every bypass is recorded.",
+        checkpoint: "Prepared: both pull requests and the main promotion run, opened after the optimizer finished. Live (optional): the fact-check command from the playbook. If CI isn't working on the day, use slides 14 and 15 with the live command.",
         source: "GitHub Actions release-check demonstration."
       },
       {
-        key: "Every production failure becomes a test.",
-        definition: "Continuous evaluation scores a sample of real conversations after release.",
-        transition: "Here are six related capabilities worth exploring beyond today's demonstrations.",
-        talk: "Turn on continuous evaluation in Foundry to score a sample of real conversations and alert on quality, latency and cost. Review interesting failures, redact personal data, and add them as new test rows. The next change, whether from a person or the optimizer, goes through the same gate against them. Simulation and trace-to-dataset generation are preview capabilities; verify before relying on them.",
+        key: "Every change takes the same path to production, and production evidence feeds the next change.",
+        definition: "Holdout and drift datasets are kept apart from development, so a score shows whether a change generalises rather than fits the tests it was tuned on.",
+        transition: "Let's step back to where we started: one agent, one question.",
+        talk: "Read it left to right. Before launch, simulation explores behaviour before real users arrive; review generated cases before they become tests, and keep holdout and drift apart from development to help prevent overfitting. Every change then takes the same path: a pull request runs the development evals, it merges to main, holdout evals run, drift evals are the final check, and only then does it deploy. In production, sample real traces and score them with continuous evaluation; live traffic has no reference answers, so use a rubric there. Two things come back through a new pull request: an optimised candidate, which never deploys directly, and new evals made from reviewed, redacted production failures, so the next change has to handle them. Simulation and trace-to-dataset generation are in preview; gates and alerts must be wired explicitly in your workflow.",
         source: "Microsoft Learn and GitHub Docs, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
+      },
+      {
+        key: "Production isn't the end of building an agent. Build the measurement system that lets you keep changing it safely.",
+        definition: "No new definition. This slide retells the session as one agent's journey.",
+        transition: "Before questions, a few places to explore next.",
+        talk: "So we started with one fairly ordinary purchasing agent and one question: can I book dinner? We chose a model. We gave the agent the right organisational context. We learnt how to see what it was doing. Then we discovered that seeing isn't the same as knowing it's right, so we evaluated it. Once we could measure it, we could optimise it. And once we could measure every change, we could safely put those checks into the path to production. That's the takeaway: don't treat production as the end of building an agent. Build the measurement system that lets you keep changing it safely.",
+        source: "Session synthesis."
       },
       {
         key: "Six next steps for extending the purchasing agent.",
@@ -3780,6 +4104,41 @@
         transition: "Move into questions.",
         talk: "Close on one working agent, consistent answers, measured trade-offs and repeatable release checks. Return to the six stage playbooks: each records what changed, how it was run and the evidence collected. Discuss what the measured runs demonstrated and which configuration was retained, then take questions.",
         source: "Session synthesis."
+      },
+      {
+        key: "Everything we used is documented.",
+        definition: "No new definition.",
+        transition: "",
+        talk: "Leave this up while people take a photo. The links follow the session: build the agent, observe and evaluate it, optimise it, then ship it with continuous evaluation and CI/CD.",
+        source: "Microsoft Learn and Microsoft Tech Community, links checked 19 October 2026."
+      },
+      {
+        key: "Ask for feedback while the session is fresh.",
+        definition: "No new definition.",
+        transition: "",
+        talk: "Leave the QR code up long enough for people to scan it. Feedback shapes the next episodes.",
+        source: "AI Genius template slide."
+      },
+      {
+        key: "Point people to the rest of the series.",
+        definition: "No new definition.",
+        transition: "",
+        talk: "Replace the placeholder with the series page QR code before presenting.",
+        source: "AI Genius template slide."
+      },
+      {
+        key: "Everyone can claim the AI Genius Certified badge.",
+        definition: "No new definition.",
+        transition: "",
+        talk: "Scan, download the badge, post it on LinkedIn with your own caption and add the #MSAIGenius hashtag.",
+        source: "AI Genius template slide."
+      },
+      {
+        key: "Thank the audience.",
+        definition: "No new definition.",
+        transition: "",
+        talk: "Thank everyone for their time and questions.",
+        source: "AI Genius template slide."
       }
     ];
 
@@ -3843,6 +4202,7 @@
         window.history.replaceState(null, "", hash);
       }
       renderNotes();
+      document.dispatchEvent(new CustomEvent("presentation:slide", { detail: { index: current } }));
     }
 
     function goTo(index) {
@@ -3971,6 +4331,21 @@
     document.getElementById("closeNotes").addEventListener("click", () => toggleNotes(false));
     document.getElementById("notesSpacer").addEventListener("click", () => toggleNotes(false));
     document.getElementById("overviewButton").addEventListener("click", () => toggleOverview());
+    let rehearsalModule;
+    async function toggleRehearsal() {
+      if (window.location.protocol === "file:") {
+        window.alert("Rehearsal needs the local companion. From presentation/rehearsal, run npm install and npm start, then open its localhost URL. See PLAYBOOK.md for setup.");
+        return;
+      }
+      try {
+        rehearsalModule ??= import("./rehearsal/client.js");
+        (await rehearsalModule).toggle();
+      } catch {
+        rehearsalModule = null;
+        window.alert("Rehearsal could not load. Start the local companion from presentation/rehearsal with npm start, then use its localhost URL.");
+      }
+    }
+    document.getElementById("rehearsalButton").addEventListener("click", toggleRehearsal);
     document.getElementById("fullscreenButton").addEventListener("click", toggleFullscreen);
     timerButton.addEventListener("click", toggleTimer);
     window.addEventListener("resize", fitDeck);
@@ -3980,6 +4355,10 @@
     stageResizeObserver.observe(stage);
 
     document.addEventListener("keydown", (event) => {
+      if (event.target instanceof Element &&
+          event.target.closest("input, textarea, select, [contenteditable], #rehearsalPanel, button")) {
+        return;
+      }
       if (event.repeat && storySlides.has(slides[current]) &&
           (event.key === "ArrowRight" || event.key === "ArrowLeft" || event.key === " ")) {
         event.preventDefault();
@@ -4002,6 +4381,8 @@
         toggleOverview();
       } else if (event.key.toLowerCase() === "f") {
         toggleFullscreen();
+      } else if (event.key.toLowerCase() === "r") {
+        toggleRehearsal();
       } else if (event.key === "Escape") {
         toggleNotes(false);
         closeOverview();
@@ -4011,6 +4392,9 @@
     buildOverview();
     renderSlide();
     fitDeck();
+    if (new URLSearchParams(window.location.search).get("rehearsal") === "1") {
+      toggleRehearsal();
+    }
   </script>
 </body>
 </html>

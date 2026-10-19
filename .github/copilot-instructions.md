@@ -16,8 +16,8 @@ layers and documentation that obscure the sample.
 
 ## Layout
 
-- `presentation/deck.html` and `presentation/presentation.pptx`: presentation
-  formats. All seven images in `presentation/assets/` are referenced by HTML.
+- `presentation/deck.html` is the source of truth; `presentation/presentation.pptx`
+  is derived. All images in `presentation/assets/` are referenced by HTML.
 - `sample/agent/`: the deployable Python agent, baseline configuration and
   fictional policy/notice documents.
 - `sample/evaluation/`: `evaluate.py`, `optimize.yaml`, the binary evaluator

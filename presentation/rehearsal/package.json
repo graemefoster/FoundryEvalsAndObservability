@@ -1,0 +1,20 @@
+{
+  "name": "presentation-rehearsal",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && esbuild src/client.ts src/worklet.ts --bundle --format=esm --outdir=dist",
+    "start": "npm run build && node src/server.ts",
+    "test": "node --test tests/*.test.ts",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0-alpha-2026-10-09",
+    "@types/node": "^26.6.4",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}
