@@ -5,6 +5,8 @@
 # 2. GitHub's OIDC token subject now includes owner and repository IDs
 #    (repo:owner@123/name@456:environment:demo). If the GitHub CLI is signed in, look them up
 #    and save the exact subject as GITHUB_OIDC_SUBJECT, so the identity trusts what GitHub sends.
+# 3. Save your user object ID as AZURE_PRINCIPAL_ID, so main.bicep gives you account-level
+#    Foundry User: evaluations call the judge models as you.
 set -eu
 # azd prints "key not found" on stdout, so only use its output when it succeeds.
 v() { out="$(azd env get-value "$1" 2>/dev/null)" && printf '%s' "$out"; }
@@ -34,4 +36,13 @@ if command -v gh >/dev/null 2>&1 && IDS="$(gh api "repos/$REPO" --jq '"\(.owner.
   fi
 else
   echo "WARNING: couldn't look up $REPO with the GitHub CLI; the identity will trust the classic subject repo:$REPO:environment:demo." >&2
+fi
+
+if ME="$(az ad signed-in-user show --query id -o tsv 2>/dev/null)" && [ -n "$ME" ]; then
+  if [ "$(v AZURE_PRINCIPAL_ID || true)" != "$ME" ]; then
+    azd env set AZURE_PRINCIPAL_ID "$ME"
+    echo "Saved AZURE_PRINCIPAL_ID=$ME (you run the evaluations)."
+  fi
+else
+  echo "WARNING: couldn't read your user from 'az ad signed-in-user show'; run 'az login' or evaluations can't call the judges." >&2
 fi

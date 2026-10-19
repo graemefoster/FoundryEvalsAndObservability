@@ -86,6 +86,9 @@
     },
     "githubOidcSubject": {
       "value": "${GITHUB_OIDC_SUBJECT}"
+    },
+    "principalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
     }
   }
 }

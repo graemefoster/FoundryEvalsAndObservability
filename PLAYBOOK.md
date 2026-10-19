@@ -64,8 +64,10 @@ The `requirements*.txt` files are exported from `uv.lock` (command at the top of
 from them, as CI does.
 
 **Baselines.** Each gate compares a test set with a committed baseline in
-`evaluation/baselines/`. The pipeline never moves its own bar; a person does. Create all three
-from `sample/` (billable, about 10 minutes each; the two promotion runs queue one after the other):
+`evaluation/baselines/`. The pipeline never moves its own bar; a person does. The repository
+ships with baselines that work in a new project, so you can skip this. Replace them when you
+change questions, references or judges, or want your own bar. From `sample/` (billable, about
+10 minutes each; the two promotion runs queue one after the other):
 
 ```bash
 gh workflow run agent-pr.yml --ref main -f write_baseline=true
@@ -74,17 +76,17 @@ gh workflow run agent-main.yml --ref main -f mode=baseline-drift
 ```
 
 Wait until `gh run list --limit 3` shows all three completed, then download and commit them.
-The push starts the first promotion to release.
+The push starts a promotion to release.
 
 ```bash
+rm -f evaluation/baselines/*.json      # gh won't overwrite existing files
 gh run download --name baseline-approvers-development --dir evaluation/baselines
 gh run download --name baseline-approvers-holdout --dir evaluation/baselines
 gh run download --name baseline-approvers-drift --dir evaluation/baselines
 git add evaluation/baselines && git commit -m "CI baselines" && git push
 ```
 
-Changing questions, references or judges needs a fresh baseline; never copy new fingerprints
-onto old scores.
+Never copy new fingerprints onto old scores; a changed test set or judge needs fresh baselines.
 
 ## Before the talk
 

@@ -58,7 +58,10 @@ def judge_problems(client: OpenAI, run_id: str, eval_id: str, name: str) -> list
             if result.get("name") != name:
                 continue
             if result.get("status") not in (None, "completed") or result.get("error"):
-                detail = result.get("error") or result.get("reason") or result.get("status")
+                error = result.get("error") or (result.get("sample") or {}).get("error")
+                if isinstance(error, dict):
+                    error = error.get("message", error)
+                detail = error or result.get("reason") or result.get("status")
                 lines.append(f"  {question}: {str(detail)[:300]}")
     return lines
 
@@ -148,8 +151,8 @@ def wait_for_evaluation(
         if missed > max_unscored:
             raise RuntimeError(
                 f"{name} did not score {missed} question(s), more than --max-unscored "
-                f"{max_unscored}; see above. One-off errors are usually the judge model's rate "
-                "limit: re-run."
+                f"{max_unscored}; see above. A 429 is the judge model's rate limit: re-run. "
+                "A 401 means you lack account-level Foundry User (new roles take ~10 minutes)."
             )
         print(
             f"WARNING: {name} did not score {missed} question(s); its averages use the other "
