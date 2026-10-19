@@ -3882,7 +3882,7 @@
               <h3>Ship</h3>
               <ul>
                 <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/how-to-monitor-agents-dashboard#set-up-continuous-evaluation" target="_blank" rel="noopener">Continuous evaluation</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action" target="_blank" rel="noopener">Run evaluations in GitHub Actions</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action" target="_blank" rel="noopener">Foundry evaluation GitHub Action (alternative)</a><span class="reference-source">Microsoft Learn</span></li>
                 <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/set-up-ci-cd-cli" target="_blank" rel="noopener">CI/CD for hosted agents with azd</a><span class="reference-source">Microsoft Learn</span></li>
               </ul>
             </div>
@@ -4073,9 +4073,9 @@
         key: "The cheapest check runs first; the evaluation catches what it can't.",
         definition: "A pull request check runs on every proposed change; it blocks merging only if the branch's ruleset requires it.",
         transition: "And after release, production keeps feeding the tests.",
-        talk: "Two prepared pull requests. First, the reviewed improvement: the development set passed on the PR; after merge, main evaluated -dev on the holdout, a reviewer inspected it, every drift case passed, then a separate release approval deployed the same commit. Second, the bad prompt: no tools, the same answer every time. The cheap offline checks pass, but the development set fails against the baseline, and because branch protection requires that check, it can't be merged normally. Optionally run the fact check live on the old copied-facts candidate: one second, no model. The gate only asks that a change not fall below the baseline by more than the normal wobble. Admins can still bypass, and every bypass is recorded.",
+        talk: "Two prepared pull requests. First, the reviewed improvement: the development set passed on the PR; after merge, main evaluated -dev on the holdout, a reviewer inspected it, every drift case passed, then a separate release approval deployed the same commit. Second, the bad prompt: no tools, the same answer every time. The cheap offline checks pass, but the development set fails against the baseline, and because branch protection requires that check, it can't be merged normally. Optionally run the fact check live on the old copied-facts candidate: one second, no model. The gate only asks that a change not fall below the baseline by more than the normal wobble. Admins can still bypass, and every bypass is recorded. If asked about the official Foundry evaluation GitHub Action: it uses the same evaluation API, but only writes a report. It exposes no run ID or pass/fail result, so it can't gate a merge. We kept our run ID and added the gate.",
         checkpoint: "Prepared: both pull requests and the main promotion run, opened after the optimizer finished. Live (optional): the fact-check command from the playbook. If CI isn't working on the day, use slides 14 and 15 with the live command.",
-        source: "GitHub Actions release-check demonstration."
+        source: "GitHub Actions release-check demonstration; microsoft/ai-agent-evals v3-beta action.py (checked 19 October 2026)."
       },
       {
         key: "Every change takes the same path to production, and production evidence feeds the next change.",
