@@ -20,8 +20,11 @@ layers and documentation that obscure the sample.
   is derived. All images in `presentation/assets/` are referenced by HTML.
 - `sample/agent/`: the deployable Python agent, baseline configuration and
   fictional policy/notice documents.
-- `sample/evaluation/`: `evaluate.py`, `optimize.yaml`, the binary evaluator
-  definition and separate development/validation JSONL datasets.
+- `sample/evaluation/`: `evaluate.py`, `compare_to_baseline.py`, `optimize.yaml`,
+  two judge definitions, committed baselines and the development, holdout and
+  drift JSONL datasets.
+- `.github/workflows/`: PR gate (development set) and promotion (holdout, then
+  drift, then release), sharing `_agent-eval.yml`.
 - `sample/azure.yaml`, dependency manifests and lock files: runnable sample
   configuration. Run backstage commands from `sample/`.
 - `sample/infra/monitoring.bicep`: companion deployment for Application Insights,
@@ -38,9 +41,10 @@ screenshots or template/conversion files unless requested. Generated
 - Native Microsoft Agent Framework with `FoundryChatClient` and
   `ResponsesHostServer`. Hosting and Agent Framework own tracing and the
   model/tool loop. Do not reintroduce custom spans or orchestration.
-- Two read-only tools search local JSON via SQLite FTS5, returning up to three
-  whole documents per call. They simulate policy/workplace knowledge:
-  **neither real Foundry IQ nor Work IQ is connected**.
+- Three read-only tools over local JSON stand in for the IQ tools:
+  `knowledge_base_retrieve` (Foundry IQ; hybrid keyword plus embedding search over
+  policies), `ask` (Work IQ; roles, leave, delegations) and `search_ontology`
+  (Fabric IQ; budget). **No real Foundry, Work or Fabric IQ is connected.**
 - The agent advises on purchasing; it cannot approve, buy or contact approvers.
 - Keep mutable policy facts in retrieved documents, not system instructions or
   tool descriptions. Preserve native optimiser configuration loading.
@@ -55,14 +59,15 @@ ask for missing decision facts, identify outstanding requirements, or recognise
 readiness. Do not list alternative routes before resolving missing facts or
 reopen approvals already supplied as complete.
 
-- One binary `purchasing-next-action` judge is shared by evaluation and
-  optimisation. Do not silently change its rubric to improve a score.
+- The binary `purchasing-next-action` judge is shared by evaluation and
+  optimisation; `purchasing-demo-rubric` adds feedback dimensions. Do not
+  silently change a rubric to improve a score.
 - Only the question goes to the agent. The judge receives the question,
   `ground_truth` and final answer. The optimiser service receives references;
   its exact internal reflector inputs have not been established.
-- Python submits the static development evaluation using an existing judge
-  version; `--dry-run` prints the request. No registration or report download.
-  Optimisation uses the static baseline,
+- `evaluate.py` registers the judges (`--register-only`), submits an evaluation
+  (`EVAL_DATASET` selects the set; `--dry-run` prints the request) and writes the
+  report that `compare_to_baseline.py` gates. Optimisation uses the static baseline,
   separate datasets and registered judge version in `evaluation/optimize.yaml`.
   Dataset paths resolve from the service's `sample/agent/` directory, not the YAML.
 - **`azd ai agent optimize` submits optimisation jobs.** Python is not a
@@ -88,8 +93,10 @@ evaluation is unsupported. Do not restart that migration without a request.
 - Agent and judge versions default to 1 for a fresh project. Check actual returned
   versions and align the script/YAML; do not infer live state from documentation.
 - The agent uses GPT-5.4-mini with low reasoning; judge/generator use GPT-5.5.
-- The corpus contains 19 policies and five notices; datasets contain 32 development
-  and 24 validation cases. All questions supply an explicit decision date.
+- The corpus contains 22 policies and five notices; datasets contain 34 development,
+  22 holdout and 8 drift cases. All questions supply an explicit decision date.
+- Gates compare with baselines committed by a person; a pipeline never writes
+  its own bar. Never give the drift set to the optimiser.
 - The companion Bicep provides monitoring and account-level Foundry User access.
   Project-only or OpenAI-only access is insufficient for cloud judging.
 - Continuous evaluation is a setup walkthrough. Do not enable it or promote a
@@ -106,13 +113,15 @@ delete resources or change RBAC/networking without explicit approval. Discover
 project/environment details from local azd state. An authorised app-only
 deployment uses `azd deploy purchasing-advice-demo`, not `azd up`.
 
-Use Python 3.13 and the existing locked dependencies. CI performs Ruff lint and
-format checks, not unit tests or model evaluation. From `sample/`:
+Use Python 3.13 and the existing locked dependencies (`requirements*.txt`,
+exported from `uv.lock`). Pull requests run offline checks, then a billable
+development-set evaluation; pushes to main touching `sample/**` start the
+billable promotion workflow. Offline checks, from `sample/`:
 
 ```bash
 .venv/bin/ruff check agent evaluation
 .venv/bin/ruff format --check agent evaluation
-uv run --frozen python evaluation/evaluate.py --dry-run
+.venv/bin/python evaluation/evaluate.py --dry-run
 ```
 
 The dry run prints the request without writing files or making cloud calls. Check actual input

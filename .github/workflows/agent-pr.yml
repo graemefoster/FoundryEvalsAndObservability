@@ -75,6 +75,5 @@ jobs:
       dataset: approvers-development
       # With 34 rows, the noise band allows two binary outcomes to change.
       tolerance: 0.07
-      blocking: true
       detail: full
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

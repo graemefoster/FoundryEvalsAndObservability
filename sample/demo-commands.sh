@@ -1,6 +1,7 @@
-# Commands used in the demo, to show on screen. Not meant to run top to bottom.
+# Commands used in the demo, to show on screen. Copy and paste them one at a time.
 # Run from sample/ with the venv active and FOUNDRY_PROJECT_ENDPOINT exported.
 # BILLABLE = calls models or deploys. Slow ones are run before the talk.
+echo "Copy commands from this file one at a time; don't run it as a script." && exit 1
 
 # --- Deploy the app only ---
 azd deploy purchasing-advice-demo
@@ -15,7 +16,7 @@ azd ai agent invoke purchasing-advice-demo --new-session --new-conversation \
   'Today is 21 October 2026. I'\''m Marcus Webb in Engineering. Can I buy a video-conferencing system for the boardroom for $6,800? I'\''ve got two supplier quotes.'
 
 # --- Demo 4: evaluate (BILLABLE, ~10 minutes) ---
-uv run --frozen python evaluation/evaluate.py --dry-run          # prints the request only
+python evaluation/evaluate.py --dry-run                          # prints the request only
 EVAL_DATASET=evaluation/datasets/approvers-holdout.jsonl python evaluation/evaluate.py --wait
 
 # Compare runs question by question

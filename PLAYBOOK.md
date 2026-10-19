@@ -60,24 +60,31 @@ python evaluation/evaluate.py --register-only    # register judges; no scoring r
 `azd up` builds the Foundry project, models, Application Insights, the agent, the GitHub Actions
 identity, and the GitHub environments `demo` (Azure variables) and `production` (you as reviewer).
 Check it with the Demo 2 question: the trace's policy search should show `"search_mode": "hybrid"`.
+The `requirements*.txt` files are exported from `uv.lock` (command at the top of each); install
+from them, as CI does.
 
 **Baselines.** Each gate compares a test set with a committed baseline in
-`evaluation/baselines/`. The pipeline never moves its own bar; a person does. Create the first two
-(billable, about 10 minutes each), then download and commit them:
+`evaluation/baselines/`. The pipeline never moves its own bar; a person does. Create all three
+from `sample/` (billable, about 10 minutes each; the two promotion runs queue one after the other):
 
 ```bash
 gh workflow run agent-pr.yml --ref main -f write_baseline=true
 gh workflow run agent-main.yml --ref main -f mode=baseline-holdout
-for pair in agent-pr:development agent-main:holdout; do
-  RUN=$(gh run list --workflow ${pair%%:*}.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-  gh run download "$RUN" --name baseline-approvers-${pair#*:} --dir evaluation/baselines
-done
+gh workflow run agent-main.yml --ref main -f mode=baseline-drift
+```
+
+Wait until `gh run list --limit 3` shows all three completed, then download and commit them.
+The push starts the first promotion to release.
+
+```bash
+gh run download --name baseline-approvers-development --dir evaluation/baselines
+gh run download --name baseline-approvers-holdout --dir evaluation/baselines
+gh run download --name baseline-approvers-drift --dir evaluation/baselines
 git add evaluation/baselines && git commit -m "CI baselines" && git push
 ```
 
-The first promotion creates the drift baseline: approve it with **Accept drift baseline and
-approve release**, then commit the artifact. Changing questions, references or judges needs a
-fresh baseline; never copy new fingerprints onto old scores.
+Changing questions, references or judges needs a fresh baseline; never copy new fingerprints
+onto old scores.
 
 ## Before the talk
 
