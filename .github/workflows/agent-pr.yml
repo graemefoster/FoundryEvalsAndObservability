@@ -1,6 +1,6 @@
 name: Agent PR gate
 
-# Every pull request: cheapest checks first.
+# Every non-Dependabot pull request: cheapest checks first.
 #   1. Offline: lint, the evaluation request, and the prompt fact check (seconds, no Azure).
 #   2. Development set against the baseline from the PR's base revision.
 # The drift set never runs here; it is kept for releases so it stays a surprise exam.
@@ -23,6 +23,7 @@ permissions:
 jobs:
   offline:
     name: 1. Offline checks
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
