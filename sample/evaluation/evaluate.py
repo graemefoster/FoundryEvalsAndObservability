@@ -177,7 +177,26 @@ def ensure_evaluator(project: AIProjectClient, name: str, update: bool, register
         for evaluator in project.beta.evaluators.list(type="custom"):
             if evaluator.name == name:
                 registered = project.beta.evaluators.get_version(name, evaluator.version)
-                if registered.definition.as_dict() != definition["definition"]:
+                actual = registered.definition.as_dict()
+                expected = definition["definition"]
+                if (
+                    expected["type"] == "rubric"
+                    and "threshold" not in expected["init_parameters"]["properties"]
+                ):
+                    # Foundry adds this optional schema when registering a legacy pass_threshold.
+                    properties = actual.get("init_parameters", {}).get("properties", {})
+                    if properties.get("threshold") == {
+                        "type": "number",
+                        "description": (
+                            "Normalized rubric score required to pass. "
+                            "pass_threshold is accepted as a legacy alias."
+                        ),
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "default": expected["pass_threshold"],
+                    }:
+                        del properties["threshold"]
+                if actual != expected:
                     raise ValueError(
                         f"Registered evaluator {name}:{evaluator.version} differs from {filename}. "
                         "Explicitly register the change with --update-evaluators --register-only, "
